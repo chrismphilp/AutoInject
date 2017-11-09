@@ -3,6 +3,6 @@ import shlex
 
 out = check_output(["dpkg-query", "-W", 
     "-f=${binary:Package}\t${Version}\t${Architecture}\n"])
-out = out.split('\n')
-out = out.split('\t')
-print(out)
+for line in out:
+    print(line)
+    print()
