@@ -1,0 +1,6 @@
+AutoInject/__init__.py
+AutoInject.egg-info/PKG-INFO
+AutoInject.egg-info/SOURCES.txt
+AutoInject.egg-info/dependency_links.txt
+AutoInject.egg-info/requires.txt
+AutoInject.egg-info/top_level.txt
