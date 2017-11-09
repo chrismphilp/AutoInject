@@ -1,3 +1,4 @@
-from subprocess import call
+from subprocess import check_output
 
-call(["dpkg-query", "-l"])
+out = check_output(["dpkg-query", "-l"])
+print(out)
