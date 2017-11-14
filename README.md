@@ -10,8 +10,8 @@ A software for automatically patching vulnerabilities.
 ## Running the package
 
 ```
-set FLASK_APP=AutoInject
-set FLASK_DEBUG=true
-pip install -e .
+export FLASK_APP=AutoInject
+export FLASK_DEBUG=true
+sudo pip3 install -e .
 flask run
 ```
