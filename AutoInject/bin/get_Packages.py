@@ -14,16 +14,24 @@ for line in tmp:
     ntmp        = line.split('\t')
     listOfPackages.append(ntmp)
 
-for package_array in listOfPackages:
-    print('Package name:', package_array[0])
-    print('Version:', package_array[1])
-    print('Architecture:', package_array[2])
-    print()
+print(db.collection_names())
 
-    package_item = {
-        'package_name' : package_array[0],
-        'version' : package_array[1],
-        'architecture' : package_array[2]
+for package_array in listOfPackages:
+    # print('Package name:', package_array[0])
+    # print('Version:', package_array[1])
+    # print('Architecture:', package_array[2])
+    # print()
+
+    
+    try {
+        package_item = {
+            'package_name' : package_array[0],
+            'version' : package_array[1],
+            'architecture' : package_array[2]
+        }
+    }
+    except {
+        continue
     }
 
     result = collection.insert_one(package_item)
