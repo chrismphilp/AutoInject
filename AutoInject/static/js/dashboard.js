@@ -3,6 +3,11 @@ $(document).ready(function() {
         "paging":   true,
         "ordering": true,
         "order": [[ 1, "desc" ]],
-        "info":     true
+        "info":     true,
+        "columns": [
+            { data: "package_name" },
+            { data: "package_version" },
+            { data: "architecture" }
+        ]  
     } );
 } );
