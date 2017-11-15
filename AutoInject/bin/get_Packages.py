@@ -9,7 +9,8 @@ collection              = db['package_list']
 
 def insert_Packages():
     
-    out                 = check_output(["dpkg-query", "-W", "-f=${binary:Package}\t${Version}\t${Architecture}\n"], universal_newlines=True)
+    out                 = check_output(["dpkg-query", "-W", "-f=${binary:Package}\t${Version}\t${Architecture}\n"], 
+                            universal_newlines=True)
     # out.write(plaintext.encode('utf-8'))
     tmp                 = out.split('\n')
 
@@ -34,13 +35,8 @@ def insert_Packages():
         result = collection.insert_one(package_item)
 
     print('Finished inserting into DB')
-    python_data = collection.find_one({ 'package_name' : 'python' })
-    print(python_data)
 
 def get_Packages_JSON():
 
     package_JSON = collection.find({})
     return dumps(package_JSON)
-
-insert_Packages()
-print(get_Packages_JSON())
