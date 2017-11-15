@@ -13,23 +13,22 @@
             				<div class="table-responsive">
 								<table 
 									id="packages" 
-									class="table table-bordered table-hover table-striped" 
-									cellspacing="0" 
+									class="display"  
 									width="100%"
 								>
 							        <thead>
-							            <!-- <tr>
+							            <tr>
 							                <th>Package Name</th>
 							                <th>Package Version</th>
 							                <th>Affected System</th>
-							            </tr> -->
+							            </tr>
 							        </thead>
 							        <tfoot>
-							            <!-- <tr>
+							            <tr>
 							                <th>Package Name</th>
 							                <th>Package Version</th>
 							                <th>Affected System</th>
-							            </tr> -->
+							            </tr>
 									</tfoot>
 									<tbody>
 										<!-- {% for packages in package_JSON_data %}
@@ -65,5 +64,5 @@
 	</script>
 
 	<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-	
+
 {% endblock %}
