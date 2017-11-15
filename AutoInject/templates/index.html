@@ -32,11 +32,13 @@
 							            </tr>
 									</tfoot>
 									<tbody>
-										<tr>
-											<td>Python</td>
-											<td>3.0</td>
-											<td>Windows 10</td>
-										</tr>
+										{% for packages in package_JSON_data %}
+											<tr>
+												<td>{{ packages[0] }}</td>
+												<td>{{ packages[1] }}</td>
+												<td>{{ packages[2] }}</td>
+											</tr>
+										{% endfor %}
 									</tbody>
 							    </table>
 							</div>
