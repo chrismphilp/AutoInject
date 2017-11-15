@@ -9,8 +9,7 @@ collection              = db['package_list']
 
 def insert_Packages():
     
-    out                 = check_output(["dpkg-query", "-W", "-f=${binary:Package}\t${Version}\t${Architecture}\n"], 
-                            stdout=subprocess.PIPE)
+    out                 = check_output(["dpkg-query", "-W", "-f=${binary:Package}\t${Version}\t${Architecture}\n"])
     out.write(plaintext.encode('utf-8'))
     tmp                 = out.split('\n')
 
