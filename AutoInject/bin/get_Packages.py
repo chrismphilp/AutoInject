@@ -1,5 +1,4 @@
 import pymongo, json
-from bson.json_util import dumps
 from pymongo import MongoClient
 from subprocess import check_output
 
