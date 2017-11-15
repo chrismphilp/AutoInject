@@ -6,11 +6,3 @@ $(document).ready(function() {
         "info":     true
     } );
 } );
-
-var table = $('#packages').DataTable();
-
-table.row.add( {
-       "Tiger Nixon",
-       "System Architect",
-       "$3,120",
-} ).draw();
