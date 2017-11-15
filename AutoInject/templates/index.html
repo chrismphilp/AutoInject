@@ -32,7 +32,7 @@
 							            </tr>
 									</tfoot>
 									<tbody>
-										{% for packages in package_JSON_data %}
+										{% for packages in package_JSON_data.iteritems() %}
 											<tr>
 												<td>{{ packages[0] }}</td>
 												<td>{{ packages[1] }}</td>
