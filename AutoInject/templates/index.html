@@ -52,18 +52,16 @@
 {% block scripts %}
 	<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 
-	<script>
-		$(document).ready(function() {
-			var table = $('#packages').DataTable();
-			var JSON_data = {{ package_JSON_data }};
+	<script type='text/javascript'>
+		var table = $('#packages').DataTable();
+		var JSON_data = {{ package_JSON_data }};
 
-			for data in package_JSON_data {
-				table.row.add( [
-					data.package_name,
-					data.version,
-					data.architecture
-				] ).draw( false );
-			}
-		} );
+		for data in package_JSON_data {
+			table.row.add( [
+				data.package_name,
+				data.version,
+				data.architecture
+			] ).draw( false );
+		}
 	</script>
 {% endblock %}
