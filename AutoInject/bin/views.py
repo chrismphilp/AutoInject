@@ -9,7 +9,7 @@ from AutoInject.bin.get_Packages import *
 def index():
     insert_Packages()
     package_JSON_data = get_Packages_JSON()
-    return render_template('index.html', package_JSON_data)
+    return render_template('index.html', package_JSON_data=package_JSON_data)
 
 @app.route("/vulnerabilities")
 def vulnerabilities():
