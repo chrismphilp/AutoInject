@@ -31,13 +31,6 @@
 							                <th>Affected System</th>
 							            </tr>
 							        </tfoot>
-							        <tbody>
-							            <tr>
-							                <td>Tiger Nixon</td>
-							                <td>System Architect</td>
-							                <td>Edinburgh</td>
-							            </tr>
-							        </tbody>
 							    </table>
 							</div>
 						</div>
@@ -47,6 +40,21 @@
 		</div>
 	</div>
 {% endblock %}
-{% block scripts %}I
+{% block scripts %}
+
+	<script type="text/javascript">
+		
+		var table = $('#packages').DataTable();
+
+		table.row.add( {
+			"name":       "Tiger Nixon",
+			"position":   "System Architect",
+			"salary":     "$3,120",
+			"start_date": "2011/04/25",
+			"office":     "Edinburgh",
+			"extn":       "5421"
+		} ).draw();
+		
+	</script>
 	<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}
