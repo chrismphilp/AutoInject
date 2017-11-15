@@ -1,4 +1,5 @@
-import pymongo, json
+import pymongo
+from json import dumps
 from pymongo import MongoClient
 from subprocess import check_output
 
