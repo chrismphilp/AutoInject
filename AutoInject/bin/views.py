@@ -2,7 +2,8 @@ import pymongo
 from AutoInject import app
 from flask import Flask, render_template, request
 from pymongo import MongoClient
-from getPackages import *
+
+from AutoInject.bin import get_Packages
 
 @app.route("/")
 def index():
