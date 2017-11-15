@@ -38,6 +38,7 @@ def insert_Packages():
 def get_Packages():
 
     package_JSON = collection.find({})
-    print(package_JSON)
+    for document in package_JSON:
+        print(document)
 
 get_Packages()
