@@ -1,4 +1,5 @@
-import pymongo, json
+import pymongo
+from json import loads
 from bson.json_util import dumps
 from pymongo import MongoClient
 from subprocess import check_output
@@ -39,4 +40,4 @@ def insert_Packages():
 def get_Packages_JSON():
 
     package_JSON = collection.find({})
-    return dumps(package_JSON)
+    return loads(dumps(package_JSON))
