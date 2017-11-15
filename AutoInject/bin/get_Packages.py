@@ -6,7 +6,7 @@ client                  = MongoClient()
 db                      = client['package_db']
 collection              = db['package_list']
 
-def get_Packages():
+def insert_Packages():
     
     out                 = check_output(["dpkg-query", "-W", "-f=${binary:Package}\t${Version}\t${Architecture}\n"])
     tmp                 = out.split('\n')
@@ -34,5 +34,10 @@ def get_Packages():
     print('Finished inserting into DB')
     python_data = collection.find_one({ 'package_name' : 'python' })
     print(python_data)
+
+def get_Packages():
+
+    package_JSON = collection.find({})
+    print(package_JSON)
 
 get_Packages()
