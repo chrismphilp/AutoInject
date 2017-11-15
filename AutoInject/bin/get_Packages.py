@@ -18,3 +18,15 @@ for package_array in listOfPackages:
     print('Package name:', package_array[0])
     print('Version:', package_array[1])
     print('Architecture:', package_array[2])
+    print()
+
+    package_item = {
+        'package_name' : package_array[0],
+        'version' : package_array[1],
+        'architecture' : package_array[2]
+    }
+
+    result = collection.insert_one(package_item)
+    print('Result ID', result.inserted_id)
+
+print('Finished inserting into DB')
