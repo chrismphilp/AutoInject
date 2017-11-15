@@ -36,9 +36,10 @@ def insert_Packages():
     python_data = collection.find_one({ 'package_name' : 'python' })
     print(python_data)
 
-def get_Packages():
+def get_Packages_JSON():
 
     package_JSON = collection.find({})
     return dumps(package_JSON)
 
-print(get_Packages())
+insert_Packages()
+print(get_Packages_JSON())

@@ -2,12 +2,13 @@ import pymongo
 from AutoInject import app
 from flask import Flask, render_template, request
 from pymongo import MongoClient
-
-
+from getPackages import *
 
 @app.route("/")
 def index():
-    return render_template('index.html')
+    insert_Packages()
+    package_JSON_data = get_Packages_JSON()
+    return render_template('index.html', package_JSON_data)
 
 @app.route("/vulnerabilities")
 def vulnerabilities():
