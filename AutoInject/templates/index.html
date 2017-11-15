@@ -6,7 +6,7 @@
 	<div class="row">
   		<div class="col-lg-12">
     		<div class="panel panel-default">
-      			<div class="panel-heading">Anomaly Detected</div>
+      			<div class="panel-heading">Currently Installed Packages</div>
       			<div class="panel-body">
         			<div class="row">
           				<div class="col-lg-12">
@@ -32,13 +32,13 @@
 							            </tr>
 									</tfoot>
 									<tbody>
-										{% for packages in package_JSON_data %}
+										<!-- {% for packages in package_JSON_data %}
 											<tr>
 												<td>{{ packages.package_name }}</td>
 												<td>{{ packages.version }}</td>
 												<td>{{ packages.architecture }}</td>
 											</tr>
-										{% endfor %}
+										{% endfor %} -->
 									</tbody>
 							    </table>
 							</div>
@@ -51,4 +51,19 @@
 {% endblock %}
 {% block scripts %}
 	<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+	<script>
+		$(document).ready(function() {
+			var table = $('#packages').DataTable();
+			var JSON_data = {{ package_JSON_data }};
+
+			for data in package_JSON_data {
+				table.row.add( [
+					data.package_name,
+					data.version,
+					data.architecture
+				] ).draw( false );
+			}
+		} );
+	</script>
 {% endblock %}
