@@ -18,14 +18,18 @@
 									width="100%"
 								>
 							        <thead>
-							            
-							        </thead>
-							        <tfoot>
-							            <tr>
+							            <!-- <tr>
 							                <th>Package Name</th>
 							                <th>Package Version</th>
 							                <th>Affected System</th>
-							            </tr>
+							            </tr> -->
+							        </thead>
+							        <tfoot>
+							            <!-- <tr>
+							                <th>Package Name</th>
+							                <th>Package Version</th>
+							                <th>Affected System</th>
+							            </tr> -->
 									</tfoot>
 									<tbody>
 										<!-- {% for packages in package_JSON_data %}
@@ -46,7 +50,6 @@
 	</div>
 {% endblock %}
 {% block scripts %}
-	<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 
 	<script type='text/javascript'>
 		var table = $('#packages').DataTable();
@@ -60,4 +63,7 @@
 			] ).draw( false );
 		}
 	</script>
+
+	<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+	
 {% endblock %}
