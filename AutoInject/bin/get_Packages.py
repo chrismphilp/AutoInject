@@ -13,7 +13,7 @@ def get_Packages():
 
     # Deleting any current package details
     db.package_list.drop()
-    print('Collection names:', db.collection_names())
+    print('Collection names (should be empty):', db.collection_names())
     
     for line in tmp:
         package_array   = line.split('\t')
