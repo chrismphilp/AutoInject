@@ -69,7 +69,7 @@
 		$(document).ready(function() {
 			
 			var table = $('#packages').DataTable();
-			var JSON_data = JSON.parse({{ package_JSON_data|safe }});
+			var JSON_data = {{ package_JSON_data|safe }};
 			// console.log(JSON_data.package_name);
 			
 			for (package in JSON_data) {
@@ -78,7 +78,7 @@
 				// 	package.version,
 				// 	package.architecture
 				// ] ).draw();
-				console.log(package.package_name);
+				console.log(package['package_name']);
 			}
 		} );
 
