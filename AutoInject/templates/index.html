@@ -71,15 +71,18 @@
 			var table = $('#packages').DataTable();
 			var JSON_data = {{ package_JSON_data|safe }};
 			var package;
+			var data;
 			// console.log(JSON_data.package_name);
 			
 			for (package in JSON_data) {
+				for (data in package) {
+					console.log(data);
+				}
 					// table.row.add( [
 					// 	package.package_name,
 					// 	package.version,
 					// 	package.architecture
 					// ] ).draw();
-				console.log(package.architecture);
 			}
 		} );
 
