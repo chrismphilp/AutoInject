@@ -1,5 +1,6 @@
 $(document).ready(function() {
     $('#packages').DataTable( {
+        "lengthMenu": [ 10, 25 ],
         "paging":       true,
         "ordering":     true,
         "order":        [[ 1, "desc" ]],
@@ -18,6 +19,6 @@ $(document).ready(function() {
         "Hello",
         "Hola",
         "Senor"
-    ] ).draw( true );
+    ] ).draw();
 
 } );
