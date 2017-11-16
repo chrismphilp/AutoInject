@@ -11,13 +11,13 @@ $(document).ready(function() {
         ]  
     } );
 
-    var table = $('#packages').DataTable();
-    // var JSON_data = {{ package_JSON_data }};
+    // var table = $('#packages').DataTable();
+    // // var JSON_data = {{ package_JSON_data }};
 
-    table.row.add( [
-        data.package_name,
-        data.version,
-        data.architecture
-    ] ).draw( false );
+    // table.row.add( [
+    //     data.package_name,
+    //     data.version,
+    //     data.architecture
+    // ] ).draw( false );
 
 } );
