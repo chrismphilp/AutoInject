@@ -73,12 +73,14 @@
 			// console.log(JSON_data.package_name);
 			
 			for (package in JSON_data) {
+				for (details in package) {
 				// table.row.add( [
 				// 	package.package_name,
 				// 	package.version,
 				// 	package.architecture
 				// ] ).draw();
-				console.log(package);
+					console.log(details.package_name);
+				}
 			}
 		} );
 
