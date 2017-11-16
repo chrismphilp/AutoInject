@@ -39,4 +39,4 @@ def insert_Packages():
 def get_Packages_JSON():
 
     package_JSON = collection.find({})
-    return dumps(package_JSON)
+    return loads(dumps(package_JSON))
