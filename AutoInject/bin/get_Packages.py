@@ -8,8 +8,13 @@ client                  = MongoClient()
 db                      = client['package_db']
 collection              = db['package_list']
 
+global list_Of_Package_Names
+list_Of_Package_Names = []
+
 def insert_Packages():
     
+    global list_Of_Package_Names
+
     out                 = check_output(["dpkg-query", "-W", "-f=${binary:Package}\t${Version}\t${Architecture}\n"], 
                             universal_newlines=True)
     tmp                 = out.split('\n')
@@ -27,6 +32,7 @@ def insert_Packages():
                 'version' : package_array[1],
                 'architecture' : package_array[2]
             }
+            list_Of_Package_Names.append(package_array[0])
         
         except:
             print("Error inserting", package_array)
