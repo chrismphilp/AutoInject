@@ -39,7 +39,6 @@
 											<td>{{ packages.architecture }}</td>
 										</tr> -->
 										<!-- {% endfor %} -->
-
 										<tr>
 											<td>CP</td>
 											<td>2.2</td>
@@ -62,6 +61,8 @@
 {% endblock %}
 {% block scripts %}
 
+	<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
 	<script type='text/javascript'>
 		var table = $('#packages').DataTable();
 		var JSON_data = {{ package_JSON_data }};
@@ -74,7 +75,5 @@
 			] ).draw( false );
 		}
 	</script>
-
-	<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 
 {% endblock %}
