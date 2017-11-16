@@ -69,8 +69,8 @@
 		$(document).ready(function() {
 			
 			 var table = $('#packages').DataTable();
-			 var JSON_data = {{ package_JSON_data }};
-			 console.log(JSON_data);
+			 var JSON_data = {{ package_JSON_data|safe }};
+			 console.log(JSON_data.package_name);
 		 
 				 table.row.add( [
 					 "Hello",
