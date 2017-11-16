@@ -12,7 +12,6 @@ def insert_Packages():
     
     out                 = check_output(["dpkg-query", "-W", "-f=${binary:Package}\t${Version}\t${Architecture}\n"], 
                             universal_newlines=True)
-    # out.write(plaintext.encode('utf-8'))
     tmp                 = out.split('\n')
 
     # Deleting any current package details
@@ -40,4 +39,4 @@ def insert_Packages():
 def get_Packages_JSON():
 
     package_JSON = collection.find({})
-    return loads(dumps(package_JSON))
+    return dumps(package_JSON)
