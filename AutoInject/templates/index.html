@@ -72,14 +72,14 @@
 			var JSON_data = {{ package_JSON_data|safe }};
 			// console.log(JSON_data.package_name);
 			
-			for (package in JSON_data) {
-				for (details in package) {
-				// table.row.add( [
-				// 	package.package_name,
-				// 	package.version,
-				// 	package.architecture
-				// ] ).draw();
-					console.log(details.package_name);
+			for (var package in JSON_data) {
+				for (var details in package) {
+					// table.row.add( [
+					// 	package.package_name,
+					// 	package.version,
+					// 	package.architecture
+					// ] ).draw();
+					console.log(details['package_name']);
 				}
 			}
 		} );
