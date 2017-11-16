@@ -32,23 +32,6 @@
 							            </tr>
 									</tfoot>
 									<tbody>
-										<!-- {% for packages in package_JSON_data %} -->
-										<!-- <tr>
-											<td>{{ packages.package_name }}</td>
-											<td>{{ packages.version }}</td>
-											<td>{{ packages.architecture }}</td>
-										</tr> -->
-										<!-- {% endfor %} -->
-										<tr>
-											<td>CP</td>
-											<td>2.2</td>
-											<td>Windows</td>
-										</tr>
-										<tr>
-											<td>DP</td>
-											<td>3.2</td>
-											<td>Windows</td>
-										</tr>
 									</tbody>
 							    </table>
 							</div>
@@ -61,30 +44,27 @@
 {% endblock %}
 {% block scripts %}
 
-	<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-	<!-- <script src="{{ url_for('static', filename='js/add_row.js') }}"></script> -->
-
 	<script type='text/javascript'>
 
 		$(document).ready(function() {
 			
-			var table = $('#packages').DataTable();
 			var JSON_data = {{ package_JSON_data|safe }};
 			var package;
-			var data;
-			// console.log(JSON_data.package_name);
+			var data = [];
 			
-			for (package in JSON_data) {
-				console.log(JSON.stringify(package[0]));
-				for (data in package) {
-					console.log(JSON.stringify(data));
-				}
-					// table.row.add( [
-					// 	package.package_name,
-					// 	package.version,
-					// 	package.architecture
-					// ] ).draw();
+			for (package in JSON_data) {				
+				data.push( [JSON_data[package]['package_name'], JSON_data[package]['version'], JSON_data[package]['architecture'] ]);
 			}
+
+			$('#packages').DataTable( {
+				data: 			data,
+		        "lengthMenu":   [ 10, 15 ],
+		        "paging":       true,
+		        "processing":   true,
+		        "ordering":     true,
+		        "order":        [[ 0, "asc" ]],
+		        "info":         true
+		    } );
 		} );
 
 	</script>
