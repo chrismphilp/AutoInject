@@ -1,4 +1,4 @@
-import pymongo
+import pymongo, re
 from pymongo import MongoClient
 from json import loads
 from bson.json_util import dumps
@@ -13,14 +13,23 @@ global list_Of_Package_Names
 def get_Vulnerabilities():
 
 	global list_Of_Package_Names, system_Vulnerabilites
-	system_Vulnerabilites = []
+	system_Vulnerabilites 	= []
+	t 						= r'.*|.*'.join(list_Of_Package_Names)
+	r 						= re.compile(t)
 
-	for package in list_Of_Package_Names:	
-		
-		vulnerability_JSON 	= collection.find({ "vulnerable_configuration" : {'$regex' : ".*" + package + ".*"} })
-		system_Vulnerabilites.append(vulnerability_JSON)
+	# vulnerability_JSON 	= collection.find(
+	# 	{ "vulnerable_configuration" : 
+	# 		{ '$in' : [
+	# 			re.compile(t)
+	# 			]
+	# 		}
+	# 	}
+	# )
+	# system_Vulnerabilites.append(vulnerability_JSON)
 
-	print(len(system_Vulnerabilites))
+	# for items in system_Vulnerabilites:
+	# 	for data in items:
+	# 		print(data)
 
 	# for data in vulnerability_JSON:
 	# 	list_Data.append(('ID:', data['id'], ' References:', data['references'], ' Vulnerable Configurations:', data['vulnerable_configuration']))	
