@@ -1,4 +1,4 @@
-import pymongo
+import pymongo, re, time
 from json import loads
 from bson.json_util import dumps
 from pymongo import MongoClient
@@ -8,12 +8,10 @@ client                  = MongoClient()
 db                      = client['package_db']
 collection              = db['package_list']
 
-global list_Of_Package_Names
-list_Of_Package_Names = []
+global package_Names_With_Versions
+package_Names_With_Versions = []
 
 def insert_Packages():
-    
-    global list_Of_Package_Names
 
     out                 = check_output(["dpkg-query", "-W", "-f=${binary:Package}\t${Version}\t${Architecture}\n"], 
                             universal_newlines=True)
@@ -27,12 +25,17 @@ def insert_Packages():
         package_array   = line.split('\t')
 
         try:
+
+            package_Version             = get_Formatted_Version(package_array[1])
+            package_Names_With_Version  = get_Formatted_Name(package_array[0]) + ':' + package_Version
+
             package_item = {
+                'package_name_with_version' : package_Names_With_Version,
                 'package_name' : package_array[0],
-                'version' : package_array[1],
+                'version' : package_Version,
                 'architecture' : package_array[2]
             }
-            list_Of_Package_Names.append(package_array[0])
+            package_Names_With_Versions.append(package_Names_With_Version)
         
         except:
             print("Error inserting", package_array)
@@ -41,6 +44,16 @@ def insert_Packages():
         result = collection.insert_one(package_item)
 
     print('Finished inserting into DB')
+
+def get_Formatted_Name(package_Name):
+
+    re_string = re.compile(r"""(([A-Za-z])+(\-[A-Za-z])*)+""")
+    return((re.match(re_string, package_Name)).group(0))
+
+def get_Formatted_Version(package_Version):
+
+    re_num = re.compile(r"""([0-9]\.*)+""")
+    return((re.match(re_num, package_Version)).group(0)) 
 
 def get_Packages_JSON():
 

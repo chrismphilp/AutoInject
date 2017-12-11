@@ -19,16 +19,18 @@
 								>
 							        <thead>
 							            <tr>
-							                <th>Vulnerability Name</th>
-							                <th>Vulnerability Version</th>
-							                <th>Affected System</th>
+							                <th>Vulnerability ID</th>
+							                <th>Vulnerability Systems</th>
+							                <th>References</th>
+							                <th>Summary</th>
 							            </tr>
 							        </thead>
 							        <tfoot>
 							            <tr>
-							                <th>Vulnerability Name</th>
-                                            <th>Vulnerability Version</th>
-                                            <th>Affected System</th>
+							                <th>Vulnerability ID</th>
+							                <th>Vulnerability Systems</th>
+							                <th>References</th>
+							                <th>Summary</th>
 							            </tr>
 									</tfoot>
 									<tbody>
@@ -44,30 +46,36 @@
 {% endblock %}
 {% block scripts %}
 
-	<!-- <script type='text/javascript'>
+	<script type='text/javascript'>
 
 		$(document).ready(function() {
-			
+
 			var JSON_data = {{ vulnerability_JSON_data|safe }};
 			var vulnerability;
 			var data = [];
-			
+
 			for (vulnerability in JSON_data) {	
-                console.log(JSON_data[vulnerability]['id']);
-				//data.push( [JSON_data[vulnerability]['id'], JSON_data[vulnerability]['references'], JSON_data[vulnerability]['vulnerable_configuration'] ]);
+				data.push( 
+					[ 
+						JSON_data[vulnerability]['id'], 
+						JSON_data[vulnerability]['vulnerable_systems'], 
+						JSON_data[vulnerability]['references'], 
+						JSON_data[vulnerability]['summary'] 
+					] 
+				);
 			}
 
 			$('#vulnerabilities').DataTable( {
-				//data: 			data,
+				data: 			data,
 		        "lengthMenu":   [ 10, 15 ],
 		        "paging":       true,
 		        "processing":   true,
 		        "ordering":     true,
 		        "order":        [[ 0, "asc" ]],
 		        "info":         true,
-		    } );
-		} );
+		        stateSave: 		true
+			});
 
 	</script>
- -->
+
 {% endblock %}
