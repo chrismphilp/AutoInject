@@ -8,7 +8,7 @@ client                  = MongoClient()
 db                      = client['package_db']
 collection              = db['package_list']
 
-global package_Names_With_Versions
+package_Names               = []
 package_Names_With_Versions = []
 
 def insert_Packages():
@@ -35,7 +35,8 @@ def insert_Packages():
                 'version' : package_Version,
                 'architecture' : package_array[2]
             }
-            package_Names_With_Versions.append(package_Names_With_Version)
+            package_Names.append(get_Formatted_Name(package_array[0]))
+            package_Names_With_Versions.append(package_Names_With_Versions)
         
         except:
             print("Error inserting", package_array)

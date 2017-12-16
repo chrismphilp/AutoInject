@@ -7,119 +7,58 @@ from json import loads
 from bson.json_util import dumps
 from subprocess import check_output
 
-# client                  = MongoClient()
-# db                      = client['cvedb']
-# collection              = db['cves']
+client                  = MongoClient()
+db                      = client['cvedb']
+collection              = db['cves']
 
-list_Of_Memes = []
+list_Of_CVE_IDs         = []
 
-def get_Vulnerabilities():
+def search_Database(name_Array, name_With_Version_Array):
 
-    global package_Names_With_Versions, system_Vulnerabilites_IDs
-    system_Vulnerabilites_IDs   = []
+    start1 = time.time()
+    
+    for values in name_Array:
+        cursor = collection.find( { '$text' : { '$search' : values } } )        
+        for items in cursor:
+            try:    
+                if items['id'] not in list_Of_CVE_IDs:
+                    list_Of_CVE_IDs.append(items['id'])
+            except:
+                print("Couldn't print out:", items)
+    
+    end1 = time.time()
 
-    for elem in collection.find({}):
-        system_Vulnerabilites.append(
-            { 
-                'id' : elem['id'], 
-                'vulnerable_systems' : elem['vulnerable_configuration'],
-                'references' : elem['references'], 
-                'summary' : elem['summary']
+    print("Time to search packages: ", end1 - start1)  
+    print('Number of CVE IDs:', len(list_Of_CVE_IDs))
+
+    start2 = time.time()
+
+    for values in name_With_Version_Array:
+        cursor = collection.find( 
+            {
+                '$text' : { '$search' : "\"" + values + "\""},
+                'id' : { '$in' : list_Of_CVE_IDs } 
             }
         )
+        # for items in cursor:
 
-def run_Vulnearbility_Search():
+    end2 = time.time()
+    print("Time to match exact package names:", end2 - start2)
 
-    for value in gp.package_Names_With_Versions:
-        out                 = check_output(["../../../cve-search/bin/search.py", "-p", value, "-o", "json"], 
-                                universal_newlines=True)
-        tmp                 = out.split('\n')
+    # cursor = collection.find( {'$text' : { '$search' : "python"} } )
 
-def search_Database(package_Array):
-
-    client                  = MongoClient()
-    db                      = client['cvedb']
-    collection              = db['cves']
-
-    # regx = re.compile("python:3.4.0$")
-    # reg2 = re.compile(".*python:3.4.0.*")
-
-    # cursor = collection.find( { 'vulnerable_configuration' : re.compile("python:3.4.0$") } )
-    # cursor2 = collection.find( { 'vulnerable_configuration' : { '$regex' : ('python:3.4.0$'), '$options' : 'i' } } )
-    
-    # count = 0
-    # start = time.time()
-    # for values in cursor:
-    #     if (count == 0): print(values)
-    #     count += 1
-    # end = time.time()
-    # print("Total time: ", end - start)
-    # count = 0
-    # start2 = time.time()
-    # for values in cursor2:
-    #     if (count == 0): print(values)
-    #     count += 1
-    # end2 = time.time()
-    # print("Total time 2: ", end2 - start2)
-
-    # for items in package_Array:
-    #     print('$' + items)
-
-    #     cursor = collection.find( { 'vulnerable_configuration' : re.compile(items + "$") } )
-
-    #     for inner_items in cursor:
-    #         list_Of_Memes.append(inner_items['id'])
-    #     print('Finished sorting:', items)
-        # sys.stdout.flush()
-
-    # print(package_Array)
-    list_Of_Regex = ""
-    count = 0
-    for items in package_Array:
-        if count == 0:
-            list_Of_Regex += (':' + items + '$')
-            count += 1
-        elif count < 500: 
-            list_Of_Regex += (' | :' + items + '$')
-            count += 1
-        else:
-            regx = re.compile(list_Of_Regex)
-            cursor = collection.find( { 'vulnerable_configuration' : regx } )
-            print(list_Of_Regex, '\n')
-            list_Of_Regex = ""
-            count = 0
-            for items in cursor:
-                print(items)
-                print()
-
-    # print(list_Of_Regex)
-    # regx = re.compile(list_Of_Regex)
-    # cursor = collection.find( { 'vulnerable_configuration' : regx } )
-
-    # cursor      = collection.find( 
-    #     {
-    #         '$or' : list_Of_Regex
-    #     }
-    # )
+def match_Vulnerabilites_To_Packages():
 
 
-    # try:
-    #     collection.drop_index(index)
-    # except:
-    #     print("Index doesn't exist")
 
-    # collection.create_index(index)
-    # cursor = index.find( {'$text' : { '$search' : "python"}} )
-    # cursor = collection.find( { 'vulnerable_configuration_1': { '$search' : "python:3.4.0" } } )
+def initial_Update_Database():
 
-    # for values in cursor:
-    #     try:    
-    #         print('\n')
-    #         print(values['id'])
-    #     except:
-    #         print("Couldn't print out:", values)
-
-    # print("Total time: ", end - start)
+    collection.update( 
+        {},
+        { '$set' : { 'matched_To_CVE' : 0 } },
+        upsert=False,
+        multi=True 
+    )
 
 def process_Creator():
 
@@ -138,9 +77,6 @@ def chunks(array):
     for i in range(0, len(array), 200):
         yield array[i : i + 200]
 
-gp.insert_Packages()
-# process_Creator()
-search_Database(gp.package_Names_With_Versions)
-# print(list_Of_Memes)
-
-# print(mp.cpu_count())
+initial_Update_Database()
+# gp.insert_Packages()
+# search_Database(gp.package_Names, gp.package_Names_With_Versions)
