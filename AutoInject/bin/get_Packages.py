@@ -27,16 +27,20 @@ def insert_Packages():
         try:
 
             package_Version             = get_Formatted_Version(package_array[1])
-            package_Names_With_Version  = get_Formatted_Name(package_array[0]) + ':' + package_Version
+            squashed_Version            = ''.join(e for e in package_Version if e.isalnum())
+            package_Name_With_Version   = get_Formatted_Name(package_array[0]) + squashed_Version
+            squashed_Name_With_Version  = ''.join(e for e in package_Name_With_Version if e.isalnum())
 
             package_item = {
-                'package_name_with_version' : package_Names_With_Version,
+                'package_name_with_version' : package_Name_With_Version,
                 'package_name' : package_array[0],
+                'formatted_package_name_with_version' :  squashed_Name_With_Version,
                 'version' : package_Version,
+                'formatted_version' : squashed_Version,
                 'architecture' : package_array[2]
             }
             package_Names.append(get_Formatted_Name(package_array[0]))
-            package_Names_With_Versions.append(package_Names_With_Versions)
+            package_Names_With_Versions.append(package_Name_With_Version)
         
         except:
             print("Error inserting", package_array)
@@ -49,12 +53,12 @@ def insert_Packages():
 def get_Formatted_Name(package_Name):
 
     re_string = re.compile(r"""(([A-Za-z])+(\-[A-Za-z])*)+""")
-    return((re.match(re_string, package_Name)).group(0))
+    return (re.match(re_string, package_Name)).group(0)
 
 def get_Formatted_Version(package_Version):
 
     re_num = re.compile(r"""([0-9]\.*)+""")
-    return((re.match(re_num, package_Version)).group(0)) 
+    return (re.match(re_num, package_Version)).group(0)
 
 def get_Packages_JSON():
 
