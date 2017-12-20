@@ -8,46 +8,49 @@ client                  = MongoClient()
 db                      = client['package_db']
 collection              = db['package_list']
 
-package_Names               = []
 package_Names_With_Versions = []
+list_To_Insert              = []
 
-def insert_Packages():
+def get_Package_Data():
 
     out                 = check_output(["dpkg-query", "-W", "-f=${binary:Package}\t${Version}\t${Architecture}\n"], 
                             universal_newlines=True)
     tmp                 = out.split('\n')
-
-    # Deleting any current package details
-    db.package_list.drop()
-    print('Collection names (should be empty):', db.collection_names())
     
+    print('Retrieving list of packages on system')
     for line in tmp:
         package_array   = line.split('\t')
 
         try:
-
-            package_Version             = get_Formatted_Version(package_array[1])
-            squashed_Version            = ''.join(e for e in package_Version if e.isalnum())
-            package_Name_With_Version   = get_Formatted_Name(package_array[0]) + squashed_Version
-            squashed_Name_With_Version  = ''.join(e for e in package_Name_With_Version if e.isalnum())
+            package_Version                         = get_Formatted_Version(package_array[1])
+            formatted_Package_Name_Without_Version  = get_Formatted_Name(package_array[0])
+            squashed_Version                        = ''.join(e for e in package_Version if e.isalnum())
+            package_Name_With_Version               = formatted_Package_Name_Without_Version + squashed_Version
+            squashed_Name_With_Version              = ''.join(e for e in package_Name_With_Version if e.isalnum())
 
             package_item = {
                 'package_name_with_version' : package_Name_With_Version,
                 'package_name' : package_array[0],
                 'formatted_package_name_with_version' :  squashed_Name_With_Version,
+                'formatted_package_name_without_version' : formatted_Package_Name_Without_Version,
                 'version' : package_Version,
                 'formatted_version' : squashed_Version,
                 'architecture' : package_array[2]
             }
-            package_Names.append(get_Formatted_Name(package_array[0]))
-            package_Names_With_Versions.append(package_Name_With_Version)
+            list_To_Insert.append(package_item)
+            package_Names_With_Versions.append(squashed_Name_With_Version)
         
         except:
             print("Error inserting", package_array)
             continue
-        
-        result = collection.insert_one(package_item)
+    return(list_To_Insert)
 
+def insert_Packages(package_List):
+
+    # Deleting any current package details
+    db.package_list.drop()
+    print('Collection names (should be empty):', db.collection_names())
+    collection.insert(list_To_Insert)
     print('Finished inserting into DB')
 
 def get_Formatted_Name(package_Name):

@@ -69,7 +69,7 @@ def remove_Special_Characters():
 def format_String(cursor):
 
     word        = re.compile(r'''['a-zA-Z']''')
-    re_num      = re.compile(r"""([0-9]\.*)+""")
+    re_num      = re.compile(r"""(\d+\.*)+[A-Za-z]*""")
     re_string   = re.compile(r"""(([A-Za-z])+(\-[A-Za-z])*)+""")
 
     list_Of_Reformatted_Configs = []
@@ -77,42 +77,113 @@ def format_String(cursor):
     for items in cursor:
             
         split_string = re.split('[:]', items)
-        print(split_string)
-
         count = 0
         string_At_End = False
 
         for strings in list(reversed(split_string)):
-            if (count == 0 and re.match(word, strings)): string_At_End = True; count += 1; continue
-            elif (count == 0): temp = strings; count += 1; continue
 
-            if (count == 1 and string_At_End == True): temp = strings; count += 1; continue
-            elif (count == 1): name = strings; count += 1; continue
-
-            if (count == 2 and string_At_End == True): name = strings; count += 1; continue
-
-            if (count > 2): break
-
+            if (re.match(re_num, strings)):
+                # print('Found a match:', re.match(re_num, strings).group(0))
+                temp = re.match(re_num, strings).group(0)
+                count += 1
+                continue
+            if (count == 1):
+                name = strings
+                break
         try:
-            name = ''.join(e for e in re.match(re_string, name).group(0) if e.isalnum())
-            temp = ''.join(e for e in re.match(re_num, temp).group(0) if e.isalnum())
+            name = ''.join(e for e in name if e.isalnum())
+            temp = ''.join(e for e in temp if e.isnumeric())
             list_Of_Reformatted_Configs.append(name + temp)
         except:
             print("Couldn't format reformatted_configs package correctly")
-            
     return list_Of_Reformatted_Configs
 
 def run_Package_Updater():
-    pass
+    gp.get_Packages()
 
-'''
-This needs to perform a search on packages that are already in the database
-but only on values from the updated database which do not have a 
-'matched_To_CVE' value associated
-*Run this before package updater*
-'''
 def collect_Checkable_Packages():
-    pass
+    
+    '''
+    Command to remove updated values:
+        coll.update( {}, { '$unset' : { 'matched_To_CVE' : 1, 'reformatted_configs' : 1 } }, { 'multi' : true } )
+        coll.update( {}, { '$unset' : { 'reformatted_configs' : 1 } }, { 'multi' : true } )
+        coll.update( {}, { '$unset' : { 'matched_To_CVE' : 1 } }, { 'multi' : true } )
+    '''
+
+    package_Collection = client['package_db']['package_list']
+    new_Package_Cursor = package_Collection.find(
+        { 'formatted_package_name_with_version' : { '$nin' : gp.package_Names_With_Versions } }
+    )
+
+    print('Getting new packages and comparing to all values')
+    for values in new_Package_Cursor:
+
+        # Find all CVE's that match the new package, not currently matched (not including new found vulnerabilties)
+        cursor = collection.find( 
+            { 'matched_CVE_ID' : 0 },
+            { '$text' : 
+                { 
+                    '$search' : values['squashed_Name_With_Version'],
+                    '$language' : 'none' 
+                } 
+            } 
+        )
+
+        # Create a list to store the list of relating id's to package names
+        list_Of_IDs = []
+        # For each matched id to package, update the package matched_To_CVE data to 1
+        for unsearched_Packages in cursor:
+            collection.update(
+                { 'id' : unsearched_Packages['id'] },
+                { '$set' : { 'matched_To_CVE' : 1, 'matched_to' : values['squashed_Name_With_Version'] } },
+                upsert=True,
+                multi=True
+            )
+            list_Of_IDs.append(unsearched_Packages['id'])
+
+        '''
+        --- WHAT IF PACKAGE HAS BEEN UPDATED OUTSIDE THE SYSTEM ---
+        1) Complete a not in on packages compared to current packages
+        2) Find the one with same package_name and delete
+        3) Perform a new search with updated package/new package
+        '''
+
+        # Need to add new packages to package_db database
+        for items in gp.list_To_Insert:
+            if (items['squashed_Name_With_Version'] == values['squashed_Name_With_Version']):
+                items['matching_ids'] = list_Of_IDs
+                package_Collection.insert_one(items)
+                break
+
+    # Search all new packages 
+    print('Matching packages to new updated vulnerabilites')
+    for items in gp.package_Names_With_Versions:
+        
+        cursor = collection.find( 
+            { 
+                '$text' : { '$search' : items },
+                'matched_To_CVE' : { '$exists' : False } 
+            }     
+        )
+
+        # Create a list to store the list of relating id's to package names
+        list_Of_IDs = []
+        for values in cursor:
+            
+            collection.update(
+                { 'id' : values['id'] },
+                { '$set' : { 'matched_To_CVE' : 1 } },
+                upsert=False,
+                multi=True 
+            )
+            list_Of_IDs.append(values['id'])
+
+        package_Collection.update(
+            { 'formatted_package_name_with_version' : items },
+            { '$set' : { 'matching_ids' : list_Of_IDs } },
+            upsert=True,
+            multi=True
+        )
 
 # This needs to return all the cve_ids where matched_To_CVE != 1
 def collect_Checkable_IDs():
@@ -187,10 +258,12 @@ def match_Vulnerabilites_To_Packages(name_With_Version_Array):
     end = time.time()
     print("Time to match exact package names:", end - start)
 
-remove_Special_Characters()
+gp.get_Package_Data()
+gp.insert_Packages(gp.list_To_Insert)
 # run_Database_Updater_Script()
-# remove_Special_Characters()
+remove_Special_Characters()
+collect_Checkable_Packages()
+
 # update_Database_Matched_Field()
-# gp.insert_Packages()
 # search_Database(gp.package_Names)
 # match_Vulnerabilites_To_Packages(gp.package_Names_With_Versions)
