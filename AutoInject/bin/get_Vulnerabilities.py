@@ -1,9 +1,10 @@
 import pymongo, re, time, sys, subprocess
-import get_Packages as gp
 
 from pymongo import MongoClient
 from json import loads
 from bson.json_util import dumps
+
+import AutoInject.bin.get_Packages as gp
 
 client                  = MongoClient()
 db                      = client['cvedb']
@@ -110,6 +111,7 @@ def collect_Checkable_Packages():
         coll.update( {}, { '$unset' : { 'matched_To_CVE' : 1 } }, { 'multi' : true } )
     '''
 
+    # Use this for package updates, when the squashed_name will have changed
     package_Collection = client['package_db']['package_list']
     new_Package_Cursor = package_Collection.find(
         { 'formatted_package_name_with_version' : { '$nin' : gp.package_Names_With_Versions } }
@@ -198,72 +200,19 @@ def update_Database_Matched_Field():
         multi=True 
     )
 
-def search_Database(name_Array):
+def return_Matched_Vulnerability_Values():
 
-    start1 = time.time()
-    
-    for values in name_Array:
-        cursor = collection.find( { '$text' : { '$search' : values } } )        
-        for items in cursor:
-            try:    
-                if items['id'] not in list_Of_CVE_IDs:
-                    list_Of_CVE_IDs.append(items['id'])
-            except:
-                print("Couldn't print out:", items)
-    
-    end1 = time.time()
+    package_Collection = client['package_db']['package_list']
+    package_Vulnerability_JSON = package_Collection.find( 
+        { 
+            'matching_ids' : { '$exists' : True, '$not' : { '$size' : 0 } }
+        } 
+    )
+    return loads(dumps(package_Vulnerability_JSON))
 
-    print("Time to search packages: ", end1 - start1)  
-    print('Number of CVE IDs:', len(list_Of_CVE_IDs))
-
-def match_Vulnerabilites_To_Packages(name_With_Version_Array):
-
-    collection_Of_Matched_Vulnerabilites = db['package_list']
-    cursor2 = []
-
-    start = time.time()
-
-    for values in name_With_Version_Array:
-        try:    
-            cursor2 = collection.find( 
-                {
-                    '$text' : { '$search' : ('\"' + values + '\"') },
-                    'id' : { '$in' : list_Of_CVE_IDs },
-                    'matched_To_CVE' : 0 
-                }
-            )
-        except:
-            print('Could not create Cursor')
-
-        for matched in cursor2:
-            print(matched['id'])
-            collection.update(
-                { '_id' : matched['_id'] },
-                { '$set' : { 'matched_To_CVE' : 1 } }
-            )
-
-            collection_Of_Matched_Vulnerabilites.update(
-                { 'package_name_with_version' : values },
-                {  
-                    '$set' : {
-                        'cve_id' : matched['id'],
-                        'summary' : matched['summary'],
-                        'references' : matched['references']
-                    } 
-                },
-                upsert=False,
-                multi=True
-            )
-
-    end = time.time()
-    print("Time to match exact package names:", end - start)
-
-gp.get_Package_Data()
-gp.insert_Packages(gp.list_To_Insert)
+# gp.get_Package_Data()
+# gp.insert_Packages(gp.list_To_Insert)
 # run_Database_Updater_Script()
-remove_Special_Characters()
-collect_Checkable_Packages()
-
+# remove_Special_Characters()
+# collect_Checkable_Packages()
 # update_Database_Matched_Field()
-# search_Database(gp.package_Names)
-# match_Vulnerabilites_To_Packages(gp.package_Names_With_Versions)

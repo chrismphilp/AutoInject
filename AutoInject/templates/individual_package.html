@@ -1,39 +1,37 @@
 {% extends "layout.html" %}
 <!-- Title -->
-{% block title %}Index{% endblock %}
+{% block title %}Vulnerabilities{% endblock %}
 <!-- Active TitleBar Name -->
-{% block active1 %}<li class="active">{% endblock %}
-{% block active2 %}<li>{% endblock %}
 {% block active1 %}<li>{% endblock %}
-{% block active1 %}<li>{% endblock %}
+{% block active2 %}<li class="active">{% endblock %}
+{% block active3 %}<li>{% endblock %}
+{% block active4 %}<li>{% endblock %}
 <!-- Main content -->
 {% block content %}
-	<div class="row">
+<div class="row">
   		<div class="col-lg-12">
     		<div class="panel panel-default">
-      			<div class="panel-heading">Currently Installed Packages</div>
+      			<div class="panel-heading">Current Vulnerabilities</div>
       			<div class="panel-body">
         			<div class="row">
           				<div class="col-lg-12">
             				<div class="table-responsive">
 								<table 
-									id="packages" 
+									id="package_vulnerabilities" 
 									cellspacing="0"
 									class="table table-bordered table-hover table-striped"  
 									width="100%"
 								>
 							        <thead>
 							            <tr>
-							                <th>Package Name</th>
-							                <th>Package Version</th>
-							                <th>Affected System</th>
+							                <th>CVE ID</th>
+							                <th>References</th>
 							            </tr>
 							        </thead>
 							        <tfoot>
 							            <tr>
-							                <th>Package Name</th>
-							                <th>Package Version</th>
-							                <th>Affected System</th>
+							                <th>CVE ID</th>
+							                <th>References</th>
 							            </tr>
 									</tfoot>
 									<tbody>
@@ -52,17 +50,26 @@
 	<script type='text/javascript'>
 
 		$(document).ready(function() {
-			
-			var JSON_data = {{ package_JSON_data|safe }};
-			var package;
+
+			var JSON_data = {{ vulnerabilities|safe }};
+			var vulnerability;
 			var data = [];
-			
-			for (package in JSON_data) {				
-				data.push( [JSON_data[package]['package_name'], JSON_data[package]['version'], JSON_data[package]['architecture'] ]);
+
+			for (vulnerability in JSON_data) {	
+				data.push( 
+					[ 
+						JSON_data[vulnerability]['id'],
+						JSON_data[vulnerability]['references']
+					] 
+				);
 			}
 
-			$('#packages').DataTable( {
+			$('#package_vulnerabilities').DataTable( {
 				data: 			data,
+				"columns" : [
+					{ "data" : [0] },
+					{ "data" : '[1, ]' }
+				],
 		        "lengthMenu":   [ 10, 15 ],
 		        "paging":       true,
 		        "processing":   true,
@@ -70,7 +77,7 @@
 		        "order":        [[ 0, "asc" ]],
 		        "info":         true,
 		        stateSave: 		true
-		    } );
+			});
 		} );
 
 	</script>

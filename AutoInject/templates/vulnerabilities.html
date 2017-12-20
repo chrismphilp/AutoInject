@@ -1,6 +1,11 @@
 {% extends "layout.html" %}
 <!-- Title -->
 {% block title %}Vulnerabilities{% endblock %}
+<!-- Active TitleBar Name -->
+{% block active1 %}<li>{% endblock %}
+{% block active2 %}<li class="active">{% endblock %}
+{% block active3 %}<li>{% endblock %}
+{% block active4 %}<li>{% endblock %}
 <!-- Main content -->
 {% block content %}
 	<div class="row">
@@ -19,18 +24,18 @@
 								>
 							        <thead>
 							            <tr>
-							                <th>Vulnerability ID</th>
-							                <th>Vulnerability Systems</th>
-							                <th>References</th>
-							                <th>Summary</th>
+							                <th>Package Name</th>
+							                <th>Formatted Package Name</th>
+							                <th>Package Version</th>
+							                <th>Architecture</th>
 							            </tr>
 							        </thead>
 							        <tfoot>
 							            <tr>
-							                <th>Vulnerability ID</th>
-							                <th>Vulnerability Systems</th>
-							                <th>References</th>
-							                <th>Summary</th>
+							                <th>Package Name</th>
+							                <th>Formatted Package Name</th>
+							                <th>Package Version</th>
+							                <th>Architecture</th>
 							            </tr>
 									</tfoot>
 									<tbody>
@@ -57,13 +62,14 @@
 			for (vulnerability in JSON_data) {	
 				data.push( 
 					[ 
-						JSON_data[vulnerability]['id'], 
-						JSON_data[vulnerability]['vulnerable_systems'], 
-						JSON_data[vulnerability]['references'], 
-						JSON_data[vulnerability]['summary'] 
+						JSON_data[vulnerability]['package_name'],
+						JSON_data[vulnerability]['formatted_package_name_with_version'],
+						JSON_data[vulnerability]['version'],
+						JSON_data[vulnerability]['architecture']
 					] 
 				);
 			}
+			console.log(data)
 
 			$('#vulnerabilities').DataTable( {
 				data: 			data,
@@ -75,6 +81,7 @@
 		        "info":         true,
 		        stateSave: 		true
 			});
+		} );
 
 	</script>
 

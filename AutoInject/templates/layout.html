@@ -25,10 +25,10 @@
                     <a class="navbar-brand" href="/">AutoInject</a>
                 </div>
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="/">Dashboard</a></li>
-                    <li><a href="/vulnerabilities">Vulnerabilities</a></li>
-                    <li><a href="/about">About</a></li>
-                    <li><a href="/profile">Profile</a></li>
+                    {% block active1 %}{% endblock %}<a href="/">Dashboard</a></li>
+                    {% block active2 %}{% endblock %}<a href="/vulnerabilities">Vulnerabilities</a></li>
+                    {% block active3 %}{% endblock %}<a href="/about">About</a></li>
+                    {% block active4 %}{% endblock %}<a href="/profile">Profile</a></li>
                 </ul>
             </div>
         </nav>
