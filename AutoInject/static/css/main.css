@@ -1,0 +1,7 @@
+#vulnerabilities tbody tr.even:hover, #vulnerabilities tbody tr.even td.highlighted {
+	background-color: #ECFFB3;
+}
+
+#vulnerabilities tbody tr.odd:hover, #vulnerabilities tbody tr.odd td.highlighted {
+	background-color: #E6FF99;
+}

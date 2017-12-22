@@ -2,12 +2,16 @@
 <!-- Title -->
 {% block title %}Vulnerabilities{% endblock %}
 <!-- Active TitleBar Name -->
-{% block active1 %}<li>{% endblock %}
-{% block active2 %}<li class="active">{% endblock %}
-{% block active3 %}<li>{% endblock %}
-{% block active4 %}<li>{% endblock %}
+{% block navitems %}
+	<li><a href="/">Dashboard</a></li>
+	<li class="active"><a href="/vulnerabilities">Vulnerabilities</a></li>
+	<li><a href="/about">About</a></li>
+	<li><a href="/profile">Profile</a></li>
+{% endblock %}
 <!-- Main content -->
 {% block content %}
+
+<h1>_{{ package }} Vulnerabilites</h1>
 <div class="row">
   		<div class="col-lg-12">
     		<div class="panel panel-default">
@@ -26,12 +30,16 @@
 							            <tr>
 							                <th>CVE ID</th>
 							                <th>References</th>
+							                <th>Rating</th>
+							                <th>Update Package</th>
 							            </tr>
 							        </thead>
 							        <tfoot>
 							            <tr>
 							                <th>CVE ID</th>
 							                <th>References</th>
+							                <th>Rating</th>
+							                <th>Update Package</th>
 							            </tr>
 									</tfoot>
 									<tbody>
@@ -59,7 +67,8 @@
 				data.push( 
 					[ 
 						JSON_data[vulnerability]['id'],
-						JSON_data[vulnerability]['references']
+						JSON_data[vulnerability]['references'],
+						JSON_data[vulnerability]['cvss']
 					] 
 				);
 			}
@@ -68,7 +77,9 @@
 				data: 			data,
 				"columns" : [
 					{ "data" : [0] },
-					{ "data" : '[1, ]' }
+					{ "data" : '[1, ]' },
+					{ "data" : [2] },
+					{ "defaultContent" : "<button class='btn btn-success'>Update Package</button>" }
 				],
 		        "lengthMenu":   [ 10, 15 ],
 		        "paging":       true,

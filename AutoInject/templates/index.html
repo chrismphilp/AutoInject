@@ -2,10 +2,13 @@
 <!-- Title -->
 {% block title %}Index{% endblock %}
 <!-- Active TitleBar Name -->
-{% block active1 %}<li class="active">{% endblock %}
-{% block active2 %}<li>{% endblock %}
-{% block active1 %}<li>{% endblock %}
-{% block active1 %}<li>{% endblock %}
+{% block navitems %}
+	<li class="active"><a href="/">Dashboard</a></li>
+	<li><a href="/vulnerabilities">Vulnerabilities</a></li>
+	<li><a href="/about">About</a></li>
+	<li><a href="/profile">Profile</a></li>
+	<li><button class='btn' id='drop'>Drop Packages</button></li>
+{% endblock %}
 <!-- Main content -->
 {% block content %}
 	<div class="row">
@@ -71,6 +74,10 @@
 		        "info":         true,
 		        stateSave: 		true
 		    } );
+
+		    $('#drop').on('click', function() {
+				location.href += '/?package_drop=true';
+			});
 		} );
 
 	</script>

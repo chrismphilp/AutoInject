@@ -11,12 +11,8 @@ db                      = client['cvedb']
 collection              = db['cves']
 
 list_Of_CVE_IDs         = []
-
-# 1) Create new vulnerable_config field without special characters
-# 2) Create index on new field
-# 3) For each package, create new field with special characters removed
-# 4) Update each value based on if an exact match is encountered
-# 5) WINNING
+global count_Of_Fails
+count_Of_Fails          = 0
 
 '''
 Order of operations:
@@ -66,6 +62,7 @@ def remove_Special_Characters():
         ],
         name="vulnerability_index"
     )
+    print("Total number of packages unmatchable:", count_Of_Fails)
 
 def format_String(cursor):
 
@@ -96,7 +93,7 @@ def format_String(cursor):
             temp = ''.join(e for e in temp if e.isnumeric())
             list_Of_Reformatted_Configs.append(name + temp)
         except:
-            print("Couldn't format reformatted_configs package correctly")
+            count_Of_Fails += 1
     return list_Of_Reformatted_Configs
 
 def run_Package_Updater():
@@ -187,10 +184,6 @@ def collect_Checkable_Packages():
             multi=True
         )
 
-# This needs to return all the cve_ids where matched_To_CVE != 1
-def collect_Checkable_IDs():
-    pass
-
 def update_Database_Matched_Field():
     # If there is a package that matches, value = 1; else value = 0
     collection.update( 
@@ -209,10 +202,3 @@ def return_Matched_Vulnerability_Values():
         } 
     )
     return loads(dumps(package_Vulnerability_JSON))
-
-# gp.get_Package_Data()
-# gp.insert_Packages(gp.list_To_Insert)
-# run_Database_Updater_Script()
-# remove_Special_Characters()
-# collect_Checkable_Packages()
-# update_Database_Matched_Field()

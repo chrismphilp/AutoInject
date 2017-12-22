@@ -4,9 +4,9 @@ from bson.json_util import dumps
 from pymongo import MongoClient
 from subprocess import check_output
 
-client                  = MongoClient()
-db                      = client['package_db']
-collection              = db['package_list']
+client                      = MongoClient()
+db                          = client['package_db']
+collection                  = db['package_list']
 
 package_Names_With_Versions = []
 list_To_Insert              = []
