@@ -77,15 +77,26 @@
 				data: 			data,
 				"columns" : [
 					{ "data" : [0] },
-					{ "data" : '[1, ]' },
+					{ 
+						"data" : [1],
+						"render" : function(data, type, row, meta) {
+							var newList = data.toString().split(",");
+							var newString = "";;
+							if (type == 'display') {
+								for (var i = 0; i < newList.length; i++) {	
+									newString += '<a href="' + newList[i] + '">' + newList[i] + '</a></br>';
+								}
+							}
+							return newString;
+						}
+					},
 					{ "data" : [2] },
 					{ "defaultContent" : "<button class='btn btn-success'>Update Package</button>" }
 				],
 		        "lengthMenu":   [ 10, 15 ],
 		        "paging":       true,
-		        "processing":   true,
 		        "ordering":     true,
-		        "order":        [[ 0, "asc" ]],
+		        "order":        [[ 2, "asc" ]],
 		        "info":         true,
 		        stateSave: 		true
 			});

@@ -30,9 +30,12 @@ Order of operations:
 '''
 
 def run_Database_Updater_Script():
+    print("Running script")
     subprocess.call(["python3", "./../../../cve-search/sbin/db_updater.py", "-v"])
 
 def remove_Special_Characters():
+    
+    global count_Of_Fails
     
     print("Beginning special character removal")
     cursor = collection.find( { 'reformatted_configs' : { '$exists' : False } } )
@@ -65,6 +68,8 @@ def remove_Special_Characters():
     print("Total number of packages unmatchable:", count_Of_Fails)
 
 def format_String(cursor):
+
+    global count_Of_Fails
 
     word        = re.compile(r'''['a-zA-Z']''')
     re_num      = re.compile(r"""(\d+\.*)+[A-Za-z]*""")

@@ -18,6 +18,7 @@ def get_Package_Data():
     tmp                 = out.split('\n')
     
     print('Retrieving list of packages on system')
+    list_To_Insert      = []
     for line in tmp:
         package_array   = line.split('\t')
 
@@ -50,7 +51,7 @@ def insert_Packages(package_List):
     # Deleting any current package details
     db.package_list.drop()
     print('Collection names (should be empty):', db.collection_names())
-    collection.insert(list_To_Insert)
+    collection.insert(package_List)
     print('Finished inserting into DB')
 
 def get_Formatted_Name(package_Name):

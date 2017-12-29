@@ -18,6 +18,7 @@
                 <li class="active"><a href="" data-target-id="profile"><i class="glyphicon glyphicon-user"></i> Profile</a></li>
                 <li><a href="" data-target-id="change-password"><i class="glyphicon glyphicon-lock"></i> Change Password</a></li>
                 <li><a href="" data-target-id="settings"><i class="glyphicon glyphicon-cog"></i> Settings</a></li>
+                <li><a href="" data-target-id="delete"><i class="glyphicon glyphicon-cog"></i> Delete Account</a></li>
                 <li><a href="" data-target-id="logout"><i class="glyphicon glyphicon-log-out"></i> Logout</a></li>
             </ul>
         </div>
@@ -39,14 +40,6 @@
                     ashishpatel0720@gmail.com
                 </div>
             </div>
-            <div class="panel panel-info" style="margin: 1em;">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Last Password Change</h3>
-                </div>
-                <div class="panel-body">
-                    4 days Ago
-                </div>
-            </div>
         </div>
    		<div class="col-md-9  admin-content" id="settings">
             <div class="panel panel-info" style="margin: 1em;">
@@ -59,19 +52,10 @@
             </div>
             <div class="panel panel-info" style="margin: 1em;">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Newsletter</h3>
+                    <h3 class="panel-title">Auto-Update Packages</h3>
                 </div>
                 <div class="panel-body">
-                    <div class="badge">Monthly</div>
-                </div>
-            </div>
-            <div class="panel panel-info" style="margin: 1em;">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Admin</h3>
-
-                </div>
-                <div class="panel-body">
-                     <div class="label label-success">yes</div>
+                    <div class="label label-danger">dis-allowed</div>
                 </div>
             </div>
         </div>
@@ -119,7 +103,22 @@
             </form>
         </div>
 
-        <div class="col-md-9  admin-content" id="settings"></div>
+        <div class="col-md-9  admin-content" id="delete">
+            <form action="/delete-account" method="post">
+                <div class="panel panel-info" style="margin: 1em;">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Delete Account?</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <div class="pull-left">
+                                <button value="delete_account" type="submit" class="form-control btn btn-primary btn-danger" name="submit-delete" id="submit-delete">Yes - Delete my Account</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
 
         <div class="col-md-9  admin-content" id="logout">
             <div class="panel panel-info" style="margin: 1em;">

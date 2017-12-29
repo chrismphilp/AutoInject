@@ -7,7 +7,6 @@
 	<li><a href="/vulnerabilities">Vulnerabilities</a></li>
 	<li><a href="/about">About</a></li>
 	<li><a href="/profile">Profile</a></li>
-	<li><button class='btn' id='drop'>Drop Packages</button></li>
 {% endblock %}
 <!-- Main content -->
 {% block content %}
@@ -72,12 +71,8 @@
 		        "ordering":     true,
 		        "order":        [[ 0, "asc" ]],
 		        "info":         true,
-		        stateSave: 		true
+		        stateSave: 		false
 		    } );
-
-		    $('#drop').on('click', function() {
-				location.href += '/?package_drop=true';
-			});
 		} );
 
 	</script>
