@@ -37,9 +37,10 @@ def drop():
 
 @app.route("/refresh")
 def refresh():  
-    print("Refresh time")
+    print("Refreshing vulnerabilities")
     gv.run_Database_Updater_Script()
     gv.remove_Special_Characters()
+    gv.collect_Checkable_Packages()
     return redirect("/", code=302)
 
 @app.route("/enable/<package>")
@@ -63,7 +64,7 @@ def disabler(package):
 @app.route("/enable_all")
 def enable_all():
     package_collection.update(
-        { 'package_name' : package },
+        {},
         { '$set' : { 'updateable' : 1 } },
         multi=True
     )
@@ -72,8 +73,8 @@ def enable_all():
 @app.route("/disable_all")
 def disable_all():
     package_collection.update(
-        { 'package_name' : package },
-        { '$set' : { 'updateable' : 1 } },
+        {},
+        { '$set' : { 'updateable' : 0 } },
         multi=True
     )
     return redirect("/", code=302)

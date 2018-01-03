@@ -31,7 +31,9 @@ Order of operations:
 
 def run_Database_Updater_Script():
     print("Running script")
-    subprocess.call(["python3", "./../../../cve-search/sbin/db_updater.py", "-v"])
+    subprocess.call(
+        ["python3", "../cve-search/sbin/db_updater.py", "-v"]
+    )
 
 def remove_Special_Characters():
     
