@@ -29,6 +29,7 @@
 							                <th>Package Name</th>
 							                <th>Package Version</th>
 							                <th>Affected System</th>
+							                <th>Updateable?</th>
 							            </tr>
 							        </thead>
 							        <tfoot>
@@ -36,6 +37,7 @@
 							                <th>Package Name</th>
 							                <th>Package Version</th>
 							                <th>Affected System</th>
+							                <th>Updateable?</th>
 							            </tr>
 									</tfoot>
 									<tbody>
@@ -59,19 +61,47 @@
 			var package;
 			var data = [];
 			
+			console.log(JSON_data);
 			for (package in JSON_data) {				
-				data.push( [JSON_data[package]['package_name'], JSON_data[package]['version'], JSON_data[package]['architecture'] ]);
+				data.push( 
+					[
+						JSON_data[package]['package_name'], 
+						JSON_data[package]['version'], 
+						JSON_data[package]['architecture'],
+						JSON_data[package]['updateable']
+					] 
+				);
+				console.log(JSON_data[package]['updateable']);
 			}
 
 			$('#packages').DataTable( {
 				data: 			data,
+				"columns" : [
+					{ "data" : [0] },
+					{ "data" : [1] },
+					{ "data" : [2] },
+					{ 
+						"data" : [3],
+						"render" : function(data, type, row, meta) {
+							var button = "<button class='btn btn-success'>Updater</button>";
+							if (type == 'display') {
+								if (data == 1) {
+									button = "<a href='disable/" + row[0] + "' class='btn btn-danger'>Disable Updates</a>";
+								}
+								else {
+									button = "<a <a href='enable/" + row[0] + "' class='btn btn-success'>Enable Updates</a>";
+								}
+							}
+							return button;
+						}
+					}
+				],
 		        "lengthMenu":   [ 10, 15 ],
 		        "paging":       true,
 		        "processing":   true,
 		        "ordering":     true,
 		        "order":        [[ 0, "asc" ]],
-		        "info":         true,
-		        stateSave: 		false
+		        "info":         true
 		    } );
 		} );
 

@@ -36,7 +36,9 @@ def get_Package_Data():
                 'formatted_package_name_without_version' : formatted_Package_Name_Without_Version,
                 'version' : package_Version,
                 'formatted_version' : squashed_Version,
-                'architecture' : package_array[2]
+                'architecture' : package_array[2],
+                # 1 = updateable, 0 means do not update
+                'updateable' : 1
             }
             list_To_Insert.append(package_item)
             package_Names_With_Versions.append(squashed_Name_With_Version)

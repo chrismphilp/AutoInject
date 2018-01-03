@@ -20,9 +20,9 @@ list_Of_Parsing_Procedures 	= [
 def search_URL_For_Version_Update(url):
 	print('Scanning:', url)
 	start 		= time.time()
-	page 		= requests.get(url)
-	# tree 		= lh.fromstring(page.content)
-	# update_name = tree.xpath('//td[@id="field_container_cf_fixed_in"]/text()')
+	page 		= requests.get(url, auth=('user', 'pass'))
+	tree 		= lh.fromstring(page.content)
+	update_name = tree.xpath('//td[@id="field_container_cf_fixed_in"]/text()')
 	end 		= time.time()
 	print('Total time for requests:', end - start)
 	# print(update_name)
@@ -38,7 +38,8 @@ def update_Vulnerability_Information():
 def search_URL_For_BFS_Update():
 	pass
 
-# search_URL_For_Version_Update('https://bugzilla.redhat.com/show_bug.cgi?id=902998')
+search_URL_For_Version_Update('https://bugzilla.redhat.com/show_bug.cgi?id=902998')
 # search_URL_For_Version_Update('https://bugzilla.redhat.com/show_bug.cgi?id=1377613')
 # search_URL_For_Version_Update('http://www.securityfocus.com/bid/67106')
 search_URL_For_Version_Update('http://lists.fedoraproject.org/pipermail/package-announce/2015-May/157387.html')
+# search_URL_For_Version_Update('139.130.4.5')

@@ -18,13 +18,12 @@ current_time            = datetime.datetime.now().time()
 
 @app.route("/")
 def index():  
-    package_JSON_data = gp.get_Package_Data()
+    package_JSON_data = gp.get_Packages_JSON()
     return render_template('index.html', package_JSON_data=package_JSON_data)
 
 @app.route("/drop")
 def drop():  
-    print("Hello drop")
-    
+    print("Dropping and refreshing packages")
     cve_collection.update( 
         {}, 
         { '$unset' : { 'matched_To_CVE' : 1 } }, 
@@ -43,6 +42,42 @@ def refresh():
     gv.remove_Special_Characters()
     return redirect("/", code=302)
 
+@app.route("/enable/<package>")
+def enabler(package):
+    package_collection.update(
+        { 'package_name' : package },
+        { '$set' : { 'updateable' : 1 } },
+        multi=True
+    )
+    return redirect("/", code=302)
+
+@app.route("/disable/<package>")
+def disabler(package):
+    package_collection.update(
+        { 'package_name' : package },
+        { '$set' : { 'updateable' : 0 } },
+        multi=True
+    )
+    return redirect("/", code=302)
+
+@app.route("/enable_all")
+def enable_all():
+    package_collection.update(
+        { 'package_name' : package },
+        { '$set' : { 'updateable' : 1 } },
+        multi=True
+    )
+    return redirect("/", code=302)
+
+@app.route("/disable_all")
+def disable_all():
+    package_collection.update(
+        { 'package_name' : package },
+        { '$set' : { 'updateable' : 1 } },
+        multi=True
+    )
+    return redirect("/", code=302)
+
 @app.route("/vulnerabilities")
 def vulnerabilities():
 
@@ -52,9 +87,9 @@ def vulnerabilities():
 @app.route("/vulnerabilities/<package>")
 def return_CVE_IDs(package):
 
-    cursor          = package_collection.find( { 'formatted_package_name_with_version' : package } )
+    cursor = package_collection.find( { 'formatted_package_name_with_version' : package } )
 
-    list_Of_Values  = []
+    list_Of_Values = []
     for values in cursor:
         list_Of_Values.extend(values['matching_ids'])
 
