@@ -2,44 +2,258 @@ import pymongo, re, time
 # Parsing related modules
 import lxml.html as lh 
 import requests
-from urllib.request import urlopen 
 
 from pymongo import MongoClient
-from subprocess import check_output
+from subprocess import check_output, check_call
 from bs4 import BeautifulSoup
+from collections import defaultdict
+
+global ubuntu_version
+ubuntu_version = "14"
 
 client                      = MongoClient()
 package_collection          = client['package_db']['package_list']
-cve_collection 				= client['cvedb']['cves']
+cve_collection              = client['cvedb']['cves']
 
-list_Of_Parsing_Procedures 	= [
-	('bugzilla.redhat', re.compile(r""".*bugzilla.redhat.*"""), '//td[@id="field_container_cf_fixed_in"]/text()'),
-	('securityfocus', re.compile(r""".*securityfocus.*"""))
-]
+kwargs  = {
+    'bugzilla.redhat' : { 
+        'finder' : re.compile(r""".*bugzilla.redhat.*"""), 
+        'search_info' : '//td[@id="field_container_cf_fixed_in"]/text()',
+        'compiler' : re.compile(r"""(?:(\d+\.(?:\d+\.)*\d+))""") 
+    },
+    'securityfocus' : {
+        'finder' : re.compile(r""".*securityfocus.*"""),
+        'search_info' : '',
+        'compiler' : re.compile(r""" """)
+    },
+    'ubuntu' : {
+        'finder' : re.compile(r""".*ubuntu\.com.*"""),
+        'search_info' : '',
+        'compiler' : re.compile(r""" """)
+    }
+}
+list_Of_Parsing_Procedures = defaultdict(dict, **kwargs)
+
+'''
+1) Collect list of references for package, in order of severity
+2) Place each package into a multi-threaded queue 
+3) For each package CVE:
+    - Collect the version to be updated to by searching URLs
+    - While checking packages, find tells to see if BFS update
+    - Once version is retrieved, update the package acordingly (if package cannot be updated, set to non-
+    updateable/if update returns error)
+4) If packages cannot be updated, set to unupdateable, and remove all matched CVEs, and set new field
+to state this package can never be updated
+'''
+
+def collect_All_Package_URLs():
+
+    cursor = package_collection.find( {
+        'matching_ids' : { '$exists' : True, '$not' : { '$size' : 0 } },
+        'updateable' : 1
+    } )
+
+    for items in cursor:
+        pass
+        # Call multi-threader function
+
+def collect_Specific_Package_URL(package_name, cve_id):
+    
+    cursor = cve_collection.find( { 'id' : cve_id } )
+
+    for urls in cursor['references']:
+        version_name = search_URL_For_Version_Update(urls)
+        if (version_name != False):
+            package_Updater(package_name, version_name)
+            return True
+
+    # If none match then do this
+    package_collection.update( 
+        { 'cve_id' : cve_id },
+        { '$set' : { 'cannot_be_updated' : 1 } },
+        multi=True
+    )
+
+def package_Updater(package_name, version_name):
+    
+    list_Of_Potential_Versions  = []
+
+    madison_versions = check_output(
+        ["apt-cache", "madison", package_name],
+        universal_newlines=True
+    )
+    policy_versions = check_output(
+        ["apt-cache", "policy", package_name],
+        universal_newlines=True
+    )
+    
+    total_output = [x.strip() for x in madison_versions.split("\n")] + [x.strip() for x in policy_versions.split("\n")]
+    print(total_output)
+
+    for items in total_output:
+        # Update version so that it can be reversed lated if required
+        if ("Installed:" in items):
+            current = items.split(' ')[1]
+            package_collection.update(
+                { 'package_name' : package_name },
+                { '$set' : { 'previous_version' : current } },
+                multi=True
+            )
+        # Get the ubuntu version to update to and append to list
+        split_substring = items.split(" ")
+        for sub_items in split_substring:
+            if version_name in sub_items:
+                print('Found', version_name, ' in:', sub_items)
+                try:
+                    if (sub_items not in list_Of_Potential_Versions):   
+                        list_Of_Potential_Versions.append(sub_items)
+                except:
+                    print('Could not add:', items)
+
+    print(list_Of_Potential_Versions)
+    
+    for versions in list_Of_Potential_Versions:
+        combi = package_name + '=' + versions
+        try:
+            package_upgrade = check_call(
+                ["sudo", "apt-get", "install", "-y", "--force-yes", "--only-upgrade", combi],
+                universal_newlines=True
+            )
+            if (package_upgrade == 0):
+                update_Vulnerability_Information(package_name, combi, versions)
+                return True
+        except:
+            print("Couldn't upgrade with:", combi)
+
+def update_Vulnerability_Information(package_name, new_package_version_name, just_version):
+    print("Updating vulnerability information")
+
+    # 1) Get all CVE's unmatched from current package and release them
+    cursor = package_collection.find( { 'package_name' : package_name } )
+    for items in cursor['id']:
+        cve_collection.update(
+            { 'id' : items },
+            { '$set' : { 'matched_To_CVE' : 0 } },
+            multi=True
+        )
+
+    # 2)1) Change new version number accordingly with new_package_version_name
+    # 2)2) Also could check whether old version can be downgraded back to?
+    
+    try:
+        re_num                          = re.compile(r"""([0-9]\.*)+""")
+        formatted_version               = re.match(re_num, just_version).group(0)
+    except:
+        print("Couln't reformat:", just_version)
+
+    package_name_with_version           = package_name + number_format_version
+    formatted_package_name_with_version = package_name + formatted_version
+
+    try:
+        package_collection.update(
+            { 'package_name' : package_name },
+            { '$set' : 
+                { 
+                    'package_name_with_version' : package_name_with_version, #apport2141
+                    'formatted_package_name_with_version' :  squashed_Name_With_Version, #apport2141 
+                    'formatted_package_name_without_version' : package_name, #apport
+                    'version' : package_Version, #2.1.41
+                    'formatted_version' : formatted_version #2141
+                } 
+            },
+            multi=True
+        )
+    except: print("Couldn't update:", package_name)
+
+    # 3) Set the package to no longer be updateable
+    package_collection.update(
+        { 'package_name' : package_name },
+        { '$set' : 
+            { 
+                'updateable' : 0,
+                'has_been_updated' : 1 
+            } 
+        },
+        multi=True
+    )
+
+    # 4) Re-search new package version to potentially find new vulnerabilities 
+
+def package_Update_Reversal(package_name):
+    print("Reversing package update")
+    
+    cursor = package_collection.find(
+        { 'package_name' : package_name }
+    )
+
+    for package in cursor['previous_version']:
+        try:
+            package_upgrade = check_call(
+                ["sudo", "apt-get", "install", "-y", "--force-yes", "--only-upgrade", package]
+            )
+            if (package_upgrade == 0):
+                update_Vulnerability_Information(package_name, combi)
+                return True
+        except:
+            print("Couldn't reverse update:", package_name)
 
 def search_URL_For_Version_Update(url):
-	print('Scanning:', url)
-	start 		= time.time()
-	page 		= requests.get(url, auth=('user', 'pass'))
-	tree 		= lh.fromstring(page.content)
-	update_name = tree.xpath('//td[@id="field_container_cf_fixed_in"]/text()')
-	end 		= time.time()
-	print('Total time for requests:', end - start)
-	# print(update_name)
+    print('Scanning:', url)
 
-	start1 		= time.time()
-	page 		= urlopen(url)
-	end1 		= time.time()
-	print('Time for urllib:', end1 - start1)
+    start       = time.time()
+    matched     = False
+    
+    for key, value in list_Of_Parsing_Procedures.items():
+        
+        if matched: 
+            end = time.time()
+            print('Total time for match:', end - start)
+            return version_name
 
-def update_Vulnerability_Information():
-	pass
+        if (re.match(value['finder'], url)):
+            print('Matched with:', value['finder'])
+            try:
+                req_time        = time.time()
+                page            = requests.get(url)
+                print('Total request time:', time.time() - req_time)
+                tree            = lh.fromstring(page.content)
+                update_name     = tree.xpath(value['search_info'])
+                version_name    = re.findall(value['compiler'], str(update_name))
+                
+                if (version_name): 
+                    version_name = version_name[0] 
+                    print("Found a match!:", version_name)
+                    matched = True 
+            except:
+                print("Couldn't match:", url)
+    
+    end = time.time()
+    print('Total time for requests:', end - start)
+
+    if matched: return version_name
+    else:       return False 
+
+def get_Ubuntu_Version():
+    global ubuntu_version
+
+    print("Getting Ubuntu version")
+    out = check_output(
+        ["lsb_release", "-a"], 
+        universal_newlines=True
+    )
+    tmp = out.split('\n')
+
+    for line in tmp:
+        if "Description" in line:
+            new_line        = line.split(' ')
+            ubuntu_version  = new_line[1]
+            if new_line[2]: ubuntu_version += ' ' + new_line[2]
+            print(ubuntu_version)
 
 def search_URL_For_BFS_Update():
-	pass
+    pass
 
-search_URL_For_Version_Update('https://bugzilla.redhat.com/show_bug.cgi?id=902998')
-# search_URL_For_Version_Update('https://bugzilla.redhat.com/show_bug.cgi?id=1377613')
-# search_URL_For_Version_Update('http://www.securityfocus.com/bid/67106')
-search_URL_For_Version_Update('http://lists.fedoraproject.org/pipermail/package-announce/2015-May/157387.html')
-# search_URL_For_Version_Update('139.130.4.5')
+# package_Updater("apt", "1.0.1")
+
+t = re.compile(r"""(?:(\d+\.(?:\d+\.)*\d+))""")
+print(re.match(t, "3.345.43g").group(0))

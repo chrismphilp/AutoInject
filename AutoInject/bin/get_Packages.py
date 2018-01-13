@@ -28,17 +28,18 @@ def get_Package_Data():
             squashed_Version                        = ''.join(e for e in package_Version if e.isalnum())
             package_Name_With_Version               = formatted_Package_Name_Without_Version + squashed_Version
             squashed_Name_With_Version              = ''.join(e for e in package_Name_With_Version if e.isalnum())
-
             package_item = {
                 'package_name_with_version' : package_Name_With_Version,
                 'package_name' : package_array[0],
                 'formatted_package_name_with_version' :  squashed_Name_With_Version,
                 'formatted_package_name_without_version' : formatted_Package_Name_Without_Version,
-                'version' : package_Version,
+                'version' : package_Version, 
                 'formatted_version' : squashed_Version,
+                'previous_version' : package_Version,
                 'architecture' : package_array[2],
                 # 1 = updateable, 0 means do not update
-                'updateable' : 1
+                'updateable' : 1,
+                'has_been_updated' : 0
             }
             list_To_Insert.append(package_item)
             package_Names_With_Versions.append(squashed_Name_With_Version)
