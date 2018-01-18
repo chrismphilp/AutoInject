@@ -1,0 +1,116 @@
+{% extends "layout.html" %}
+<!-- Title -->
+{% block title %}Vulnerabilities{% endblock %}
+<!-- Active TitleBar Name -->
+{% block navitems %}
+	<li><a href="/">Dashboard</a></li>
+	<li><a href="/">Vulnerabilities</a></li>
+	<li class="active"><a href="/log">Log</a></li>
+	<li><a href="/about">About</a></li>
+	<li><a href="/profile">Profile</a></li>
+{% endblock %}
+<!-- Main content -->
+{% block content %}
+
+<div class="row">
+  		<div class="col-lg-12">
+    		<div class="panel panel-default">
+      			<div class="panel-heading">Update Log</div>
+      			<div class="panel-body">
+        			<div class="row">
+          				<div class="col-lg-12">
+            				<div class="table-responsive">
+								<table 
+									id="update_log" 
+									cellspacing="0"
+									class="table table-bordered table-hover table-striped"  
+									width="100%"
+								>
+							        <thead>
+							            <tr>
+							                <th>Package Name</th>
+							                <th>Update Type</th>
+							                <th>Further Information</th>
+							                <th>Date</th>
+							                <!-- Manual or Automatic -->
+							                <th>Implementation Type</th> 
+							            </tr>
+							        </thead>
+							        <tfoot>
+							            <tr>
+							                <th>Package Name</th>
+							                <th>Update Type</th>
+							                <th>Further Information</th>
+							                <th>Date</th>
+							                <!-- Manual or Automatic -->
+							                <th>Implementation Type</th> 
+							            </tr>
+									</tfoot>
+									<tbody>
+									</tbody>
+							    </table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+{% block scripts %}
+
+	<script type='text/javascript'>
+
+		$(document).ready(function() {
+
+			// var JSON_data = {{ vulnerabilities|safe }};
+			// var vulnerability;
+			// var data = [];
+
+			// for (vulnerability in JSON_data) {	
+			// 	data.push( 
+			// 		[ 
+			// 			JSON_data[vulnerability]['id'],
+			// 			JSON_data[vulnerability]['references'],
+			// 			JSON_data[vulnerability]['summary'],
+			// 			JSON_data[vulnerability]['cvss']
+			// 		] 
+			// 	);
+			// }
+
+			$('#update_log').DataTable( {
+				// data: 			data,
+				// "columns" : [
+				// 	{ "data" : [0] },
+				// 	{ 
+				// 		"data" : [1],
+				// 		"render" : function(data, type, row, meta) {
+				// 			var newList = data.toString().split(",");
+				// 			var newString = "";
+				// 			if (type == 'display') {
+				// 				for (var i = 0; i < newList.length; i++) {	
+				// 					newString += '<a href="' + newList[i] + '">' + newList[i] + '</a></br>';
+				// 				}
+				// 			}
+				// 			return newString;
+				// 		}
+				// 	},
+				// 	{ 	
+				// 		"data" : [2],
+				// 		"width" : "25%" 
+				// 	},
+				// 	{ "data" : [3] },
+				// 	{ "defaultContent" : "<button class='btn btn-success'>Update Package</button>" }
+				// ],
+		        "lengthMenu":   [ 5, 10, 15 ],
+		        "paging":       true,
+		        "ordering":     true,
+		        "order":        [[ 2, "asc" ]],
+		        "info":         true,
+		        stateSave: 		true
+			});
+		} );
+
+	</script>
+
+{% endblock %}

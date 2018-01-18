@@ -130,6 +130,7 @@ def update_Vulnerability_Information(package_name, new_package_version_name, jus
 
     # 1) Get all CVE's unmatched from current package and release them
     cursor = package_collection.find( { 'package_name' : package_name } )
+    
     for items in cursor['id']:
         cve_collection.update(
             { 'id' : items },
@@ -141,23 +142,24 @@ def update_Vulnerability_Information(package_name, new_package_version_name, jus
     # 2)2) Also could check whether old version can be downgraded back to?
     
     try:
-        re_num                          = re.compile(r"""([0-9]\.*)+""")
-        formatted_version               = re.match(re_num, just_version).group(0)
+        re_num                          = re.compile(r"""(?:(\d+\.(?:\d+\.)*\d+))""")
+        version                         = re.match(re_num, just_version).group(0)
     except:
         print("Couln't reformat:", just_version)
 
-    package_name_with_version           = package_name + number_format_version
     formatted_package_name_with_version = package_name + formatted_version
+    formatted_version                   = ''.join(e for e in formatted_version if e.isalnum())
+    squashed_name_with_version          = package_name + formatted_version        
 
     try:
         package_collection.update(
             { 'package_name' : package_name },
             { '$set' : 
                 { 
-                    'package_name_with_version' : package_name_with_version, #apport2141
-                    'formatted_package_name_with_version' :  squashed_Name_With_Version, #apport2141 
+                    'package_name_with_version' : squashed_name_with_version, #apport2141
+                    'formatted_package_name_with_version' :  squashed_name_with_version, #apport2141 
                     'formatted_package_name_without_version' : package_name, #apport
-                    'version' : package_Version, #2.1.41
+                    'version' : version, #2.1.41
                     'formatted_version' : formatted_version #2141
                 } 
             },
@@ -178,6 +180,17 @@ def update_Vulnerability_Information(package_name, new_package_version_name, jus
     )
 
     # 4) Re-search new package version to potentially find new vulnerabilities 
+
+    new_package_cursor = package_collection.find( { 'package_name' : package_name } )
+
+    for package in new_package_cursor:
+
+        finder_cursor = cve_collection.find(
+            { 
+                '$text' : { '$search' : items },
+                'matched_To_CVE' : 0 
+            }
+        )
 
 def package_Update_Reversal(package_name):
     print("Reversing package update")
@@ -254,6 +267,3 @@ def search_URL_For_BFS_Update():
     pass
 
 # package_Updater("apt", "1.0.1")
-
-t = re.compile(r"""(?:(\d+\.(?:\d+\.)*\d+))""")
-print(re.match(t, "3.345.43g").group(0))

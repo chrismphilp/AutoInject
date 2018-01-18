@@ -11,7 +11,56 @@
 <!-- Main content -->
 {% block content %}
 
-<h1>_{{ package }} Vulnerabilites</h1>
+<h1 style='display: inline-block;'>_{{ package }} Vulnerabilites</h1>
+
+<!-- Modal Button -->
+<button 
+	style="float: right;" 
+	class="btn btn-md btn-warning" 
+	data-toggle="modal"
+	data-target="#modalcode"
+>
+	Manually Update Package
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="modalcode" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  	<div class="modal-dialog modal-dialog-centered" role="document">
+    	<div class="modal-content">
+      		<div class="modal-header">
+        		<h5 class="modal-title" style="display: inline-block;">Insert code for <b>{{ package }}</b></h5>
+        		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          			<span aria-hidden="true">&times;</span>
+        		</button>
+      		</div>
+      		<div class="modal-body">
+		        <form>
+		          	<div class="form-group">
+			            <label for="recipient-name" class="col-form-label">File Path</label>
+			            <input type="text" class="form-control" id="file-path">
+		          	</div>
+		          	<div class="form-group">
+		            	<label for="message-text" class="col-form-label">Code to Insert</label>
+		            	<textarea class="form-control" id="code-to-insert"></textarea>
+		          	</div>
+		          	<div class="form-group">
+		            	<label for="message-text" class="col-form-label">Code to Remove <i>(Leave blank if none)</i></label>
+		            	<textarea class="form-control" id="code-to-remove"></textarea>
+		          	</div>
+		          	<div class="form-group">
+			            <label for="recipient-name" class="col-form-label">Comment</label>
+			            <input type="text" class="form-control" id="comment">
+		          	</div>
+		        </form>
+      		</div>
+      		<div class="modal-footer">
+		        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+		        <button type="button" class="btn btn-primary">Submit</button>
+      		</div>
+    	</div>
+  	</div>
+</div>
+
 <div class="row">
   		<div class="col-lg-12">
     		<div class="panel panel-default">
@@ -30,7 +79,8 @@
 							            <tr>
 							                <th>CVE ID</th>
 							                <th>References</th>
-							                <th>Rating</th>
+							                <th>Summary</th>
+							                <th>CVSS Rating</th>
 							                <th>Update Package</th>
 							            </tr>
 							        </thead>
@@ -38,7 +88,8 @@
 							            <tr>
 							                <th>CVE ID</th>
 							                <th>References</th>
-							                <th>Rating</th>
+							                <th>Summary</th>
+							                <th>CVSS Rating</th>
 							                <th>Update Package</th>
 							            </tr>
 									</tfoot>
@@ -68,6 +119,7 @@
 					[ 
 						JSON_data[vulnerability]['id'],
 						JSON_data[vulnerability]['references'],
+						JSON_data[vulnerability]['summary'],
 						JSON_data[vulnerability]['cvss']
 					] 
 				);
@@ -90,7 +142,11 @@
 							return newString;
 						}
 					},
-					{ "data" : [2] },
+					{ 	
+						"data" : [2],
+						"width" : "25%" 
+					},
+					{ "data" : [3] },
 					{ "defaultContent" : "<button class='btn btn-success'>Update Package</button>" }
 				],
 		        "lengthMenu":   [ 5, 10, 15 ],
@@ -101,6 +157,16 @@
 		        stateSave: 		true
 			});
 		} );
+
+		// Submit modal form
+		$(function() {
+			$('form').submit(function() {
+				$.post("/manual_bfs", function() {
+					location.reload();
+				});
+				return false;
+			});
+		});
 
 	</script>
 
