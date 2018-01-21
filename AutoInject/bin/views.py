@@ -14,7 +14,9 @@ import AutoInject.bin.system_functions as sf
 client                  = MongoClient()
 package_collection      = client['package_db']['package_list']
 cve_collection          = client['cvedb']['cves']
-current_time            = datetime.datetime.now().time()
+# Flask-login
+login_manager           = LoginManager()
+login_manager.init_app(app)
 
 @app.route("/")
 def index():  
@@ -97,6 +99,29 @@ def return_CVE_IDs(package):
     vulnerabilities = loads(dumps( cve_collection.find( { 'id' : { '$in' : list_Of_Values } } ) ))
     return render_template('individual_package.html', vulnerabilities=vulnerabilities, package=package)
 
+@app.route("/version_update", methods=['POST'])
+def version_update():
+    version_name    = request.form['version-name']
+    link            = request.form['link']
+    comment         = request.form['comment']
+    package         = request.form['package']
+    print(version_name, link, comment, package)
+    return redirect("/vulnerabilities/" + package, code=302)
+
+@app.route("/manual_update", methods=['POST'])
+def manual_update():
+    filepath    = request.form['file-path']
+    insert_code = request.form['inserted-code']
+    remove_code = request.form['removed-code']
+    comment     = request.form['comment']
+    package     = request.form['package']
+    print(filepath, insert_code, remove_code, comment, package)
+    return redirect("/vulnerabilities/" + package, code=302)
+
+@app.route("/log")
+def log():
+    return render_template('log.html')
+
 @app.route("/profile")
 def profile():
     return render_template('profile.html')
@@ -104,3 +129,17 @@ def profile():
 @app.route("/about")
 def about():
     return render_template('about.html')
+
+# Login related functions
+
+@app.route("/login", methods=['POST', 'GET'])
+def login():
+
+    form = LoginForm()
+
+    
+    return render_template('about.html')
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(user_id)

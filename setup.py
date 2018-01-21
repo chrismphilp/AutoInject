@@ -6,6 +6,9 @@ setup(
     packages=['AutoInject'],
     include_package_data=True,
     install_requires=[
+    	'cve-search',
         'flask',
+        'flask-login',
+        'pygments'
     ],
 )
