@@ -1,1 +1,4 @@
+cve-search
 flask
+flask-login
+pygments

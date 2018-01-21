@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+<!-- Title -->
+{% block title %}Login{% endblock %}
+<!-- Active TitleBar Name -->
+{% block navitems %}
+	<li><a href="/">Dashboard</a></li>
+	<li><a href="/vulnerabilities">Vulnerabilities</a></li>
+    <li><a href="/log">Log</a></li>
+	<li class="active"><a href="/about">About</a></li>
+	<li><a href="/profile">Profile</a></li>
+{% endblock %}
+{% block content %}
+    <h1>Login here</h1>
+    <form method="post" action="/register">
+<!--         {{ form.hidden_tag() }}
+        {{ form.email.label }} {{ form.email(size=20) }}
+        {{ form.password.label }} {{ form.password(size=20) }}
+        <input type="submit" value="Signup"> -->
+    </form>
+{% endblock %}
+{% block scripts %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+{% endblock %}
