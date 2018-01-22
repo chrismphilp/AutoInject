@@ -1,22 +1,23 @@
 import pymongo, json, datetime
 
-from json import loads
-from bson.json_util import dumps
-from flask import Flask, render_template, request, redirect
-from pymongo import MongoClient
+from json               import loads
+from bson.json_util     import dumps
+from flask              import Flask, render_template, request, redirect, url_for
+from pymongo            import MongoClient
 
-from AutoInject import app
+from AutoInject         import app
 
 # Importing scripts to sort data
-import AutoInject.bin.get_Vulnerabilities as gv
-import AutoInject.bin.get_Packages as gp
-import AutoInject.bin.system_functions as sf
+import AutoInject.bin.get_Vulnerabilities   as gv
+import AutoInject.bin.get_Packages          as gp
+import AutoInject.bin.system_functions      as sf
 
 # Flask-login
 from flask_login        import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 from wtforms            import Form, StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email
 from flask_wtf          import FlaskForm
+from werkzeug.security  import check_password_hash, generate_password_hash
 
 login_manager            = LoginManager()
 login_manager.init_app(app)
@@ -26,6 +27,7 @@ login_manager.login_view = 'login'
 client                  = MongoClient()
 package_collection      = client['package_db']['package_list']
 cve_collection          = client['cvedb']['cves']
+user_collection         = client['user_db']['users']
 
 @app.route("/")
 @login_required
@@ -160,33 +162,50 @@ def about():
 
 app.secret_key = 'philpy'
 
-class User(UserMixin):
-    pass
+class User(UserMixin):   
+    @staticmethod
+    def validate_login(hashed_password, password):
+        return check_password_hash(hashed_password, password)
 
 class SignupForm(FlaskForm):
+    username    = StringField('username', validators=[DataRequired()]) 
     email       = StringField('email', validators=[DataRequired(), Email()])
+    password    = PasswordField('password', validators=[DataRequired()])
+    submit      = SubmitField("Register")
+
+class LoginForm(FlaskForm):
+    email       = StringField('email')      
+    username    = StringField('username', validators=[DataRequired()]) 
     password    = PasswordField('password', validators=[DataRequired()])
     submit      = SubmitField("Sign In")
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.get(user_id)
+    data    = user_collection.find_one( { 'id' : user_id } )
+    user    = User()
+    user.id = data['id']
+    return user
 
 @app.route("/login", methods=['POST', 'GET'])
 def login():
 
-    form = UserLoginForm()
+    form = LoginForm()
     
-    if form.validate_on_submit():
-        login_user(user)
-        flask.flash('Logged in Successfully')
+    if request.method == 'POST':
+        if form.validate_on_submit():
+
+            result = user_collection.find_one( { 'id' : request.form['username'] } )
+
+            if check_password_hash(result['password'], request.form['password']):
+                user    = User()
+                user.id = result['id']
+                login_user(user)
+                return redirect(url_for("vulnerabilities"))
+            else:
+                print("Passwords do not match")
+                return render_template('login.html', form=form)
 
     return render_template('login.html', form=form)
-
-@app.route("/logout")
-def logout():
-    logout_user()
-    return True
 
 @app.route("/register", methods=['POST', 'GET'])
 def register():
@@ -194,12 +213,30 @@ def register():
     form = SignupForm()
 
     if request.method == 'GET':
-        return render_template('register.html', form=form)
+        print("Received GET request for register form")
+        return render_template('login.html', form=form)
     elif request.method == 'POST':
         if form.validate_on_submit():
-            if 'user_exists':
-                return True
+            print("Registering User")
+            if (user_collection.find( { 'email' : request.form['email'] } ).count()):
+                print("User already registered")
+                return render_template('login.html', form=form)
             else:
-                return False
+                user_collection.insert({
+                    'id' : request.form['username'],
+                    'email' : request.form['email'],
+                    'password' : generate_password_hash(request.form['password'])
+                })
+                return render_template('login.html', form=form)
         else:
-            return False
+            print("Form could not be validated")
+            return redirect(url_for('login'))
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+@app.route("/forgot_password", methods=['POST', 'GET'])
+def forgot_password():
+    return render_template('forgot_password.html')
