@@ -27,24 +27,26 @@
                 <ul class="nav navbar-nav">
                     {% block navitems %}{% endblock %}
                 </ul>
-                <div class="collapse navbar-collapse">
-                    <ul class="nav navbar-nav">
-                        <li>
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Functions <b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li><a href="/drop">Refresh Packages</a></li>
-                                <li class="divider"></li>
-                                <li><a href="/patchall">Patch All Vulnerabilites</a></li>
-                                <li><a href="/refresh">Update Vulnerabilites</a></li>
-                                <li class="divider"></li>
-                                <li><a href="/enable_all">Enable All Updates</a></li>
-                                <li><a href="/disable_all">Disable All Updates</a></li>
-                                <li class="divider"></li>
-                                <li><a href="/logout">Logout</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
+                {% if current_user.is_authenticated() %}
+                    <div class="collapse navbar-collapse">
+                        <ul class="nav navbar-nav">
+                            <li>
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Functions <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="/drop">Refresh Packages</a></li>
+                                    <li class="divider"></li>
+                                    <li><a href="/patchall">Patch All Vulnerabilites</a></li>
+                                    <li><a href="/refresh">Update Vulnerabilites</a></li>
+                                    <li class="divider"></li>
+                                    <li><a href="/enable_all">Enable All Updates</a></li>
+                                    <li><a href="/disable_all">Disable All Updates</a></li>
+                                    <li class="divider"></li>
+                                    <li><a href="/logout">Logout</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                {% endif %}
             </div>
         </nav>
         {% block content %}{% endblock %}

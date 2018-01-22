@@ -27,10 +27,10 @@
         <div class="col-md-9  admin-content" id="profile">
             <div class="panel panel-info" style="margin: 1em;">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Name</h3>
+                    <h3 class="panel-title">Username</h3>
                 </div>
                 <div class="panel-body">
-                    CMP
+                    {{ current_user.id }}
                 </div>
             </div>
             <div class="panel panel-info" style="margin: 1em;">
@@ -38,7 +38,7 @@
                     <h3 class="panel-title">Email</h3>
                 </div>
                 <div class="panel-body">
-                    CMP@gmail.com
+                    {{ current_user.email }}
                 </div>
             </div>
         </div>
@@ -48,7 +48,21 @@
                     <h3 class="panel-title">Notification</h3>
                 </div>
                 <div class="panel-body">
-                    <div class="label label-success">allowed</div>
+                    {% if current_user.notifications == 1 %}
+                        <div class="label label-success">allowed</div>
+                        <form action="/update_notifications" method="post">
+                            <input type="hidden" name="notification" value="0">
+                            <input type="hidden" name="username" value="{{ current_user.id }}">
+                            <input value="Change" type="submit" class="form-control btn btn-primary" name="submit" id="submit">
+                        </form>
+                    {% else %}
+                        <div class="label label-danger">dis-allowed</div>
+                        <form action="/update_notifications" method="post">
+                            <input type="hidden" name="notification" value="1">
+                            <input type="hidden" name="username" value="{{ current_user.id }}">
+                            <input value="Change" type="submit" class="form-control btn btn-primary" name="submit" id="submit">
+                        </form>
+                    {% endif %}
                 </div>
             </div>
             <div class="panel panel-info" style="margin: 1em;">
@@ -56,13 +70,27 @@
                     <h3 class="panel-title">Auto-Update Packages</h3>
                 </div>
                 <div class="panel-body">
-                    <div class="label label-danger">dis-allowed</div>
+                    {% if current_user.auto_update == 1 %}
+                        <div class="label label-success">allowed</div>
+                        <form action="/update_auto_update" method="post">
+                            <input type="hidden" name="auto_update" value="0">
+                            <input type="hidden" name="username" value="{{ current_user.id }}">
+                            <input value="Change" type="submit" class="form-control btn btn-primary" name="submit" id="submit">
+                        </form>
+                    {% else %}
+                        <div class="label label-danger">dis-allowed</div>
+                        <form action="/update_auto_update" method="post">
+                            <input type="hidden" name="auto_update" value="1">
+                            <input type="hidden" name="username" value="{{ current_user.id }}">
+                            <input value="Change" type="submit" class="form-control btn btn-primary" name="submit" id="submit">
+                        </form>
+                    {% endif %}
                 </div>
             </div>
         </div>
 
         <div class="col-md-9  admin-content" id="change-password">
-            <form action="/password" method="post">
+            <form action="/change_password" method="post">
                 <div class="panel panel-info" style="margin: 1em;">
                     <div class="panel-heading">
                         <h3 class="panel-title">
@@ -72,27 +100,14 @@
                     <div class="panel-body">
                         <div class="form-group">
                             <div class="col-sm-10">
-                                <input type="password" class="form-control" name="password" id="new_password" >
+                                <input pattern=".{4,}" type="password" class="form-control" name="password" id="new_password" >
+                                <input type="hidden" name="username" value="{{ current_user.id }}">
                             </div>
                         </div>
 
                     </div>
-                </div>
-                <div class="panel panel-info" style="margin: 1em;">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">
-                        	<label for="confirm_password" class="control-label panel-title">Confirm password</label>
-                        </h3>
-                    </div>
-                    <div class="panel-body">
-                        <div class="form-group">
-                            <div class="col-sm-10">
-                                <input type="password" class="form-control" name="password_confirmation" id="confirm_password" >
-                            </div>
-                        </div>
-                    </div>
-                </div>           
-                <div class="panel panel-info border" style="margin: 1em;">
+                </div>          
+                <div class="panel border" style="margin: 1em;">
                     <div class="panel-body">
                         <div class="form-group">
                             <div class="pull-left">
@@ -105,7 +120,7 @@
         </div>
 
         <div class="col-md-9  admin-content" id="delete">
-            <form action="/delete-account" method="post">
+            <form action="/delete_account" method="post">
                 <div class="panel panel-info" style="margin: 1em;">
                     <div class="panel-heading">
                         <h3 class="panel-title">Delete Account?</h3>
@@ -114,6 +129,7 @@
                         <div class="form-group">
                             <div class="pull-left">
                                 <button value="delete_account" type="submit" class="form-control btn btn-primary btn-danger" name="submit-delete" id="submit-delete">Yes - Delete my Account</button>
+                                <input type="hidden" name="username" value="{{ current_user.id }}">
                             </div>
                         </div>
                     </div>
@@ -129,13 +145,12 @@
                 <div class="panel-body">
                     Do you really want to logout ?  
                     <a  href="#" class="label label-danger"
-                        onclick="event.preventDefault();
-                        document.getElementById('logout-form').submit();">
+                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         <span >   Yes   </span>
                     </a>    
-                    <a href="/account" class="label label-success"> <span >  No   </span></a>
+                    <a href="/profile" class="label label-success"><span >  No   </span></a>
                 </div>
-                <form id="logout-form" action="#" method="POST" style="display: none;"></form>
+                <form id="logout-form" action="/logout" method="post" style="display: none;"></form>
             </div>
         </div>
     </div>

@@ -156,7 +156,7 @@ def about():
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
-#                           Login related functions
+#                           Login related functions                        |
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 
@@ -181,9 +181,12 @@ class LoginForm(FlaskForm):
 
 @login_manager.user_loader
 def load_user(user_id):
-    data    = user_collection.find_one( { 'id' : user_id } )
-    user    = User()
-    user.id = data['id']
+    data                = user_collection.find_one( { 'id' : user_id } )
+    user                = User()
+    user.id             = data['id']
+    user.email          = data['email']
+    user.notifications  = data['notifications']
+    user.auto_update    = data['auto_update']
     return user
 
 @app.route("/login", methods=['POST', 'GET'])
@@ -218,14 +221,18 @@ def register():
     elif request.method == 'POST':
         if form.validate_on_submit():
             print("Registering User")
-            if (user_collection.find( { 'email' : request.form['email'] } ).count()):
+            if (user_collection.find( { 'email' : request.form['email'] } ).count() 
+                or
+                user_collection.find( { 'id' : request.form['username'] } ).count()):
                 print("User already registered")
                 return render_template('login.html', form=form)
             else:
                 user_collection.insert({
                     'id' : request.form['username'],
                     'email' : request.form['email'],
-                    'password' : generate_password_hash(request.form['password'])
+                    'password' : generate_password_hash(request.form['password']),
+                    'auto_update' : 1,
+                    'notifications' : 1
                 })
                 return render_template('login.html', form=form)
         else:
@@ -240,3 +247,36 @@ def logout():
 @app.route("/forgot_password", methods=['POST', 'GET'])
 def forgot_password():
     return render_template('forgot_password.html')
+
+@app.route("/delete_account", methods=['POST', 'GET'])
+def delete_account():
+    account = user_collection.remove( { 'id' : request.form['username'] } )
+    logout_user()
+    return redirect(url_for('login'))
+
+@app.route("/change_password", methods=['POST', 'GET'])
+def change_password():
+    account = user_collection.update(
+        { 'id' : request.form['username'] },
+        { '$set' : { 'password' : generate_password_hash(request.form['password']) } },
+        multi=True
+    )
+    return redirect(url_for('profile'))  
+
+@app.route("/update_notifications", methods=['POST', 'GET'])
+def update_notifications():
+    account = user_collection.update( 
+        { 'id' : request.form['username'] }, 
+        { '$set' : { 'notifications' : request.form['notification'] } },
+        multi=True
+    )
+    return redirect(url_for('profile'))
+
+@app.route("/update_auto_update", methods=['POST', 'GET'])
+def update_auto_update():
+    account = user_collection.update( 
+        { 'id' : request.form['username'] }, 
+        { '$set' : { 'auto_update' : request.form['auto_update'] } },
+        multi=True
+    )
+    return redirect(url_for('profile'))
