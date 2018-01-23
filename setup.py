@@ -8,7 +8,9 @@ setup(
     install_requires=[
     	'cve-search',
         'flask',
+        'flask-admin',
         'flask-login',
-        'pygments'
+        'pygments',
+        'flask-mongoengine'
     ],
 )

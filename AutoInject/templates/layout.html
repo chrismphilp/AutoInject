@@ -40,6 +40,10 @@
                                     <li class="divider"></li>
                                     <li><a href="/enable_all">Enable All Updates</a></li>
                                     <li><a href="/disable_all">Disable All Updates</a></li>
+                                    {% if current_user.id == 'admin' %}
+                                        <li class="divider"></li>                                   
+                                        <li><a href="/admin_settings">Admin Page</a></li>
+                                    {% endif %}
                                     <li class="divider"></li>
                                     <li><a href="/logout">Logout</a></li>
                                 </ul>

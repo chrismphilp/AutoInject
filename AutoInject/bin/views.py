@@ -19,15 +19,15 @@ from wtforms.validators import DataRequired, Email
 from flask_wtf          import FlaskForm
 from werkzeug.security  import check_password_hash, generate_password_hash
 
-login_manager            = LoginManager()
+login_manager               = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager.login_view    = 'login'
 
 # Database API
-client                  = MongoClient()
-package_collection      = client['package_db']['package_list']
-cve_collection          = client['cvedb']['cves']
-user_collection         = client['user_db']['users']
+client                      = MongoClient()
+package_collection          = client['package_db']['package_list']
+cve_collection              = client['cvedb']['cves']
+user_collection             = client['user_db']['users']
 
 @app.route("/")
 @login_required
@@ -280,3 +280,33 @@ def update_auto_update():
         multi=True
     )
     return redirect(url_for('profile'))
+
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+#                           Admin related functions                        |
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+
+@app.route("/admin_settings")
+@login_required
+def admin_settings():
+    package_JSON_data = loads(dumps(user_collection.find()))
+    return render_template("admin_settings.html", package_JSON_data=package_JSON_data)
+
+@app.route("/admin_settings/<email>")
+@login_required
+def admin_delete(email):
+    user_collection.remove( { 'email' : email } )
+    return redirect(url_for('admin_settings'))
+
+@app.route("/admin_registration")
+@login_required
+def admin_registration():
+    user_collection.insert({
+        'id' : request.form['username'],
+        'email' : request.form['email'],
+        'password' : generate_password_hash(request.form['password']),
+        'auto_update' : 1,
+        'notifications' : 1
+    })
+    return redirect(url_for('admin_settings'))

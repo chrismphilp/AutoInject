@@ -1,0 +1,7 @@
+#!/bin/bash
+echo "Beginning to run AutoInject Script"
+export FLASK_APP=AutoInject
+export FLASK_DEBUG=1
+sudo pip3 install -e .
+xdg-open http://127.0.0.1:5000/
+flask run

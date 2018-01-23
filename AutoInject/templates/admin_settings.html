@@ -1,0 +1,228 @@
+{% extends "layout.html" %}
+<!-- Title -->
+{% block title %}Admin{% endblock %}
+<!-- Active TitleBar Name -->
+{% block navitems %}
+	<li><a href="/">Dashboard</a></li>
+	<li><a href="/vulnerabilities">Vulnerabilities</a></li>
+    <li><a href="/log">Log</a></li>
+	<li><a href="/about">About</a></li>
+	<li><a href="/profile">Profile</a></li>
+	<li class="active"><a href="/admin_settings">Admin</a></li>
+{% endblock %}
+{% block content %}
+	{% if current_user.id == 'admin' %}
+		<button 
+			style="margin-left: 10px; margin-bottom: 10px;" 
+			class="btn btn-md btn-info" 
+			data-toggle="modal"
+			data-target="#admin_update"
+		>
+			Add New Version Update
+		</button>
+		<button 
+			style="margin-left: 10px; margin-bottom: 10px;" 
+			class="btn btn-md btn-danger" 
+			data-toggle="modal"
+			data-target="#admin_bfs"
+		>
+			Add New BFS Update
+		</button>
+		<button 
+			style="margin-left: 10px; margin-bottom: 10px;" 
+			class="btn btn-md btn-success" 
+			data-toggle="modal"
+			data-target="#add_user"
+		>
+			Add New User
+		</button>
+
+		<!-- Admin Version Update -->
+		<div class="modal fade" id="admin_update" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+		  	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+		    	<div class="modal-content">
+		      		<div class="modal-header">
+		        		<h5 class="modal-title" style="display: inline-block;">Update Version for <b>{{ package }}</b></h5>
+		        		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		          			<span aria-hidden="true">&times;</span>
+		        		</button>
+		      		</div>
+		      		<div class="modal-body">
+				        <form action="{{ url_for('version_update') }}" method="post" id="version-form">
+				          	<div class="form-group">
+					            <label for="recipient-name" class="col-form-label">Version to Upgrade To</label>
+					            <input type="text" class="form-control" id="version-name" name="version-name">
+				          	</div>
+				          	<div class="form-group">
+					            <label for="recipient-name" class="col-form-label">Version Repository Link <i>(Optional)</i></label>
+					            <input type="text" class="form-control" id="link" name="link">
+				          	</div>
+				          	<div class="form-group">
+					            <label for="recipient-name" class="col-form-label">Comment</label>
+					            <input type="text" class="form-control" id="comment" name="comment">
+				          	</div>
+				          	<input type="hidden" name="package" value="{{ package }}">
+				          	<div class="modal-footer">
+						        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						        <input type="submit" class="btn btn-primary" id="version-form" value="Submit"></button>
+				      		</div>
+				        </form>
+		      		</div>
+		    	</div>
+		  	</div>
+		</div>
+		<!-- Admin BFS Update -->
+		<div class="modal fade" id="admin_bfs" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+		  	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+		    	<div class="modal-content">
+		      		<div class="modal-header">
+		        		<h5 class="modal-title" style="display: inline-block;">Rebuild Code for <b>{{ package }}</b></h5>
+		        		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		          			<span aria-hidden="true">&times;</span>
+		        		</button>
+		      		</div>
+		      		<div class="modal-body">
+				        <form action="{{ url_for('manual_update') }}" method="post" id="manual-form">
+				          	<div class="form-group">
+					            <label for="recipient-name" class="col-form-label">File Path</label>
+					            <input type="text" class="form-control" id="file-path" name="file-path">
+				          	</div>
+				          	<div class="form-group">
+				            	<label for="message-text" class="col-form-label">Code to Insert</label>
+				            	<textarea class="form-control" id="inserted-code" name="inserted-code"></textarea>
+				          	</div>
+				          	<div class="form-group">
+				            	<label for="message-text" class="col-form-label">Code to Remove <i>(Optional)</i></label>
+				            	<textarea class="form-control" id="removed-code" name="removed-code"></textarea>
+				          	</div>
+				          	<div class="form-group">
+					            <label for="recipient-name" class="col-form-label">Comment</label>
+					            <input type="text" class="form-control" id="comment" name="comment">
+				          	</div>
+				          	<input type="hidden" name="package" value="{{ package }}">
+				          	<div class="modal-footer">
+						        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						        <input type="submit" class="btn btn-primary" id="manual-form" value="Submit"></button>
+				      		</div>
+				        </form>
+		      		</div>
+		    	</div>
+		  	</div>
+		</div>
+		<!-- Add User -->
+		<div class="modal fade" id="add_user" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+		  	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+		    	<div class="modal-content">
+		      		<div class="modal-header">
+		        		<h5 class="modal-title" style="display: inline-block;">Add New User</b></h5>
+		        		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		          			<span aria-hidden="true">&times;</span>
+		        		</button>
+		      		</div>
+		      		<div class="modal-body">
+				        <form action="{{ url_for('admin_registration') }}" method="post" id="version-form">
+				          	<div class="form-group">
+					            <label for="recipient-name" class="col-form-label">Username</label>
+					            <input type="text" class="form-control" id="version-name" name="username">
+				          	</div>
+				          	<div class="form-group">
+					            <label for="recipient-name" class="col-form-label">Email</label>
+					            <input type="text" class="form-control" id="version-name" name="email">
+				          	</div>
+				          	<div class="form-group">
+					            <label for="recipient-name" class="col-form-label">Password</label>
+					            <input type="password" class="form-control" id="version-name" name="password">
+				          	</div>
+				          	<div class="modal-footer">
+						        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						        <input type="submit" class="btn btn-primary" id="version-form" value="Submit"></button>
+				      		</div>
+				        </form>
+		      		</div>
+		    	</div>
+		  	</div>
+		</div>
+		<!-- DataTable -->
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="panel panel-default">
+		  			<div class="panel-heading">Current Vulnerabilities</div>
+		  			<div class="panel-body">
+		    			<div class="row">
+		      				<div class="col-lg-12">
+		        				<div class="table-responsive">
+									<table 
+										id="users" 
+										cellspacing="0"
+										class="table table-bordered table-hover table-striped"  
+										width="100%"
+									>
+								        <thead>
+								            <tr>
+								                <th>User ID</th>
+								                <th>Email</th>
+								                <th>Delete User</th>
+								            </tr>
+								        </thead>
+								        <tfoot>
+								            <tr>
+								                <th>User ID</th>
+								                <th>Email</th>
+								                <th>Delete User</th>
+								            </tr>
+										</tfoot>
+										<tbody>
+										</tbody>
+								    </table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+{% endblock %}
+{% block scripts %}
+
+	<script type='text/javascript'>
+
+		$(document).ready(function() {
+
+			var JSON_data = {{ package_JSON_data|safe }};
+			var vulnerability;
+			var data = [];
+
+			for (vulnerability in JSON_data) {	
+				data.push( 
+					[ 
+						JSON_data[vulnerability]['id'],
+						JSON_data[vulnerability]['email']
+					] 
+				);
+			}
+
+			var users = $('#users').DataTable( {
+				data: 			data,
+				"columns" : [
+					{ "data" : [0] },
+					{ "data" : [1] },
+					{ "defaultContent" : "<button class='btn btn-danger'>Delete User</button>" }
+				],
+		        "lengthMenu":   [ 5, 10, 15 ],
+		        "paging":       true,
+		        "ordering":     true,
+		        "order":        [[ 0, "desc" ]],
+		        "info":         true,
+		        stateSave: 		true
+			});
+
+			$('#users tbody').on('click', 'button', function() {
+				var data = users.row( $(this).parents('tr') ).data();
+				location.href += '/' + data[1];
+			});
+		});
+
+	</script>
+
+{% endblock %}

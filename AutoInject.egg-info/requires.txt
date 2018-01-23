@@ -1,4 +1,6 @@
 cve-search
 flask
+flask-admin
 flask-login
 pygments
+flask-mongoengine
