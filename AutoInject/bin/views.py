@@ -199,7 +199,9 @@ def login():
 
             result = user_collection.find_one( { 'id' : request.form['username'] } )
 
-            if check_password_hash(result['password'], request.form['password']):
+            if not result:
+                return redirect(url_for("login"))
+            elif check_password_hash(result['password'], request.form['password']):
                 user    = User()
                 user.id = result['id']
                 login_user(user)

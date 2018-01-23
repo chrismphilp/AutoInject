@@ -12,148 +12,163 @@
 {% block content %}
 <div class="container">
 	<div class="well">
-    <div class="row">
-        
-        <div class="col-md-3">
-            <ul class="nav nav-pills nav-stacked admin-menu" >
-                <li class="active"><a href="" data-target-id="profile"><i class="glyphicon glyphicon-user"></i> Profile</a></li>
-                <li><a href="" data-target-id="change-password"><i class="glyphicon glyphicon-lock"></i> Change Password</a></li>
-                <li><a href="" data-target-id="settings"><i class="glyphicon glyphicon-cog"></i> Settings</a></li>
-                <li><a href="" data-target-id="delete"><i class="glyphicon glyphicon-cog"></i> Delete Account</a></li>
-                <li><a href="" data-target-id="logout"><i class="glyphicon glyphicon-log-out"></i> Logout</a></li>
-            </ul>
-        </div>
+        <div class="row">  
+            
+            <div class="col-md-3">
+                <ul class="nav nav-pills nav-stacked admin-menu" >
+                    <li class="active"><a href="" data-target-id="profile"><i class="glyphicon glyphicon-user"></i> Profile</a></li>
+                    <li><a href="" data-target-id="change-password"><i class="glyphicon glyphicon-lock"></i> Change Password</a></li>
+                    <li><a href="" data-target-id="settings"><i class="glyphicon glyphicon-cog"></i> Settings</a></li>
+                    <li><a href="" data-target-id="delete"><i class="glyphicon glyphicon-cog"></i> Delete Account</a></li>
+                    <li><a href="" data-target-id="logout"><i class="glyphicon glyphicon-log-out"></i> Logout</a></li>
+                </ul>
+            </div>
 
-        <div class="col-md-9  admin-content" id="profile">
-            <div class="panel panel-info" style="margin: 1em;">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Username</h3>
-                </div>
-                <div class="panel-body">
-                    {{ current_user.id }}
-                </div>
-            </div>
-            <div class="panel panel-info" style="margin: 1em;">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Email</h3>
-                </div>
-                <div class="panel-body">
-                    {{ current_user.email }}
-                </div>
-            </div>
-        </div>
-   		<div class="col-md-9  admin-content" id="settings">
-            <div class="panel panel-info" style="margin: 1em;">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Notification</h3>
-                </div>
-                <div class="panel-body">
-                    {% if current_user.notifications == 1 %}
-                        <div class="label label-success">allowed</div>
-                        <form action="/update_notifications" method="post">
-                            <input type="hidden" name="notification" value="0">
-                            <input type="hidden" name="username" value="{{ current_user.id }}">
-                            <input value="Change" type="submit" class="form-control btn btn-primary" name="submit" id="submit">
-                        </form>
-                    {% else %}
-                        <div class="label label-danger">dis-allowed</div>
-                        <form action="/update_notifications" method="post">
-                            <input type="hidden" name="notification" value="1">
-                            <input type="hidden" name="username" value="{{ current_user.id }}">
-                            <input value="Change" type="submit" class="form-control btn btn-primary" name="submit" id="submit">
-                        </form>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="panel panel-info" style="margin: 1em;">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Auto-Update Packages</h3>
-                </div>
-                <div class="panel-body">
-                    {% if current_user.auto_update == 1 %}
-                        <div class="label label-success">allowed</div>
-                        <form action="/update_auto_update" method="post">
-                            <input type="hidden" name="auto_update" value="0">
-                            <input type="hidden" name="username" value="{{ current_user.id }}">
-                            <input value="Change" type="submit" class="form-control btn btn-primary" name="submit" id="submit">
-                        </form>
-                    {% else %}
-                        <div class="label label-danger">dis-allowed</div>
-                        <form action="/update_auto_update" method="post">
-                            <input type="hidden" name="auto_update" value="1">
-                            <input type="hidden" name="username" value="{{ current_user.id }}">
-                            <input value="Change" type="submit" class="form-control btn btn-primary" name="submit" id="submit">
-                        </form>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-9  admin-content" id="change-password">
-            <form action="/change_password" method="post">
+            <div class="col-md-9  admin-content" id="profile">
                 <div class="panel panel-info" style="margin: 1em;">
                     <div class="panel-heading">
-                        <h3 class="panel-title">
-                        	<label for="new_password" class="control-label panel-title">New Password</label>
-                        </h3>
+                        <h3 class="panel-title">Username</h3>
                     </div>
                     <div class="panel-body">
-                        <div class="form-group">
-                            <div class="col-sm-10">
-                                <input pattern=".{4,}" type="password" class="form-control" name="password" id="new_password" >
-                                <input type="hidden" name="username" value="{{ current_user.id }}">
-                            </div>
-                        </div>
-
-                    </div>
-                </div>          
-                <div class="panel border" style="margin: 1em;">
-                    <div class="panel-body">
-                        <div class="form-group">
-                            <div class="pull-left">
-                                <input type="submit" class="form-control btn btn-primary" name="submit" id="submit">
-                            </div>
-                        </div>
+                        {{ current_user.id }}
                     </div>
                 </div>
-            </form>
-        </div>
-
-        <div class="col-md-9  admin-content" id="delete">
-            <form action="/delete_account" method="post">
                 <div class="panel panel-info" style="margin: 1em;">
                     <div class="panel-heading">
-                        <h3 class="panel-title">Delete Account?</h3>
+                        <h3 class="panel-title">Email</h3>
                     </div>
                     <div class="panel-body">
-                        <div class="form-group">
-                            <div class="pull-left">
-                                <button value="delete_account" type="submit" class="form-control btn btn-primary btn-danger" name="submit-delete" id="submit-delete">Yes - Delete my Account</button>
-                                <input type="hidden" name="username" value="{{ current_user.id }}">
+                        {{ current_user.email }}
+                    </div>
+                </div>
+            </div>
+
+       		<div class="col-md-9  admin-content" id="settings">
+                <div class="panel panel-info" style="margin: 1em;">
+                    <div class="panel-heading">
+                        <h3 class="panel-title" style="display: inline;">Notification</h3>
+                        {% if current_user.notifications == '1' %}
+                            <div class="label label-success" style="float: right;">allowed</div>
+                    </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <form action="/update_notifications" method="post">
+                                    <input type="hidden" name="notification" value="0">
+                                    <input type="hidden" name="username" value="{{ current_user.id }}">
+                                    <input value="Change" type="submit" class="form-control btn btn-primary" name="submit" id="submit">
+                                </form>
+                            </div>
+                        </div>
+                        {% else %}
+                            <div class="label label-danger" style="float: right;">dis-allowed</div>
+                    </div>  
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <form action="/update_notifications" method="post">
+                                    <input type="hidden" name="notification" value="1">
+                                    <input type="hidden" name="username" value="{{ current_user.id }}">
+                                    <input value="Change" type="submit" class="form-control btn btn-primary" name="submit" id="submit">
+                                </form>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                <div class="panel panel-info" style="margin: 1em;">
+                    <div class="panel-heading">
+                        <h3 class="panel-title" style="display: inline;">Auto-Update Packages</h3>
+                        {% if current_user.auto_update == '1' %}
+                        <div class="label label-success" style="float: right;">allowed</div>
+                    </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <form action="/update_auto_update" method="post">
+                                    <input type="hidden" name="auto_update" value="0">
+                                    <input type="hidden" name="username" value="{{ current_user.id }}">
+                                    <input value="Change" type="submit" class="form-control btn btn-primary" name="submit" id="submit">
+                                </form>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="label label-danger" style="float: right;">dis-allowed</div>
+                    </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <form action="/update_auto_update" method="post">
+                                    <input type="hidden" name="auto_update" value="1">
+                                    <input type="hidden" name="username" value="{{ current_user.id }}">
+                                    <input value="Change" type="submit" class="form-control btn btn-primary" name="submit" id="submit">
+                                </form>
+                            </div>
+                        </div>
+                        {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-9  admin-content" id="change-password">
+                <form action="/change_password" method="post">
+                    <div class="panel panel-info" style="margin: 1em;">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">
+                            	<label for="new_password" class="control-label panel-title">New Password</label>
+                            </h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input pattern=".{4,}" type="password" class="form-control" name="password" id="new_password" >
+                                    <input type="hidden" name="username" value="{{ current_user.id }}">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>          
+                    <div class="panel border" style="margin: 1em;">
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <div class="pull-left">
+                                    <input type="submit" class="form-control btn btn-primary" name="submit" id="submit">
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </form>
-        </div>
+                </form>
+            </div>
 
-        <div class="col-md-9  admin-content" id="logout">
-            <div class="panel panel-info" style="margin: 1em;">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Confirm Logout</h3>
+            <div class="col-md-9  admin-content" id="delete">
+                <form action="/delete_account" method="post">
+                    <div class="panel panel-info" style="margin: 1em;">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Delete Account?</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <div class="pull-left">
+                                    <button value="delete_account" type="submit" class="form-control btn btn-primary btn-danger" name="submit-delete" id="submit-delete">Yes - Delete my Account</button>
+                                    <input type="hidden" name="username" value="{{ current_user.id }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="col-md-9  admin-content" id="logout">
+                <div class="panel panel-info" style="margin: 1em;">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Confirm Logout</h3>
+                    </div>
+                    <div class="panel-body">
+                        Do you really want to logout ?  
+                        <a  href="#" class="label label-danger"
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <span >   Yes   </span>
+                        </a>    
+                        <a href="/profile" class="label label-success"><span >  No   </span></a>
+                    </div>
+                    <form id="logout-form" action="/logout" method="post" style="display: none;"></form>
                 </div>
-                <div class="panel-body">
-                    Do you really want to logout ?  
-                    <a  href="#" class="label label-danger"
-                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                        <span >   Yes   </span>
-                    </a>    
-                    <a href="/profile" class="label label-success"><span >  No   </span></a>
-                </div>
-                <form id="logout-form" action="/logout" method="post" style="display: none;"></form>
             </div>
         </div>
-    </div>
     </div>
 </div>
 {% endblock %}
