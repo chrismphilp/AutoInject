@@ -203,10 +203,8 @@ def update_Database_Matched_Field():
 def return_Matched_Vulnerability_Values():
 
     package_Collection = client['package_db']['package_list']
-    package_Vulnerability_JSON = package_Collection.find( 
-        { 
-            'matching_ids' : { '$exists' : True, '$not' : { '$size' : 0 } },
-            'updateable' : 1
-        } 
-    )
+    package_Vulnerability_JSON = package_Collection.find({ 
+        'matching_ids' : { '$exists' : True, '$not' : { '$size' : 0 } },
+        'updateable' : 1
+    })
     return loads(dumps(package_Vulnerability_JSON))

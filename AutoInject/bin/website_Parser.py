@@ -1,12 +1,16 @@
-import pymongo, re, time
+import pymongo, re, time, datetime, types
+
 # Parsing related modules
 import lxml.html as lh 
 import requests
 
-from pymongo import MongoClient
-from subprocess import check_output, check_call
-from bs4 import BeautifulSoup
-from collections import defaultdict
+from pymongo        import MongoClient
+from json           import loads
+from bson.json_util import dumps
+
+from subprocess     import check_output, check_call
+from bs4            import BeautifulSoup
+from collections    import defaultdict
 
 global ubuntu_version
 ubuntu_version = "14"
@@ -24,12 +28,22 @@ kwargs  = {
     'securityfocus' : {
         'finder' : re.compile(r""".*securityfocus.*"""),
         'search_info' : '',
-        'compiler' : re.compile(r""" """)
+        'compiler' : re.compile(r"""(?:(\d+\.(?:\d+\.)*\d+))""")
     },
     'ubuntu' : {
         'finder' : re.compile(r""".*ubuntu\.com.*"""),
-        'search_info' : '',
-        'compiler' : re.compile(r""" """)
+        'search_info' : '//dl/dd/span/a/text()',
+        'compiler' : re.compile(r"""(?:(\d+\.(?:\d+\.)*\d+))""")
+    },
+    'launchpad' : {
+        'finder' : re.compile(r""".*launchpad\.net.*"""),
+        'search_info' : '//dd[@id="yui_3_10_3_1_1516828240604_66"]/text()',
+        'compiler' : re.compile(r"""(?:(\d+\.(?:\d+\.)*\d+))""")
+    },
+    'exchange' : {
+        'finder' : re.compile(r""".*exchange\.xforce.*"""),
+        'search_info' : '//p[@class="detailsline description"]/p/text()',
+        'compiler' : re.compile(r"""(?:(\d+\.(?:\d+\.)*\d+))""")
     }
 }
 list_Of_Parsing_Procedures = defaultdict(dict, **kwargs)
@@ -54,8 +68,8 @@ def collect_All_Package_URLs():
     } )
 
     for items in cursor:
-        pass
         # Call multi-threader function
+        pass
 
 def collect_Specific_Package_URL(package_name, cve_id):
     
@@ -63,7 +77,7 @@ def collect_Specific_Package_URL(package_name, cve_id):
 
     for urls in cursor['references']:
         version_name = search_URL_For_Version_Update(urls)
-        if (version_name != False):
+        if version_name:
             package_Updater(package_name, version_name)
             return True
 
@@ -73,6 +87,47 @@ def collect_Specific_Package_URL(package_name, cve_id):
         { '$set' : { 'cannot_be_updated' : 1 } },
         multi=True
     )
+    return False
+
+def search_URL_For_Version_Update(url):
+    print('Scanning:', url)
+
+    start       = time.time()
+    matched     = False
+    
+    for key, value in list_Of_Parsing_Procedures.items():
+        
+        if matched: 
+            end = time.time()
+            print('Total time for match:', end - start)
+            return version_name
+
+        if (re.match(value['finder'], url)):
+            print('Matched with:', value['finder'])
+            try:
+                req_time        = time.time()
+                page            = requests.get(url)
+                print('Total request time:', time.time() - req_time)
+                tree            = lh.fromstring(page.content)
+                update_name     = tree.xpath(value['search_info'])
+                print("Searching website and found:", update_name)
+                
+                if (update_name): 
+                    for items in update_name:   
+                        version_name = re.findall(value['compiler'], items)
+                        if (version_name): 
+                            print("Found a match!:", version_name)
+                            if type(version_name) is list:
+                                version_name = version_name[0]
+                            matched = True 
+            except:
+                print("Couldn't match:", url)
+    
+    end = time.time()
+    print('Total time for requests:', end - start)
+
+    if matched: return version_name
+    else:       return False 
 
 def package_Updater(package_name, version_name):
     
@@ -94,6 +149,7 @@ def package_Updater(package_name, version_name):
         # Update version so that it can be reversed lated if required
         if ("Installed:" in items):
             current = items.split(' ')[1]
+            print("Updated previous_version to:", current)
             package_collection.update(
                 { 'package_name' : package_name },
                 { '$set' : { 'previous_version' : current } },
@@ -115,13 +171,14 @@ def package_Updater(package_name, version_name):
     for versions in list_Of_Potential_Versions:
         combi = package_name + '=' + versions
         try:
-            package_upgrade = check_call(
-                ["sudo", "apt-get", "install", "-y", "--force-yes", "--only-upgrade", combi],
-                universal_newlines=True
-            )
-            if (package_upgrade == 0):
-                update_Vulnerability_Information(package_name, combi, versions)
-                return True
+            # # package_upgrade = check_call(
+            # #     ["sudo", "apt-get", "install", "-y", "--force-yes", "--only-upgrade", combi],
+            # #     universal_newlines=True
+            # # )
+            # if (package_upgrade == 0):
+            #     update_Vulnerability_Information(package_name, combi, versions)
+            #     return True
+            print("Could upgrade with:", combi)
         except:
             print("Couldn't upgrade with:", combi)
 
@@ -152,6 +209,7 @@ def update_Vulnerability_Information(package_name, new_package_version_name, jus
     squashed_name_with_version          = package_name + formatted_version        
 
     try:
+        # Update current package data to match updated values 
         package_collection.update(
             { 'package_name' : package_name },
             { '$set' : 
@@ -164,6 +222,20 @@ def update_Vulnerability_Information(package_name, new_package_version_name, jus
                 } 
             },
             multi=True
+        )
+        # Push new log data to array
+        package_collection.update(
+            { 'package_name' : package_name },
+            { '$push' : {
+                'log' : {
+                    'update_type' : 'version',
+                    'further' : new_package_version_name,
+                    'comment' : 'N/A',
+                    'date' : datetime.datetime.now(), 
+                    'implementation_type' : 'automatic'
+                }
+            } },
+            multi=False
         )
     except: print("Couldn't update:", package_name)
 
@@ -210,42 +282,6 @@ def package_Update_Reversal(package_name):
         except:
             print("Couldn't reverse update:", package_name)
 
-def search_URL_For_Version_Update(url):
-    print('Scanning:', url)
-
-    start       = time.time()
-    matched     = False
-    
-    for key, value in list_Of_Parsing_Procedures.items():
-        
-        if matched: 
-            end = time.time()
-            print('Total time for match:', end - start)
-            return version_name
-
-        if (re.match(value['finder'], url)):
-            print('Matched with:', value['finder'])
-            try:
-                req_time        = time.time()
-                page            = requests.get(url)
-                print('Total request time:', time.time() - req_time)
-                tree            = lh.fromstring(page.content)
-                update_name     = tree.xpath(value['search_info'])
-                version_name    = re.findall(value['compiler'], str(update_name))
-                
-                if (version_name): 
-                    version_name = version_name[0] 
-                    print("Found a match!:", version_name)
-                    matched = True 
-            except:
-                print("Couldn't match:", url)
-    
-    end = time.time()
-    print('Total time for requests:', end - start)
-
-    if matched: return version_name
-    else:       return False 
-
 def get_Ubuntu_Version():
     global ubuntu_version
 
@@ -263,7 +299,25 @@ def get_Ubuntu_Version():
             if new_line[2]: ubuntu_version += ' ' + new_line[2]
             print(ubuntu_version)
 
+def get_Update_Log(package_name=False):
+    if package_name:    
+        cursor = package_collection.find({
+            'formatted_package_name_with_version' : package_name,
+            'log' : { 
+                '$exists' : True,
+                '$not' : { '$size' : 0 } 
+            }
+        })
+    else:
+        cursor = package_collection.find({
+            'log' : { 
+                '$exists' : True
+            }
+        })
+    return loads(dumps(cursor))
+
 def search_URL_For_BFS_Update():
     pass
 
-# package_Updater("apt", "1.0.1")
+# print(search_URL_For_Version_Update("http://www.ubuntu.com/usn/USN-2569-1"))
+# package_Updater("apport", "2.14.1")

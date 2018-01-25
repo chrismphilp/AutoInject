@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
 <!-- Title -->
-{% block title %}Vulnerabilities{% endblock %}
+{% block title %}Log{% endblock %}
 <!-- Active TitleBar Name -->
 {% block navitems %}
 	<li><a href="/">Dashboard</a></li>
-	<li><a href="/">Vulnerabilities</a></li>
+	<li><a href="/vulnerabilities">Vulnerabilities</a></li>
 	<li class="active"><a href="/log">Log</a></li>
 	<li><a href="/about">About</a></li>
 	<li><a href="/profile">Profile</a></li>
@@ -34,7 +34,8 @@
 							                <th>Comment</th>
 							                <th>Date</th>
 							                <!-- Manual or Automatic -->
-							                <th>Implementation Type</th> 
+							                <th>Implementation Type</th>
+							                <th>Revert?</th> 
 							            </tr>
 							        </thead>
 							        <tfoot>
@@ -45,7 +46,8 @@
 							                <th>Comment</th>
 							                <th>Date</th>
 							                <!-- Manual or Automatic -->
-							                <th>Implementation Type</th> 
+							                <th>Implementation Type</th>
+							                <th>Revert?</th>  
 							            </tr>
 									</tfoot>
 									<tbody>
@@ -65,49 +67,44 @@
 
 		$(document).ready(function() {
 
-			// var JSON_data = {{ vulnerabilities|safe }};
-			// var vulnerability;
-			// var data = [];
+			var JSON_data = {{ package_JSON_data|safe }};
+			var objects;
+			var items;
+			var data = [];
 
-			// for (vulnerability in JSON_data) {	
-			// 	data.push( 
-			// 		[ 
-			// 			JSON_data[vulnerability]['id'],
-			// 			JSON_data[vulnerability]['references'],
-			// 			JSON_data[vulnerability]['summary'],
-			// 			JSON_data[vulnerability]['cvss']
-			// 		] 
-			// 	);
-			// }
+			for (objects in JSON_data) {
+				for (items in JSON_data[objects]['log']) {
+					data.push( 
+						[ 
+							JSON_data[objects]['package_name'],
+							JSON_data[objects]['log'][items]['update_type'],
+							JSON_data[objects]['log'][items]['further'],
+							JSON_data[objects]['log'][items]['comment'],
+							JSON_data[objects]['log'][items]['date'],
+							JSON_data[objects]['log'][items]['implementation_type']
+						] 
+					);
+				}
+			}
 
 			$('#update_log').DataTable( {
-				// data: 			data,
-				// "columns" : [
-				// 	{ "data" : [0] },
-				// 	{ 
-				// 		"data" : [1],
-				// 		"render" : function(data, type, row, meta) {
-				// 			var newList = data.toString().split(",");
-				// 			var newString = "";
-				// 			if (type == 'display') {
-				// 				for (var i = 0; i < newList.length; i++) {	
-				// 					newString += '<a href="' + newList[i] + '">' + newList[i] + '</a></br>';
-				// 				}
-				// 			}
-				// 			return newString;
-				// 		}
-				// 	},
-				// 	{ 	
-				// 		"data" : [2],
-				// 		"width" : "25%" 
-				// 	},
-				// 	{ "data" : [3] },
-				// 	{ "defaultContent" : "<button class='btn btn-success'>Update Package</button>" }
-				// ],
+				data: 			data,
+				"columns" : [
+					{ "data" :  [0] },
+					{ 	
+						"data" : [1],
+						"width" : "25%" 
+					},
+					{ "data" : [2] },
+					{ "data" : [3] },
+					{ "data" : [4] },
+					{ "data" : [5] },
+					{ "defaultContent" : "<button class='btn btn-danger'>Revert Update</button>" }
+				],
 		        "lengthMenu":   [ 5, 10, 15 ],
 		        "paging":       true,
 		        "ordering":     true,
-		        "order":        [[ 2, "asc" ]],
+		        "order":        [[ 0, "desc" ]],
 		        "info":         true,
 		        stateSave: 		true
 			});

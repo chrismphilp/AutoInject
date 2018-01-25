@@ -10,6 +10,7 @@ from AutoInject         import app
 # Importing scripts to sort data
 import AutoInject.bin.get_Vulnerabilities   as gv
 import AutoInject.bin.get_Packages          as gp
+import AutoInject.bin.website_Parser        as wp
 import AutoInject.bin.system_functions      as sf
 
 # Flask-login
@@ -102,7 +103,6 @@ def disable_all():
 @app.route("/vulnerabilities")
 @login_required
 def vulnerabilities():
-
     vulnerability_JSON_data = gv.return_Matched_Vulnerability_Values()
     return render_template('vulnerabilities.html', vulnerability_JSON_data=vulnerability_JSON_data)
 
@@ -117,7 +117,20 @@ def return_CVE_IDs(package):
         list_Of_Values.extend(values['matching_ids'])
 
     vulnerabilities = loads(dumps( cve_collection.find( { 'id' : { '$in' : list_Of_Values } } ) ))
-    return render_template('individual_package.html', vulnerabilities=vulnerabilities, package=package)
+    update_log      = wp.get_Update_Log(package)
+
+    return render_template(
+        'individual_package.html', 
+        vulnerabilities=vulnerabilities, 
+        package=package,
+        update_log=update_log
+    )
+
+@app.route("/vulnerabilities/<package>/<cve_id>")
+@login_required
+def update_individual_package(package, cve_id):
+    wp.collect_Specific_Package_URL(package_name, cve_id)
+    return redirect(url_for('vulnerabilities') + '/' + package)
 
 @app.route("/version_update", methods=['POST'])
 @login_required
@@ -143,7 +156,8 @@ def manual_update():
 @app.route("/log")
 @login_required
 def log():
-    return render_template('log.html')
+    package_JSON_data = wp.get_Update_Log()
+    return render_template('log.html', package_JSON_data=package_JSON_data)
 
 @app.route("/profile")
 @login_required
@@ -223,9 +237,7 @@ def register():
     elif request.method == 'POST':
         if form.validate_on_submit():
             print("Registering User")
-            if (user_collection.find( { 'email' : request.form['email'] } ).count() 
-                or
-                user_collection.find( { 'id' : request.form['username'] } ).count()):
+            if user_collection.find().count():
                 print("User already registered")
                 return render_template('login.html', form=form)
             else:
@@ -304,11 +316,17 @@ def admin_delete(email):
 @app.route("/admin_registration")
 @login_required
 def admin_registration():
-    user_collection.insert({
-        'id' : request.form['username'],
-        'email' : request.form['email'],
-        'password' : generate_password_hash(request.form['password']),
-        'auto_update' : 1,
-        'notifications' : 1
-    })
+
+    if (user_collection.find( { 'email' : request.form['email'] } ).count() 
+            or
+        user_collection.find( { 'id' : request.form['username'] } ).count()):
+        print("User already registered")
+    else:
+        user_collection.insert({
+            'id' : request.form['username'],
+            'email' : request.form['email'],
+            'password' : generate_password_hash(request.form['password']),
+            'auto_update' : 1,
+            'notifications' : 1
+        })
     return redirect(url_for('admin_settings'))
