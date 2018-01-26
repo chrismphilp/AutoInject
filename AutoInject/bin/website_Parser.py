@@ -316,8 +316,5 @@ def get_Update_Log(package_name=False):
         })
     return loads(dumps(cursor))
 
-def search_URL_For_BFS_Update():
-    pass
-
 # print(search_URL_For_Version_Update("http://www.ubuntu.com/usn/USN-2569-1"))
 # package_Updater("apport", "2.14.1")

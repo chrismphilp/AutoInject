@@ -8,6 +8,7 @@ from pymongo            import MongoClient
 from AutoInject         import app
 
 # Importing scripts to sort data
+import AutoInject.bin.build_From_Source     as bfs
 import AutoInject.bin.get_Vulnerabilities   as gv
 import AutoInject.bin.get_Packages          as gp
 import AutoInject.bin.website_Parser        as wp
@@ -132,6 +133,27 @@ def update_individual_package(package, cve_id):
     wp.collect_Specific_Package_URL(package_name, cve_id)
     return redirect(url_for('vulnerabilities') + '/' + package)
 
+@app.route("/log")
+@login_required
+def log():
+    package_JSON_data = wp.get_Update_Log()
+    return render_template('log.html', package_JSON_data=package_JSON_data)
+
+@app.route("/profile")
+@login_required
+def profile():
+    return render_template('profile.html')
+
+@app.route("/about")
+def about():
+    return render_template('about.html')
+
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+#                           Manual Updates                                 |
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+
 @app.route("/version_update", methods=['POST'])
 @login_required
 def version_update():
@@ -150,24 +172,12 @@ def manual_update():
     remove_code = request.form['removed-code']
     comment     = request.form['comment']
     package     = request.form['package']
-    print(filepath, insert_code, remove_code, comment, package)
+
+    bfs.search_For_Deletions(remove_code, 'AutoInject/file_store/test/test1.py')
+    
+    print('\n', filepath, insert_code, remove_code, comment, package)
     return redirect("/vulnerabilities/" + package, code=302)
-
-@app.route("/log")
-@login_required
-def log():
-    package_JSON_data = wp.get_Update_Log()
-    return render_template('log.html', package_JSON_data=package_JSON_data)
-
-@app.route("/profile")
-@login_required
-def profile():
-    return render_template('profile.html')
-
-@app.route("/about")
-def about():
-    return render_template('about.html')
-
+    
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 #                           Login related functions                        |
