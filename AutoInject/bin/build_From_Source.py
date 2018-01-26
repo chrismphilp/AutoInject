@@ -1,15 +1,17 @@
 import pymongo, re, time, datetime, os
 
 # Parsing related modules
-import ply.lex      as lex
+import ply.lex          as lex
+from pygments.lexers    import guess_lexer_for_filename
+from shutil             import copyfile
 
-from pymongo        import MongoClient
-from json           import loads
-from bson.json_util import dumps
+from pymongo            import MongoClient
+from json               import loads
+from bson.json_util     import dumps
 
-from subprocess     import check_output, check_call
-from copy           import copy
-from collections    import defaultdict
+from subprocess         import check_output, check_call
+from copy               import copy
+from collections        import defaultdict
 
 client                      = MongoClient()
 package_collection          = client['package_db']['package_list']
@@ -23,16 +25,62 @@ kwargs  = {
 }
 list_Of_Compiler_Procedures = defaultdict(dict, **kwargs)
 
-def create_Linux_Patch():
-    pass
-
-def format_Code_Deletions():
-    pass
-
 def search_URL_For_BFS_Update():
     pass
 
-# search_For_Deletions(remove_code, '../file_store/test/test1.py')
+def list_files(startpath):
+    for root, dirs, files in os.walk(startpath):
+        level = root.replace(startpath, '').count(os.sep)
+        indent = ' ' * 4 * (level)
+        print('{}{}/'.format(indent, os.path.basename(root)))
+        subindent = ' ' * 4 * (level + 1)
+        for f in files:
+            print('{}{}'.format(subindent, f))
+
+def search_Files():
+    pass
+
+def upload_File(package_name, filepath, filename, type_Of_Update):
+
+    if not os.path.exists('../file_store'):
+        os.makedirs('../file_store')
+
+    if not os.path.exists('../file_store/' + package_name):
+        os.makedirs('../file_store/' + package_name)
+
+    copied_file_path    = '../file_store/' + package_name + '/' + filename
+    iteration           = 1
+
+    while os.path.exists(copied_file_path + str(iteration)):
+        iteration += 1  
+    copyfile(filepath, copied_file_path + str(iteration))
+
+    if type_Of_Update == 'manual_Update':
+        collection.update(
+            { 'package_name' : package_name },
+            { '$set' : {
+                'manual_Update' : { 
+                    'file_path' : copied_file_path + str(iteration), 
+                    'datetime' : datetime.datetime.utcnow()
+                }
+            } },
+            multi=True
+        )
+    else:
+        collection.update(
+            { 'package_name' : package_name },
+            { '$set' : {
+                'manual_Update' : { 
+                    'file_path' : copied_file_path + str(iteration), 
+                    'datetime' : datetime.datetime.utcnow()
+                },
+            } },
+            multi=True
+        )
+
+def language_Checker(filename, text_Of_Language):
+    new     = guess_lexer_for_filename(filename, text_Of_Language)
+    print(new)
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
@@ -73,60 +121,75 @@ def t_error(t):
 lexer_for_deletion  = lex.lex()
 lexer_for_file      = lex.lex()
 
-def search_For_Deletions(deletions, path_of_file_to_modify):
+def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, additions, deletions):
     
-    list_Of_Lexers      = []
-    seperate_deletions  = deletions.split("&*&")
+    list_Of_Deletion_Tuples = search_For_Deletions(path_of_file_to_modify, deletions)
+    print(list_Of_Deletion_Tuples)
 
-    start               = time.time()
+    for deletion_items in list_Of_Deletion_Tuples:
+        remove_Contents_Of_File(path_of_file_to_modify, path_of_new_file, deletion_items)
+    
+    format_File_Additions(path_of_new_file, additions)
+
+def search_For_Deletions(path_of_file_to_modify, deletions):
+    
+    list_Of_Deletion_Tuples = []
+    seperate_deletions      = deletions.split("&*&")
+
+    start                   = time.time()
 
     for split_deletions in seperate_deletions:
-
         lexer_for_deletion.input(split_deletions)
-        list_Of_Lexers.append(lexer_for_deletion)
+        if (os.path.exists(path_of_file_to_modify)):
+            with open(path_of_file_to_modify, 'r') as file_to_search:
+                returned_deletions = run_Deletion_Searches(file_to_search, lexer_for_deletion)
+                if returned_deletions: list_Of_Deletion_Tuples.append(returned_deletions)
+        else:   
+            print("File at Path does not exist:", path_of_file_to_modify)
 
-    if (os.path.exists(path_of_file_to_modify)):
-        with open(path_of_file_to_modify, 'r') as file_to_search:
-            
-            data = file_to_search.read().replace('\n', '')
-            print(data)
-            lexer_for_file.input(data)
-
-            for tok in lexer_for_file:
-                for lexers in copy(list_Of_Lexers):
-                    
-                    start_line      = str(tok.lineno) + ',' + str(tok.lexpos)
-                    copy_of_lexer   = copy(lexer_for_file)
-                    temp_token      = tok
-                    lex_token       = lexers.token()
-
-                    if (temp_token == None or lex_token == None): break
-
-                    print("Tokens to compare:", lex_token.type, temp_token.type)
-                    while (lex_token.value == temp_token.value):
-                        
-                        end_line            = str(temp_token.lineno) + ',' + str(temp_token.lexpos)
-
-                        try:    lex_token   = lexers.token()
-                        except: return (start_line, end_line)
-                        
-                        try:    temp_token  = copy_of_lexer.token()
-                        except: break   
-
-                        if (temp_token == None): break
-                        if (lex_token == None): return (start_line, end_line)   
-                        print("Tokens to compare:", lex_token.type, temp_token.type)
-    
-    else:   
-        print("Path does not exist:", path_of_file_to_modify)
-    
     print("Total time for lexer:", time.time() - start)
+    return list_Of_Deletion_Tuples
 
-def remove_Contents_Of_File(path_of_file_to_modify, removal_tuple):
+def run_Deletion_Searches(file_to_modify, lexer_for_deletion):
+     
+    data = file_to_modify.read().replace('\n', '')
+    print(data)
+    lexer_for_file.input(data)
+
+    for tok in lexer_for_file:
+
+        copy_of_lexer_for_deletion = copy(lexer_for_deletion)
+            
+        start_line      = tok.lexpos
+        copy_of_lexer   = copy(lexer_for_file)
+        deletion_token  = tok
+        lex_token       = copy_of_lexer_for_deletion.token()
+
+        if (deletion_token == None or lex_token == None): break
+
+        print("Tokens to compare:", lex_token.value, deletion_token.value)
+        while (lex_token.value == deletion_token.value):
+            
+            end_line                = deletion_token.lexpos
+
+            try:    lex_token       = copy_of_lexer_for_deletion.token()
+            except: return (start_line, end_line)
+            
+            try:    deletion_token  = copy_of_lexer.token()
+            except: break   
+
+            if (lex_token == None):         return (start_line, end_line)
+            if (deletion_token == None):    break 
+
+            print("Matched Tokens to compare:", lex_token.value, deletion_token.value)
+
+    print("Finished searching \n")
+
+def remove_Contents_Of_File(path_of_file_to_modify, path_of_new_file, removal_tuple):
     
     current_var_count       = 1
     range_of_tuple          = range(removal_tuple[0], removal_tuple[1])
-    destination             = open("../file_store/test/new_File.py", "w")
+    destination             = open(path_of_new_file, "w")
 
     if (os.path.exists(path_of_file_to_modify)):
         with open(path_of_file_to_modify, 'r') as file_to_search:
@@ -145,13 +208,34 @@ def remove_Contents_Of_File(path_of_file_to_modify, removal_tuple):
                 if (current_string):
                     destination.write(current_string + '\n')
 
-def get_Diff_Of_Files(file_path1, file_path2):
-    pass
+def format_File_Additions(path_of_file_to_modify, additions):
+    
+    if ('&--' in additions):
+        destination = open(path_of_file_to_modify, "w")
+        pass
+    elif('&lo' in additions):
+        destination = open(path_of_file_to_modify, "w")
+        pass
+    else:
+        destination = open(path_of_file_to_modify, "a")
+        destination.write(additions)
 
-data = '''
-    def hello():
-        print("Say hello")
-    '''
+data_to_add = '''
+# Hello
+'''
 
-# print(search_For_Deletions(data, '../file_store/test/test1.py'))
-remove_Contents_Of_File('../file_store/test/test1.py', (1, 32))
+data_to_delete = '''
+def hello():
+    print("Say hello")
+'''
+
+# search_For_Deletions(data, '../file_store/test/test1.py')
+# remove_Contents_Of_File('../file_store/test/test1.py', (1, 32))
+# format_File_Additions('../file_store/test/test1.py', data)
+
+perform_File_Alterations(
+    '../file_store/test/test1.py', 
+    '../file_store/test/newFile.py', 
+    data_to_add,
+    data_to_delete
+)
