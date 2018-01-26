@@ -1,4 +1,4 @@
-def goodbye(hello):
-    print("Say goodbye")
-
+def hello():
+    print("Say hello")
+  
 # Hello

@@ -10,7 +10,8 @@ setup(
         'flask',
         'flask-admin',
         'flask-login',
-        'pygments',
-        'flask-mongoengine'
+        'flask-mongoengine',
+        'ply',
+        'pygments'
     ],
 )

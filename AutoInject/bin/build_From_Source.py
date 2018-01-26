@@ -225,8 +225,8 @@ data_to_add = '''
 '''
 
 data_to_delete = '''
-def hello():
-    print("Say hello")
+def goodbye(hello):
+    print("Say goodbye")
 '''
 
 # search_For_Deletions(data, '../file_store/test/test1.py')
