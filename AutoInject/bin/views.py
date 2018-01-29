@@ -173,7 +173,13 @@ def manual_update():
     comment     = request.form['comment']
     package     = request.form['package']
 
-    bfs.search_For_Deletions(remove_code, 'AutoInject/file_store/test/test1.py')
+    bfs.perform_File_Alterations(
+        request.form['file-path'], 
+        'AutoInject/file_store/test/newFile.py', 
+        request.form['inserted-code'],
+        request.form['removed-code'],
+        package
+    )
     
     print('\n', filepath, insert_code, remove_code, comment, package)
     return redirect("/vulnerabilities/" + package, code=302)

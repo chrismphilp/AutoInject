@@ -1,17 +1,19 @@
 import pymongo, re, time, datetime, os
 
 # Parsing related modules
-import ply.lex          as lex
-from pygments.lexers    import guess_lexer_for_filename
-from shutil             import copyfile
+import AutoInject.bin.patch_Handler as ph
 
-from pymongo            import MongoClient
-from json               import loads
-from bson.json_util     import dumps
+import ply.lex                      as lex
+from pygments.lexers                import guess_lexer_for_filename
+from shutil                         import copyfile
 
-from subprocess         import check_output, check_call
-from copy               import copy
-from collections        import defaultdict
+from pymongo                        import MongoClient
+from json                           import loads
+from bson.json_util                 import dumps
+
+from subprocess                     import check_output, check_call
+from copy                           import copy
+from collections                    import defaultdict
 
 client                      = MongoClient()
 package_collection          = client['package_db']['package_list']
@@ -39,44 +41,6 @@ def list_files(startpath):
 
 def search_Files():
     pass
-
-def upload_File(package_name, filepath, filename, type_Of_Update):
-
-    if not os.path.exists('../file_store'):
-        os.makedirs('../file_store')
-
-    if not os.path.exists('../file_store/' + package_name):
-        os.makedirs('../file_store/' + package_name)
-
-    copied_file_path    = '../file_store/' + package_name + '/' + filename
-    iteration           = 1
-
-    while os.path.exists(copied_file_path + str(iteration)):
-        iteration += 1  
-    copyfile(filepath, copied_file_path + str(iteration))
-
-    if type_Of_Update == 'manual_Update':
-        collection.update(
-            { 'package_name' : package_name },
-            { '$set' : {
-                'manual_Update' : { 
-                    'file_path' : copied_file_path + str(iteration), 
-                    'datetime' : datetime.datetime.utcnow()
-                }
-            } },
-            multi=True
-        )
-    else:
-        collection.update(
-            { 'package_name' : package_name },
-            { '$set' : {
-                'manual_Update' : { 
-                    'file_path' : copied_file_path + str(iteration), 
-                    'datetime' : datetime.datetime.utcnow()
-                },
-            } },
-            multi=True
-        )
 
 def language_Checker(filename, text_Of_Language):
     new     = guess_lexer_for_filename(filename, text_Of_Language)
@@ -121,7 +85,7 @@ def t_error(t):
 lexer_for_deletion  = lex.lex()
 lexer_for_file      = lex.lex()
 
-def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, additions, deletions):
+def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, additions, deletions, package_name):
     
     list_Of_Deletion_Tuples = search_For_Deletions(path_of_file_to_modify, deletions)
     print(list_Of_Deletion_Tuples)
@@ -130,6 +94,13 @@ def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, additions
         remove_Contents_Of_File(path_of_file_to_modify, path_of_new_file, deletion_items)
     
     format_File_Additions(path_of_new_file, additions)
+
+    ph.produce_Diff_Of_Files(
+        'path_of_file_to_modify',
+        'path_of_new_file',
+        package_name,
+        'test_patch_file.patch'
+    )
 
 def search_For_Deletions(path_of_file_to_modify, deletions):
     
@@ -170,7 +141,7 @@ def run_Deletion_Searches(file_to_modify, lexer_for_deletion):
         print("Tokens to compare:", lex_token.value, deletion_token.value)
         while (lex_token.value == deletion_token.value):
             
-            end_line                = deletion_token.lexpos
+            end_line                = deletion_token.lexpos + len(deletion_token.value)
 
             try:    lex_token       = copy_of_lexer_for_deletion.token()
             except: return (start_line, end_line)
@@ -178,16 +149,16 @@ def run_Deletion_Searches(file_to_modify, lexer_for_deletion):
             try:    deletion_token  = copy_of_lexer.token()
             except: break   
 
-            if (lex_token == None):         return (start_line, end_line)
+            if (lex_token == None): return (start_line, end_line)
             if (deletion_token == None):    break 
 
-            print("Matched Tokens to compare:", lex_token.value, deletion_token.value)
+            print("Matched Tokens to compare:", (lex_token.value, lex_token.lexpos),  (deletion_token.value, deletion_token.lexpos))
 
     print("Finished searching \n")
 
 def remove_Contents_Of_File(path_of_file_to_modify, path_of_new_file, removal_tuple):
     
-    current_var_count       = 1
+    current_var_count       = 0
     range_of_tuple          = range(removal_tuple[0], removal_tuple[1])
     destination             = open(path_of_new_file, "w")
 
@@ -206,6 +177,7 @@ def remove_Contents_Of_File(path_of_file_to_modify, path_of_new_file, removal_tu
                     current_var_count += 1
 
                 if (current_string):
+                    print(current_string)
                     destination.write(current_string + '\n')
 
 def format_File_Additions(path_of_file_to_modify, additions):
@@ -219,23 +191,4 @@ def format_File_Additions(path_of_file_to_modify, additions):
     else:
         destination = open(path_of_file_to_modify, "a")
         destination.write(additions)
-
-data_to_add = '''
-# Hello
-'''
-
-data_to_delete = '''
-def goodbye(hello):
-    print("Say goodbye")
-'''
-
-# search_For_Deletions(data, '../file_store/test/test1.py')
-# remove_Contents_Of_File('../file_store/test/test1.py', (1, 32))
-# format_File_Additions('../file_store/test/test1.py', data)
-
-perform_File_Alterations(
-    '../file_store/test/test1.py', 
-    '../file_store/test/newFile.py', 
-    data_to_add,
-    data_to_delete
-)
+        

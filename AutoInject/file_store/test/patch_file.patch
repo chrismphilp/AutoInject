@@ -1,0 +1,8 @@
+--- AutoInject/file_store/test/test1.py	2018-01-27 22:12:36.863110000 +0000
++++ AutoInject/file_store/test/test2.py	2018-01-27 22:12:25.859110000 +0000
+@@ -1,5 +1,2 @@
+ def hello():
+ 	print("Say hello")
+-    
+-def goodbye(hello):
+-    print("Say goodbye")
