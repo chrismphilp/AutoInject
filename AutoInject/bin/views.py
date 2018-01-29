@@ -178,7 +178,8 @@ def manual_update():
         'AutoInject/file_store/test/newFile.py', 
         request.form['inserted-code'],
         request.form['removed-code'],
-        package
+        package,
+        request.form['comment']
     )
     
     print('\n', filepath, insert_code, remove_code, comment, package)

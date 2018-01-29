@@ -85,7 +85,7 @@ def t_error(t):
 lexer_for_deletion  = lex.lex()
 lexer_for_file      = lex.lex()
 
-def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, additions, deletions, package_name):
+def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, additions, deletions, package_name, comment):
     
     list_Of_Deletion_Tuples = search_For_Deletions(path_of_file_to_modify, deletions)
     print(list_Of_Deletion_Tuples)
@@ -95,11 +95,13 @@ def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, additions
     
     format_File_Additions(path_of_new_file, additions)
 
+    # Produce file diff copy
     ph.produce_Diff_Of_Files(
-        'path_of_file_to_modify',
-        'path_of_new_file',
+        path_of_file_to_modify,
+        path_of_new_file,
         package_name,
-        'test_patch_file.patch'
+        'test_patch_file.patch',
+        comment
     )
 
 def search_For_Deletions(path_of_file_to_modify, deletions):
