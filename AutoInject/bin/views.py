@@ -173,7 +173,9 @@ def manual_update():
     comment     = request.form['comment']
     package     = request.form['package']
 
-    bfs.perform_File_Alterations(
+    html_To_Parse_Before = bfs.format_HTML(request.form['file-path'])
+
+    diff_file_path = bfs.perform_File_Alterations(
         request.form['file-path'], 
         'AutoInject/file_store/test/newFile.py', 
         request.form['inserted-code'],
@@ -181,9 +183,19 @@ def manual_update():
         package,
         request.form['comment']
     )
+
+    html_To_Parse_After = bfs.format_HTML('AutoInject/file_store/test/newFile.py')
+    html_For_Diff_File  = bfs.format_HTML(diff_file_path)
     
     print('\n', filepath, insert_code, remove_code, comment, package)
-    return redirect("/vulnerabilities/" + package, code=302)
+    
+    return render_template(
+        'file_alterations.html', 
+        html_To_Parse_Before=html_To_Parse_Before,
+        html_To_Parse_After=html_To_Parse_After,
+        html_For_Diff_File=html_For_Diff_File,
+        link_For_Button="/vulnerabilities/"+package
+    )
     
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------

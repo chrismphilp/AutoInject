@@ -1,9 +1,41 @@
---- /home/chrismphilp/Documents/thirdYearProject/AutoInject/AutoInject/file_store/test/test1.py 14:59:51.360707 +0000
-+++ /home/chrismphilp/Documents/thirdYearProject/AutoInject/AutoInject/file_store/test/newFile.py 14:59:51.361039 +0000
-@@ -1,2 +1,5 @@
+--- /home/chrismphilp/Documents/thirdYearProject/AutoInject/AutoInject/file_store/test/test1.py 23:35:07.069151 +0000
++++ /home/chrismphilp/Documents/thirdYearProject/AutoInject/AutoInject/file_store/test/newFile.py 23:35:07.069207 +0000
+@@ -1,2 +1,37 @@
  def hello():
--	print("Say hello")
-+	("Say hello")
-+def add(x, y):
-+    return x + yhfuirhfewfwe
-+deddewddewddewddewdhello
+-	print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")
++	("Say hello")def hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hellodef hello():
++    hello

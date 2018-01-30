@@ -4,7 +4,10 @@ import pymongo, re, time, datetime, os
 import AutoInject.bin.patch_Handler as ph
 
 import ply.lex                      as lex
-from pygments.lexers                import guess_lexer_for_filename
+from pygments                       import highlight
+from pygments.lexers                import guess_lexer_for_filename, get_lexer_by_name
+from pygments.styles                import get_all_styles, get_style_by_name
+from pygments.formatters            import get_formatter_by_name
 from shutil                         import copyfile
 
 from pymongo                        import MongoClient
@@ -42,9 +45,14 @@ def list_files(startpath):
 def search_Files():
     pass
 
-def language_Checker(filename, text_Of_Language):
-    new     = guess_lexer_for_filename(filename, text_Of_Language)
-    print(new)
+def format_HTML(filepath):
+
+    with open(filepath, 'r') as file_to_read:
+        data            = file_to_read.read()
+        lexer_object    = guess_lexer_for_filename(filepath, data)
+        pyg_formatter   = get_formatter_by_name('html', linenos='table', style='monokai')
+        completed       = highlight(data, lexer_object, pyg_formatter)
+        return completed
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
@@ -96,13 +104,14 @@ def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, additions
     format_File_Additions(path_of_new_file, additions)
 
     # Produce file diff copy
-    ph.produce_Diff_Of_Files(
+    diff_file_path = ph.produce_Diff_Of_Files(
         path_of_file_to_modify,
         path_of_new_file,
         package_name,
         'test_patch_file.patch',
         comment
     )
+    return diff_file_path
 
 def search_For_Deletions(path_of_file_to_modify, deletions):
     
@@ -193,4 +202,3 @@ def format_File_Additions(path_of_file_to_modify, additions):
     else:
         destination = open(path_of_file_to_modify, "a")
         destination.write(additions)
-        

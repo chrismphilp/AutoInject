@@ -49,14 +49,15 @@ def produce_Diff_Of_Files(file_path1, file_path2, package_name, diff_file_name, 
         'manual',
         comment
     )
+    return full_file_path
 
 def upload_File(package_name, file_path, type_Of_Update, type_Of_Implementation, comment):
 
-    # if not os.path.exists('../file_store'):
-    #     os.makedirs('../file_store')
+    if not os.path.exists('../file_store'):
+        os.makedirs('../file_store')
 
-    # if not os.path.exists('../file_store/' + package_name):
-    #     os.makedirs('../file_store/' + package_name)
+    if not os.path.exists('../file_store/' + package_name):
+        os.makedirs('../file_store/' + package_name)
 
     # copied_file_path    = '../file_store/' + package_name + '/' + filename
     # iteration           = 1
