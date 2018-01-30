@@ -192,14 +192,3 @@
     height: 100%;
     overflow-x: auto;
 }
-
-.panel-heading > .content-wrapper {
-  display: inline-block;
-  white-space: nowrap;
-  min-width: 100%;
-}
-
-.panel-heading  > .content-wrapper > .child {
-  background: springgreen;
-  white-space: normal;
-}
