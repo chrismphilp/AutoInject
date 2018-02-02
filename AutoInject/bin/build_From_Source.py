@@ -2,13 +2,13 @@ import pymongo, re, time, datetime, os
 
 # Parsing related modules
 import AutoInject.bin.patch_Handler as ph
-
 import ply.lex                      as lex
 from pygments                       import highlight
 from pygments.lexers                import guess_lexer_for_filename, get_lexer_by_name
 from pygments.styles                import get_all_styles, get_style_by_name
 from pygments.formatters            import get_formatter_by_name
 from shutil                         import copyfile
+from pkg_resources                  import resource_filename
 
 from pymongo                        import MongoClient
 from json                           import loads
@@ -33,17 +33,14 @@ list_Of_Compiler_Procedures = defaultdict(dict, **kwargs)
 def search_URL_For_BFS_Update():
     pass
 
-def list_files(startpath):
-    for root, dirs, files in os.walk(startpath):
-        level = root.replace(startpath, '').count(os.sep)
-        indent = ' ' * 4 * (level)
-        print('{}{}/'.format(indent, os.path.basename(root)))
-        subindent = ' ' * 4 * (level + 1)
-        for f in files:
-            print('{}{}'.format(subindent, f))
-
-def search_Files():
-    pass
+def search_Files(file_name):
+    path_to_script = resource_filename("AutoInject", "/bin/sudo_scripts/update_db")
+    os.system(path_to_script)
+    list_Of_Files_Found_With_Name = check_output(
+        ["locate", file_name],
+        universal_newlines=True
+    )
+    print(list_Of_Files_Found_With_Name)
 
 def format_HTML(filepath):
 
@@ -62,34 +59,43 @@ def format_HTML(filepath):
 
 # Tokens for parsing code
 tokens = (
-   'NUMBER',
-   'VARIABLE',
-   'STRING',
-   'OPERATOR',
-   'LPAREN',
-   'RPAREN',
-   'LBRACE',
-   'RBRACE',
+    'NUMBER',
+    'VARIABLE',
+    'STRING',
+    'OPERATOR',
+    'LPAREN',
+    'RPAREN',
+    'LBRACE',
+    'RBRACE',
+    'NEWLINE',
+    'ADD_AFTER',
+    'ADD_REPLACE_ADDITION',
+    'ADD_REPLACE_REMOVE'
 )
 
 # Regular expression rules 
-t_NUMBER    = r'[-+]?[0-9]*\.?[0-9]+'
-t_VARIABLE  = r'[a-zA-Z][a-zA-Z0-9_]*'
-t_STRING    = r'\"(.+?)\" | \'(.+?)\''
-t_OPERATOR  = r'\= | \+ | \- | \/ | \:'
-t_LPAREN    = r'\('
-t_RPAREN    = r'\)'
-t_LBRACE    = r'\{'
-t_RBRACE    = r'\}'
+t_NUMBER                = r'[-+]?[0-9]*\.?[0-9]+'
+t_VARIABLE              = r'[a-zA-Z][a-zA-Z0-9_]*'
+t_STRING                = r'\"(.+?)\" | \'(.+?)\''
+t_OPERATOR              = r'\= | \+ | \- | \/ | \:'
+t_LPAREN                = r'\('
+t_RPAREN                = r'\)'
+t_LBRACE                = r'\{'
+t_RBRACE                = r'\}'
+t_ADD_AFTER             = r'\&\*'
+t_ADD_REPLACE_ADDITION  = r'\&\+\+'
+t_ADD_REPLACE_REMOVE    = r'\&--'
+t_NEWLINE      = r'\n'
 
 # Ignore characters
-t_ignore    = ' \t\n'
+t_ignore    = ' \t'
 
 # Error catching
 def t_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
+lexer_for_addition  = lex.lex()
 lexer_for_deletion  = lex.lex()
 lexer_for_file      = lex.lex()
 
@@ -101,7 +107,7 @@ def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, additions
     for deletion_items in list_Of_Deletion_Tuples:
         remove_Contents_Of_File(path_of_file_to_modify, path_of_new_file, deletion_items)
     
-    format_File_Additions(path_of_new_file, additions)
+    # format_File_Additions(path_of_new_file, additions)
 
     # Produce file diff copy
     diff_file_path = ph.produce_Diff_Of_Files(
@@ -112,6 +118,12 @@ def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, additions
         comment
     )
     return diff_file_path
+
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+#                           Deletion related functions                     |
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 
 def search_For_Deletions(path_of_file_to_modify, deletions):
     
@@ -135,17 +147,15 @@ def search_For_Deletions(path_of_file_to_modify, deletions):
 def run_Deletion_Searches(file_to_modify, lexer_for_deletion):
      
     data = file_to_modify.read().replace('\n', '')
-    print(data)
     lexer_for_file.input(data)
 
     for tok in lexer_for_file:
 
-        copy_of_lexer_for_deletion = copy(lexer_for_deletion)
-            
-        start_line      = tok.lexpos
-        copy_of_lexer   = copy(lexer_for_file)
-        deletion_token  = tok
-        lex_token       = copy_of_lexer_for_deletion.token()
+        copy_of_lexer_for_deletion  = copy(lexer_for_deletion)
+        start_line                  = tok.lexpos
+        copy_of_lexer               = copy(lexer_for_file)
+        deletion_token              = tok
+        lex_token                   = copy_of_lexer_for_deletion.token()
 
         if (deletion_token == None or lex_token == None): break
 
@@ -160,7 +170,7 @@ def run_Deletion_Searches(file_to_modify, lexer_for_deletion):
             try:    deletion_token  = copy_of_lexer.token()
             except: break   
 
-            if (lex_token == None): return (start_line, end_line)
+            if (lex_token == None):         return (start_line, end_line)
             if (deletion_token == None):    break 
 
             print("Matched Tokens to compare:", (lex_token.value, lex_token.lexpos),  (deletion_token.value, deletion_token.lexpos))
@@ -191,14 +201,71 @@ def remove_Contents_Of_File(path_of_file_to_modify, path_of_new_file, removal_tu
                     print(current_string)
                     destination.write(current_string + '\n')
 
-def format_File_Additions(path_of_file_to_modify, additions):
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+#                           Addition related functions                     |
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+
+def perform_Additions(path_of_file_to_modify, additions):
     
-    if ('&--' in additions):
-        destination = open(path_of_file_to_modify, "w")
-        pass
-    elif('&lo' in additions):
-        destination = open(path_of_file_to_modify, "w")
-        pass
-    else:
-        destination = open(path_of_file_to_modify, "a")
-        destination.write(additions)
+    split_Additions = additions.split("&*&")
+
+    for addition_Strings in split_Additions:
+
+        lexer_for_addition.input(addition_Strings)
+
+        with open('../file_store/test/test1.py', 'r') as file_to_modify:
+            
+            data = file_to_modify.read()
+            lexer_for_file.input(data)
+
+            for token in lexer_for_file:
+
+                start_line                  = token.lexpos
+
+                copy_of_lexer_for_file      = copy(lexer_for_file)
+                copy_of_lexer_for_addition  = copy(lexer_for_addition)
+                lex_token                   = token
+                addition_token              = copy_of_lexer_for_addition.token()
+
+                if (addition_token == None or lex_token == None): break
+
+                # if 
+            
+                while (lex_token.value == addition_token.value):
+                    
+                    end_line                = addition_token.lexpos + len(addition_token.value)
+                    print(lex_token, addition_token)
+                    
+                    try:    lex_token       = copy_of_lexer_for_file.token()
+                    except: return (start_line, end_line)
+
+                    try:    deletion_token  = copy_of_lexer.token()
+                    except: break     
+
+                    addition_token          = copy_of_lexer_for_addition.token()
+
+def run_Addition_Searches(file_to_modify, lexer_for_addition):
+    pass
+
+def lookahead_Token(lexer):
+    copy_of_lexer = copy(lexer)
+    try:    copy_of_lexer.token()
+    except: return False
+
+example_Patch = '''
+&* class adder:
+    &-- def hello():
+    &++ def goodbye():
+    &* def hello():
+        y = 2
+
+&*&
+
+def exit():
+    quit
+'''
+
+# format_File_Additions('', example_Patch)
+# perform_Additions('', example_Patch)

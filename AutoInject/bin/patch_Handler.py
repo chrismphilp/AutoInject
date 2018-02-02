@@ -1,7 +1,6 @@
 import pymongo, re, time, os
 
 from datetime           import datetime
-from pkg_resources      import resource_filename
 from pymongo            import MongoClient
 from subprocess         import check_output, call
 from difflib            import unified_diff

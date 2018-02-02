@@ -1,8 +1,19 @@
---- /home/chrismphilp/Documents/thirdYearProject/AutoInject/AutoInject/file_store/test/test1.py 23:35:07.069151 +0000
-+++ /home/chrismphilp/Documents/thirdYearProject/AutoInject/AutoInject/file_store/test/newFile.py 23:35:07.069207 +0000
-@@ -1,2 +1,37 @@
+--- /home/chrismphilp/Documents/thirdYearProject/AutoInject/AutoInject/file_store/test/test1.py 11:34:27.848464 +0000
++++ /home/chrismphilp/Documents/thirdYearProject/AutoInject/AutoInject/file_store/test/newFile.py 11:34:27.849669 +0000
+@@ -1,13 +1,37 @@
  def hello():
--	print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")print("Say hello")
+-	print("Say hello")
+-
+-def goodbye(au_dieu):
+-def y def ydef ydef ydef ydef ydef ydef ydef ydef def ydef ydef ydef ydef ydef ydef ydef ydef ydef ydef ydef ydef ydef ydef ydef ydef
+-ferfe
+-
+-class adder():
+-	def hello()
+-
+-++ def goodbye()
+-
+-def hello():
 +	("Say hello")def hello():
 +    hellodef hello():
 +    hellodef hello():

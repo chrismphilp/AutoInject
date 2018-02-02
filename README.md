@@ -7,6 +7,13 @@ A software for automatically patching vulnerabilities.
 * Python - 3.3 or above
 * Flask-PyMongo
 
+## Sudo Permissions
+
+Must give sudo permissions for all files in the folder.
+```
+AutoInject/bin/sudo_scripts/ 
+```
+
 ## Running the package
 
 ```
