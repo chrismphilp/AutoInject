@@ -1,12 +1,11 @@
-def hello():
-	print("Say hello")
+class adder:
+	def hello():
+		print("Say hello")
+	def goodbye(au_dieu):
+		return au_dieu
 
-def goodbye(au_dieu):
-def y def ydef ydef ydef ydef ydef ydef ydef ydef 
+class adder
+	def hello():
+		return "Hello"
 
-class adder():
-	def hello()
-
-++ def goodbye()
-
-def hello():
+class adder:

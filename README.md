@@ -13,6 +13,7 @@ Must give sudo permissions for all files in the folder.
 ```
 AutoInject/bin/sudo_scripts/ 
 ```
+See this guide for further details on how to provide sudo permissions:
 
 ## Running the package
 
