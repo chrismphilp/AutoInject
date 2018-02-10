@@ -1,8 +1,0 @@
---- /home/chrismphilp/Documents/thirdYearProject/AutoInject/AutoInject/file_store/test/test1.py 17:01:00.272297 +0000
-+++ /home/chrismphilp/Documents/thirdYearProject/AutoInject/AutoInject/file_store/test/test2.py 17:01:00.272431 +0000
-@@ -1,5 +1,2 @@
- def hello():
- 	print("Say hello")
--
--def goodbye():
--	print("Say goodbye")

@@ -177,14 +177,14 @@ def manual_update():
 
     diff_file_path = bfs.perform_File_Alterations(
         request.form['file-path'], 
-        'AutoInject/file_store/test/newFile.py', 
+        'AutoInject/file_store/test/patch_file.py', 
         request.form['inserted-code'],
         request.form['removed-code'],
-        package,
+        request.form['package'],
         request.form['comment']
     )
 
-    html_To_Parse_After = bfs.format_HTML('AutoInject/file_store/test/newFile.py')
+    html_To_Parse_After = bfs.format_HTML('AutoInject/file_store/test/patch_file.py')
     html_For_Diff_File  = bfs.format_HTML(diff_file_path)
     
     print('\n', filepath, insert_code, remove_code, comment, package)
@@ -345,7 +345,6 @@ def admin_delete(email):
 @app.route("/admin_registration")
 @login_required
 def admin_registration():
-
     if (user_collection.find( { 'email' : request.form['email'] } ).count() 
             or
         user_collection.find( { 'id' : request.form['username'] } ).count()):
@@ -358,4 +357,18 @@ def admin_registration():
             'auto_update' : 1,
             'notifications' : 1
         })
+    return redirect(url_for('admin_settings'))
+
+@app.route("/admin_add_manual_update")
+@login_required
+def admin_add_manual_update():
+    
+    if (request.form['update_type'] == 'build_from_source'):
+        request.form['file-path'],  
+        request.form['inserted-code'],
+        request.form['removed-code'],
+        request.form['package'],
+        request.form['comment']
+    elif (request.form['update_type'] == 'version'):
+        pass
     return redirect(url_for('admin_settings'))
