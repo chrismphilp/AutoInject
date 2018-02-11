@@ -36,7 +36,6 @@
 		>
 			Add New User
 		</button>
-
 		<!-- Admin Version Update -->
 		<div class="modal fade" id="admin_update" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
 		  	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
@@ -82,7 +81,7 @@
 		        		</button>
 		      		</div>
 		      		<div class="modal-body">
-				        <form action="{{ url_for('manual_update') }}" method="post" id="manual-form">
+				        <form action="{{ url_for('admin_add_manual_update') }}" method="post" id="manual-form">
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">File Path</label>
 					            <input type="text" class="form-control" id="file-path" name="file-path">
@@ -146,7 +145,51 @@
 		<div class="row">
 			<div class="col-lg-12">
 				<div class="panel panel-default">
-		  			<div class="panel-heading">Current Vulnerabilities</div>
+		  			<div class="panel-heading">Current Admin Patches</div>
+		  			<div class="panel-body">
+		    			<div class="row">
+		      				<div class="col-lg-12">
+		        				<div class="table-responsive">
+									<table 
+										id="patches" 
+										cellspacing="0"
+										class="table table-bordered table-hover table-striped"  
+										width="100%"
+									>
+								        <thead>
+								            <tr>
+								                <th>Patch Type</th>
+								                <th>Package Name</th>
+								                <th>File Location</th>
+								                <th>Comment</th>
+								                <th>Apply Patch</th>								               
+								                <th>Delete Patch</th>
+								            </tr>
+								        </thead>
+								        <tfoot>
+								            <tr>
+								                <th>Patch Type</th>
+								                <th>Package Name</th>
+								                <th>File Location</th>
+								                <th>Comment</th>
+								                <th>Apply Patch</th>
+								                <th>Delete Patch</th>
+								            </tr>
+										</tfoot>
+										<tbody>
+										</tbody>
+								    </table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="panel panel-default">
+		  			<div class="panel-heading">Current Users</div>
 		  			<div class="panel-body">
 		    			<div class="row">
 		      				<div class="col-lg-12">
@@ -161,6 +204,7 @@
 								            <tr>
 								                <th>User ID</th>
 								                <th>Email</th>
+								                <th>Password</th>
 								                <th>Delete User</th>
 								            </tr>
 								        </thead>
@@ -168,6 +212,7 @@
 								            <tr>
 								                <th>User ID</th>
 								                <th>Email</th>
+								                <th>Password</th>
 								                <th>Delete User</th>
 								            </tr>
 										</tfoot>
@@ -189,25 +234,61 @@
 
 		$(document).ready(function() {
 
-			var JSON_data = {{ package_JSON_data|safe }};
-			var vulnerability;
-			var data = [];
+			var patch_JSON_data = {{ patch_JSON_data|safe }};
+			var user_JSON_data = {{ user_JSON_data|safe }};
+			var item;
+			var user_data = [];
+			var patches = [];
 
-			for (vulnerability in JSON_data) {	
-				data.push( 
+			for (item in patch_JSON_data) {	
+				patches.push( 
 					[ 
-						JSON_data[vulnerability]['id'],
-						JSON_data[vulnerability]['email']
+						patch_JSON_data[item]['update_type'],
+						patch_JSON_data[item]['package_name'],
+						patch_JSON_data[item]['file_path'],
+						patch_JSON_data[item]['comment']
 					] 
 				);
 			}
 
-			var users = $('#users').DataTable( {
-				data: 			data,
+			for (item in user_JSON_data) {	
+				user_data.push( 
+					[ 
+						user_JSON_data[item]['id'],
+						user_JSON_data[item]['email'],
+						user_JSON_data[item]['password']
+					] 
+				);
+			} 
+
+			var patches = $('#patches').DataTable( {
+				data: 			patches,
 				"columns" : [
 					{ "data" : [0] },
 					{ "data" : [1] },
-					{ "defaultContent" : "<button class='btn btn-danger'>Delete User</button>" }
+					{ "data" : [2] },
+					{ "data" : [3] },
+					{ "defaultContent" : "<button class='btn btn-danger'>Delete Patch</button>" },
+					{ "defaultContent" : "<button class='btn btn-danger'>Delete Patch</button>" }
+				],
+		        "lengthMenu":   [ 5, 10, 15 ],
+		        "paging":       true,
+		        "ordering":     true,
+		        "order":        [[ 0, "desc" ]],
+		        "info":         true,
+		        stateSave: 		true
+			});
+
+			var users = $('#users').DataTable( {
+				data: 			user_data,
+				"columns" : [
+					{ "data" : [0] },
+					{ "data" : [1] },
+					{ "data" : [2] },
+					{ 
+						"defaultContent" : "<button class='btn btn-danger'>Delete User</button>",
+						"width" : "15%" 
+					}
 				],
 		        "lengthMenu":   [ 5, 10, 15 ],
 		        "paging":       true,

@@ -108,5 +108,8 @@ def get_Current_Time():
     formatted_time = str(formatted_time).split(' ')[1] + ' +0000'
     return formatted_time
 
+def cascase_Patches():
+    pass
+
 def restore_File_Contents(path_of_diff):
     os.system("patch -d/ -p0 < " + path_of_diff)

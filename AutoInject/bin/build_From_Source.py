@@ -107,17 +107,8 @@ def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, additions
     new_string = ""
     for lines in open(path_of_new_file, 'r'):
         new_string += lines.replace("    ", "\t")
-    with open(path_of_new_file, 'w') as destination:
-        destination.write(new_string)
-
-    diff_file_path = ph.produce_Diff_Of_Files(
-        path_of_file_to_modify,
-        path_of_new_file,
-        package_name,
-        'AutoInject/file_store/test/patch_file.patch',
-        comment
-    )
-    return diff_file_path
+    
+    with open(path_of_new_file, 'w') as destination: destination.write(new_string)
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
@@ -501,5 +492,3 @@ return "Hello"
 y = au_revoir + 1
 return y
 '''
-
-perform_Deletions('../file_store/test/test1.py', test_deletion)

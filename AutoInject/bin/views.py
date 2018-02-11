@@ -28,6 +28,7 @@ login_manager.login_view    = 'login'
 # Database API
 client                      = MongoClient()
 package_collection          = client['package_db']['package_list']
+admin_patches               = client['package_db']['admin_patches']
 cve_collection              = client['cvedb']['cves']
 user_collection             = client['user_db']['users']
 
@@ -167,15 +168,10 @@ def version_update():
 @app.route("/manual_update", methods=['POST'])
 @login_required
 def manual_update():
-    filepath    = request.form['file-path']
-    insert_code = request.form['inserted-code']
-    remove_code = request.form['removed-code']
-    comment     = request.form['comment']
-    package     = request.form['package']
 
     html_To_Parse_Before = bfs.format_HTML(request.form['file-path'])
 
-    diff_file_path = bfs.perform_File_Alterations(
+    bfs.perform_File_Alterations(
         request.form['file-path'], 
         'AutoInject/file_store/test/patch_file.py', 
         request.form['inserted-code'],
@@ -184,10 +180,16 @@ def manual_update():
         request.form['comment']
     )
 
+    diff_file_path = ph.produce_Diff_Of_Files(
+        request.form['file-path'],
+        'AutoInject/file_store/test/patch_file.py',
+        request.form['package'],
+        'AutoInject/file_store/test/patch_file.patch',
+        request.form['comment']
+    )
+
     html_To_Parse_After = bfs.format_HTML('AutoInject/file_store/test/patch_file.py')
     html_For_Diff_File  = bfs.format_HTML(diff_file_path)
-    
-    print('\n', filepath, insert_code, remove_code, comment, package)
     
     return render_template(
         'file_alterations.html', 
@@ -333,8 +335,9 @@ def update_auto_update():
 @app.route("/admin_settings")
 @login_required
 def admin_settings():
-    package_JSON_data = loads(dumps(user_collection.find()))
-    return render_template("admin_settings.html", package_JSON_data=package_JSON_data)
+    patch_JSON_data   = loads(dumps(admin_patches.find()))
+    user_JSON_data    = loads(dumps(user_collection.find()))
+    return render_template("admin_settings.html", user_JSON_data=user_JSON_data, patch_JSON_data=patch_JSON_data)
 
 @app.route("/admin_settings/<email>")
 @login_required
@@ -361,14 +364,31 @@ def admin_registration():
 
 @app.route("/admin_add_manual_update")
 @login_required
-def admin_add_manual_update():
-    
-    if (request.form['update_type'] == 'build_from_source'):
-        request.form['file-path'],  
+def admin_add_manual_update():      
+
+    bfs.perform_File_Alterations(
+        request.form['file-path'], 
+        'AutoInject/file_store/test/patch_file.py', 
         request.form['inserted-code'],
         request.form['removed-code'],
-        request.form['package'],
+        'admin/' + request.form['package'],
         request.form['comment']
-    elif (request.form['update_type'] == 'version'):
-        pass
+    )
+
+    diff_file_path_forward = ph.produce_Diff_Of_Files(
+        request.form['file-path'],
+        'AutoInject/file_store/test/patch_file.py',
+        request.form['package'],
+        'AutoInject/file_store/test/patch_file.patch',
+        request.form['comment']
+    )
+
+    diff_file_path_backward = ph.produce_Diff_Of_Files(
+        request.form['file-path'],
+        'AutoInject/file_store/test/patch_file.py',
+        request.form['package'],
+        'AutoInject/file_store/test/patch_file.patch',
+        request.form['comment']
+    )
+
     return redirect(url_for('admin_settings'))
