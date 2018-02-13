@@ -46,6 +46,13 @@
     	<div class="modal-content">
       		<div class="modal-header">
         		<h5 class="modal-title" style="display: inline-block;">Update Log for <b>{{ package }}</b></h5>
+        		<button
+					data-toggle="modal"
+					class="btn btn-md btn-info"
+					data-target="#modalupdateloginfo"
+				>
+					<span class="glyphicon glyphicon-question-sign"></span>
+				</button>
         		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
           			<span aria-hidden="true">&times;</span>
         		</button>
@@ -94,12 +101,48 @@
   	</div>
 </div>
 
+<!-- Modal for Update Log Info -->
+<div class="modal fade" id="modalupdateloginfo" tabindex="0" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  	<div class="modal-dialog modal-dialog-centered modal-md" role="document">
+    	<div class="modal-content">
+      		<div class="modal-header">
+      			<h3 class="modal-title" style="display: inline-block;">Update Log Help</b></h3>
+        		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          			<span aria-hidden="true">&times;</span>
+        		</button>
+      		</div>
+      		<div class="modal-body">
+				<h4>Revert Update</h4>
+				<p>This allows you to revert an update that you have previously applied, by either going back to the previous version your package was running at before, or returning your file to the state it was at before a build-from-source update occured. Check on the documentation page if you are unsure about any terms used.</p>
+				<hr>
+				<h4>Table Layout</h4>
+				<h5><b><i>Update Type</i></b></h5>
+				<p>Gives information about the type of update that was appplied, be it build-from-source, or a version update. Check on the documentation page if you are unsure about any terms used.</p>
+				<h5><b><i>Comment</i></b></h5>
+				<p>An optional comment provided by the implementer.</p>
+				<h5><b><i>Date</i></b></h5>
+				<p>The date that the update occured, in <emp>UTC format</emp></p>
+				<h5><b><i>Implementation Type</i></b></h5>
+				<p>Gives information about the implementation type that was appplied, be it automatic <b>(by the system)</b>, or manual <b>(by a super-user)</b>. Check on the documentation page if you are unsure about any terms used.</p>
+				<hr>
+      		</div>
+    	</div>
+  	</div>
+</div>
+
 <!-- Modal for Version -->
 <div class="modal fade" id="modalversion" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
   	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
     	<div class="modal-content">
       		<div class="modal-header">
         		<h5 class="modal-title" style="display: inline-block;">Update Version for <b>{{ package }}</b></h5>
+        		<button
+					data-toggle="modal"
+					class="btn btn-md btn-info"
+					data-target="#modalversioninfo"
+				>
+					<span class="glyphicon glyphicon-question-sign"></span>
+				</button>
         		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
           			<span aria-hidden="true">&times;</span>
         		</button>
@@ -129,12 +172,43 @@
   	</div>
 </div>
 
+<!-- Modal for Version Info -->
+<div class="modal fade" id="modalversioninfo" tabindex="0" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  	<div class="modal-dialog modal-dialog-centered modal-md" role="document">
+    	<div class="modal-content">
+      		<div class="modal-header">
+      			<h3 class="modal-title" style="display: inline-block;">Version Update Help</b></h3>
+        		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          			<span aria-hidden="true">&times;</span>
+        		</button>
+      		</div>
+      		<div class="modal-body">
+				<h4>Version to Upgrade To</h4>
+				<p>The version can either be in the form <code>1.0.1</code> or the system version form <code>ubuntu@1.0.1</code>.</p>
+				<hr>
+				<h4>Version Repository Link</h4>
+				<p>If you do not want to give the version number, or the version is not currently present on your system, you can provide a link to the version here, and <b>must leave the version number input blank</b>.</p>
+				<hr>
+				<h4>Comment</h4>
+				<p>An optional comment that you provide, in case you want to revert any changes in the future.</p>
+      		</div>
+    	</div>
+  	</div>
+</div>
+
 <!-- Modal for Package -->
 <div class="modal fade" id="modalcode" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
   	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
     	<div class="modal-content">
       		<div class="modal-header">
         		<h5 class="modal-title" style="display: inline-block;">Rebuild Code for <b>{{ package }}</b></h5>
+        		<button
+					data-toggle="modal"
+					class="btn btn-md btn-info"
+					data-target="#modalmanualinfo"
+				>
+					<span class="glyphicon glyphicon-question-sign"></span>
+				</button>
         		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
           			<span aria-hidden="true">&times;</span>
         		</button>
@@ -142,7 +216,7 @@
       		<div class="modal-body">
 		        <form action="{{ url_for('manual_update') }}" method="post" id="manual-form">
 		          	<div class="form-group">
-			            <label for="recipient-name" class="col-form-label">File Path</label>
+			            <label for="recipient-name" class="col-form-label">File Path</label>			
 			            <input type="text" class="form-control" id="file-path" name="file-path">
 		          	</div>
 		          	<div class="form-group">
@@ -168,9 +242,46 @@
   	</div>
 </div>
 
+<!-- Modal for Manual Info -->
+<div class="modal fade" id="modalmanualinfo" tabindex="0" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  	<div class="modal-dialog modal-dialog-centered modal-md" role="document">
+    	<div class="modal-content">
+      		<div class="modal-header">
+      			<h3 class="modal-title" style="display: inline-block;">Manual Patch Help</b></h3>
+        		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          			<span aria-hidden="true">&times;</span>
+        		</button>
+      		</div>
+      		<div class="modal-body">
+		        <h4>Path File</h4>
+				<p>The path file must be relative to wherever the <b>AutoInject</b> folder is stored on your system.</p>
+				<hr>
+				<h4>Code To Insert</h4>
+				<p>The code to insert must follow a specific syntax, unless you want to blindly insert your code into a file.</p>
+				<code>
+					&amp;* &lt;insert after this specific code&gt; <br/>
+					&amp;-- &lt;remove this line&gt; <br/>
+					&amp;++ &lt;replace it with this line&gt; <br/>
+					&lt;no symbols just means append after this line&gt;
+				</code>
+				<h5><b>Example Input:</b></h5>
+				<code>
+					&amp;* <em>class</em> <var>Hello:</var> <br/>
+					&amp;-- print("Hello") <br/>
+					&amp;++ print("Hola") <br/>
+					<em>return "Hola"</em>
+				</code>
+				<hr>
+				<h4>Comment</h4>
+				<p>An optional comment that you provide, in case you want to revert any changes in the future.</p>
+      		</div>
+    	</div>
+  	</div>
+</div>
+
 <!-- DataTable -->
 <div class="row">
-		<div class="col-lg-12">
+	<div class="col-lg-12">
 		<div class="panel panel-default">
   			<div class="panel-heading">Current Vulnerabilities</div>
   			<div class="panel-body">
@@ -269,6 +380,8 @@
 				var data = package_vulnerabilities.row( $(this).parents('tr') ).data();
 				location.href += '/' + data[0];
 			});
+
+			// Other table
 
 			var JSON_update_data = {{ update_log|safe }};
 			var objects;

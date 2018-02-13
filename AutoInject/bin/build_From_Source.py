@@ -138,7 +138,7 @@ def perform_Deletions(path_of_file_to_modify, deletions):
         else:   
             print("File at Path does not exist:", path_of_file_to_modify)
 
-    print("Total time for lexer:", time.time() - start)
+    print("Total time for deletion lexer(s):", time.time() - start)
     print(list_Of_Deletion_Tuples)
     remove_Contents_Of_File(path_of_file_to_modify, path_of_file_to_modify, list_Of_Deletion_Tuples)
 
@@ -157,21 +157,55 @@ def run_Deletion_Searches(file_to_modify, lexer_for_deletion):
 
         if (deletion_token == None or lex_token == None): break
 
-        print("Tokens to compare:", lex_token.value, deletion_token.value)
-        while (lex_token.value == deletion_token.value):
-            
-            end_line                = lex_token.lexpos + len(lex_token.value)
+        if (deletion_token.type == 'ADD_AFTER'):
 
-            try:    deletion_token  = copy_of_lexer_for_deletion.token()
-            except: return (start_line, end_line)
-            
-            try:    lex_token  = copy_of_lexer.token()
-            except: break   
+            deletion_token = lexer_for_deletion.token()
 
-            if (deletion_token == None):    return (start_line, end_line)
-            if (lex_token == None):         break 
+            while (deletion_token.value != lex_token.value): 
+                try:    lex_token = lexer_for_file.token()
+                except: return False
 
-            print("Matched Tokens to compare:", (lex_token.value, lex_token.lexpos),  (deletion_token.value, deletion_token.lexpos))
+            while not matched:
+                
+                matched = False
+                copy_of_lexer_for_deletion  = copy(lexer_for_deletion)
+                copy_of_lexer               = copy(lexer_for_file)
+                copy_of_lex_token           = lex_token
+                copy_of_deletion_token      = deletion_token
+
+                while (copy_of_deletion_token.value == lex_token.value):
+                    try:    copy_of_deletion_token  = copy_of_lexer_for_deletion.token()
+                    except: return False
+                    
+                    if (copy_of_deletion_token.type == 'NEWLINE'):
+                        while (lex_token.lexpos != copy_of_lex_token.lexpos):
+                            lex_token = lexer_for_file.token()
+                        matched = True
+                        break
+
+                    try:    copy_of_lex_token  = copy_of_lexer.token()
+                    except: break  
+
+                if not matched: 
+                    try: lex_token = lexer_for_file.token()
+                    except: return False
+
+        else:
+            print("Tokens to compare:", lex_token.value, deletion_token.value)
+            while (lex_token.value == deletion_token.value):
+                
+                end_line = lex_token.lexpos + len(lex_token.value)
+
+                try:    deletion_token  = copy_of_lexer_for_deletion.token()
+                except: return (start_line, end_line)
+                
+                try:    lex_token  = copy_of_lexer.token()
+                except: break   
+
+                if (deletion_token == None):    return (start_line, end_line)
+                if (lex_token == None):         break 
+
+                print("Matched Tokens to compare:", (lex_token.value, lex_token.lexpos),  (deletion_token.value, deletion_token.lexpos))
 
     print("Finished searching \n")
 
@@ -486,9 +520,11 @@ goodbye
 '''
 
 test_deletion = '''
-def hello():
+&* def hello():
 return "Hello"
 &*&
 y = au_revoir + 1
 return y
 '''
+
+# perform_Deletions('../file_store/test/test1.py', test_deletion)

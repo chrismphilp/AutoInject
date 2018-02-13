@@ -185,7 +185,17 @@ def manual_update():
         'AutoInject/file_store/test/patch_file.py',
         request.form['package'],
         'AutoInject/file_store/test/patch_file.patch',
-        request.form['comment']
+        request.form['comment'],
+        'forward_patch'
+    )
+
+    diff_file_path = ph.produce_Diff_Of_Files(
+        'AutoInject/file_store/test/patch_file.py',
+        request.form['file-path'],
+        request.form['package'],
+        'AutoInject/file_store/test/patch_file.patch',
+        request.form['comment'],
+        'backward_patch'
     )
 
     html_To_Parse_After = bfs.format_HTML('AutoInject/file_store/test/patch_file.py')
@@ -380,15 +390,17 @@ def admin_add_manual_update():
         'AutoInject/file_store/test/patch_file.py',
         request.form['package'],
         'AutoInject/file_store/test/patch_file.patch',
-        request.form['comment']
+        request.form['comment'],
+        'forward_patch'
     )
 
     diff_file_path_backward = ph.produce_Diff_Of_Files(
-        request.form['file-path'],
         'AutoInject/file_store/test/patch_file.py',
+        request.form['file-path'],
         request.form['package'],
         'AutoInject/file_store/test/patch_file.patch',
-        request.form['comment']
+        request.form['comment'],
+        'backward_patch'
     )
 
     return redirect(url_for('admin_settings'))

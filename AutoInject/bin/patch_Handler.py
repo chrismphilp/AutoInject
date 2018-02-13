@@ -9,7 +9,7 @@ client                      = MongoClient()
 package_collection          = client['package_db']['package_list']
 cve_collection              = client['cvedb']['cves']
 
-def produce_Diff_Of_Files(file_path1, file_path2, package_name, diff_file_name, comment):    
+def produce_Diff_Of_Files(file_path1, file_path2, package_name, diff_file_name, comment, type_of_patch):    
     
     if (os.path.exists(file_path1) and os.path.exists(file_path2)):
         file_path_of_diff_file = "AutoInject/file_store/" + package_name
@@ -46,11 +46,12 @@ def produce_Diff_Of_Files(file_path1, file_path2, package_name, diff_file_name, 
         full_file_path,
         'build_from_source',
         'manual',
-        comment
+        comment,
+        type_of_patch
     )
     return full_file_path
 
-def upload_File(package_name, file_path, type_Of_Update, type_Of_Implementation, comment):
+def upload_File(package_name, file_path, type_Of_Update, type_Of_Implementation, comment, type_of_patch):
 
     if not os.path.exists('../file_store'):
         os.makedirs('../file_store')
@@ -76,9 +77,9 @@ def upload_File(package_name, file_path, type_Of_Update, type_Of_Implementation,
                     'file_path' : file_path, 
                     'date' : str(datetime.now()),
                     'update_type' : type_Of_Update,
-                    'further' : 'N/A',
                     'comment' : comment, 
-                    'implementation_type' : type_Of_Implementation
+                    'implementation_type' : type_Of_Implementation,
+                    'type_of_patch' : type_of_patch
                 }
             } },
             multi=True
@@ -91,10 +92,10 @@ def upload_File(package_name, file_path, type_Of_Update, type_Of_Implementation,
                     # 'file_path' : copied_file_path + str(iteration), 
                     # 'datetime' : datetime.datetime.utcnow(),
                     # 'update_type' : type_Of_Implementation,
-                    # 'further' : new_package_version_name,
                     # 'comment' : comment,
                     # 'date' : datetime.datetime.now(), 
-                    # 'implementation_type' : type_Of_Update
+                    # 'implementation_type' : type_Of_Update,
+                    # 'type_of_patch' : type_of_patch
                 }
             } },
             multi=True

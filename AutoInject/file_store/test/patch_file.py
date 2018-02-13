@@ -10,6 +10,7 @@ class adder:
         hello
         y = au_revoir + 1
         return y
+        hello
 
         return au_dieu
 
