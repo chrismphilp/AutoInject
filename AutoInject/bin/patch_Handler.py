@@ -4,13 +4,20 @@ from datetime           import datetime
 from pymongo            import MongoClient
 from subprocess         import check_output, call
 from difflib            import unified_diff
+from shutil             import copyfile
+
+from json               import loads
+from bson.json_util     import dumps
 
 client                      = MongoClient()
 package_collection          = client['package_db']['package_list']
 cve_collection              = client['cvedb']['cves']
 
-def produce_Diff_Of_Files(file_path1, file_path2, package_name, diff_file_name, comment, type_of_patch):    
+def produce_Diff_Of_Files(file_path1, file_path2, package_name, diff_file_name, comment, type_of_patch, make_copy=False, upload=True):    
     
+    if make_copy:   copy_of_file_path = make_copy_of_file(file_path1, package_name)
+    else:           copy_of_file_path = "N/A"
+
     if (os.path.exists(file_path1) and os.path.exists(file_path2)):
         file_path_of_diff_file = "AutoInject/file_store/" + package_name
         
@@ -18,6 +25,11 @@ def produce_Diff_Of_Files(file_path1, file_path2, package_name, diff_file_name, 
             os.makedirs(file_path_of_diff_file)
         
         full_file_path = file_path_of_diff_file + "/" + diff_file_name
+
+        iteration = 1
+        while (os.path.exists(full_file_path)):
+            iteration += 1
+            full_file_path = file_path_of_diff_file + "/" + str(iteration) + diff_file_name
         
         with open(full_file_path, "w") as outfile:
             
@@ -40,18 +52,10 @@ def produce_Diff_Of_Files(file_path1, file_path2, package_name, diff_file_name, 
     else:
         print("Path to files does not exist")
 
-    # Upload location of file
-    upload_File(
-        package_name,
-        full_file_path,
-        'build_from_source',
-        'manual',
-        comment,
-        type_of_patch
-    )
+    if upload: upload_File(package_name, full_file_path, 'build_from_source', 'manual', comment, type_of_patch, copy_of_file_path)
     return full_file_path
 
-def upload_File(package_name, file_path, type_Of_Update, type_Of_Implementation, comment, type_of_patch):
+def upload_File(package_name, file_path, type_Of_Update, type_Of_Implementation, comment, type_of_patch, copy_of_file_path):
 
     if not os.path.exists('../file_store'):
         os.makedirs('../file_store')
@@ -59,47 +63,43 @@ def upload_File(package_name, file_path, type_Of_Update, type_Of_Implementation,
     if not os.path.exists('../file_store/' + package_name):
         os.makedirs('../file_store/' + package_name)
 
-    # copied_file_path    = '../file_store/' + package_name + '/' + filename
-    # iteration           = 1
-
-    # while os.path.exists(copied_file_path + str(iteration)):
-    #     iteration += 1  
-    
-    # copyfile(filepath, copied_file_path + str(iteration))
-
     print("Package name is:", package_name)
 
-    if type_Of_Implementation == 'manual':
-        package_collection.update(
-            { 'formatted_package_name_with_version' : package_name },
-            { '$push' : {
-                'log' : { 
-                    'file_path' : file_path, 
-                    'date' : str(datetime.now()),
-                    'update_type' : type_Of_Update,
-                    'comment' : comment, 
-                    'implementation_type' : type_Of_Implementation,
-                    'type_of_patch' : type_of_patch
-                }
-            } },
-            multi=True
-        )
-    elif type_Of_Implementation == 'automatic':
-        package_collection.update(
-            { 'package_name' : package_name },
-            { '$push' : {
-                'log' : { 
-                    # 'file_path' : copied_file_path + str(iteration), 
-                    # 'datetime' : datetime.datetime.utcnow(),
-                    # 'update_type' : type_Of_Implementation,
-                    # 'comment' : comment,
-                    # 'date' : datetime.datetime.now(), 
-                    # 'implementation_type' : type_Of_Update,
-                    # 'type_of_patch' : type_of_patch
-                }
-            } },
-            multi=True
-        )
+    package_collection.update(
+        { 'formatted_package_name_with_version' : package_name },
+        { '$push' : {
+            'log' : { 
+                'file_path' : file_path, 
+                'date' : str(datetime.now()),
+                'update_type' : type_Of_Update,
+                'comment' : comment, 
+                'implementation_type' : type_Of_Implementation,
+                'type_of_patch' : type_of_patch, # forward / backward
+                'copy_of_original_file_path' : copy_of_file_path
+            }
+        } },
+        multi=True
+    )
+
+def reverse_Patch(package, date_of_patch):
+    reverser = package_collection.find_one( { 'log' : { '$elemMatch' :  { 'date' : date_of_patch } } } )
+    
+    formatted_data = loads(dumps(reverser))
+    for elements in formatted_data['log']:
+        if elements['date'] == date_of_patch:
+            restore_File_Contents(elements['file_path'])
+
+def restore_File_Contents(path_of_diff):
+    os.system("patch -d/ -p0 < " + path_of_diff)
+
+def make_copy_of_file(file_path, package_name):
+    copy = "AutoInject/file_store/" + package_name + "/copy"
+    count = 0
+    while (os.path.exists(copy)):
+        count += 1
+        copy = "AutoInject/file_store/" + package_name + "/" + copy + str(count)
+    copyfile(file_path, copy)
+    return copy
 
 def get_Source_Path(path_of_file):
     return os.path.realpath(path_of_file)
@@ -108,9 +108,3 @@ def get_Current_Time():
     formatted_time = datetime.utcnow()
     formatted_time = str(formatted_time).split(' ')[1] + ' +0000'
     return formatted_time
-
-def cascase_Patches():
-    pass
-
-def restore_File_Contents(path_of_diff):
-    os.system("patch -d/ -p0 < " + path_of_diff)

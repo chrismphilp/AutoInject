@@ -29,24 +29,24 @@
 							        <thead>
 							            <tr>
 							                <th>Package Name</th>
+							                <th>File Path</th>
 							                <th>Update Type</th>
-							                <th>Further Information</th>
 							                <th>Comment</th>
 							                <th>Date</th>
-							                <!-- Manual or Automatic -->
 							                <th>Implementation Type</th>
+							                <th>Type of Patch</th>
 							                <th>Revert?</th> 
 							            </tr>
 							        </thead>
 							        <tfoot>
 							            <tr>
 							                <th>Package Name</th>
+							                <th>File Path</th>
 							                <th>Update Type</th>
-							                <th>Further Information</th>
 							                <th>Comment</th>
 							                <th>Date</th>
-							                <!-- Manual or Automatic -->
 							                <th>Implementation Type</th>
+							                <th>Type of Patch</th>
 							                <th>Revert?</th>  
 							            </tr>
 									</tfoot>
@@ -77,11 +77,12 @@
 					data.push( 
 						[ 
 							JSON_data[objects]['package_name'],
+							JSON_data[objects]['log'][items]['file_path'],
 							JSON_data[objects]['log'][items]['update_type'],
-							JSON_data[objects]['log'][items]['further'],
 							JSON_data[objects]['log'][items]['comment'],
 							JSON_data[objects]['log'][items]['date'],
-							JSON_data[objects]['log'][items]['implementation_type']
+							JSON_data[objects]['log'][items]['implementation_type'],
+							JSON_data[objects]['log'][items]['type_of_patch']
 						] 
 					);
 				}
@@ -90,15 +91,13 @@
 			$('#update_log').DataTable( {
 				data: 			data,
 				"columns" : [
-					{ "data" :  [0] },
-					{ 	
-						"data" : [1],
-						"width" : "25%" 
-					},
+					{ "data" : [0] },
+					{ "data" : [1] },
 					{ "data" : [2] },
 					{ "data" : [3] },
 					{ "data" : [4] },
 					{ "data" : [5] },
+					{ "data" : [6] },
 					{ "defaultContent" : "<button class='btn btn-danger'>Revert Update</button>" }
 				],
 		        "lengthMenu":   [ 5, 10, 15 ],

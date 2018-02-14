@@ -42,6 +42,7 @@ def search_Files(file_name):
         universal_newlines=True
     )
     print(list_Of_Files_Found_With_Name)
+    return list_Of_Files_Found_With_Name
 
 def format_HTML(filepath):
     with open(filepath, 'r') as file_to_read:
@@ -63,6 +64,7 @@ tokens = (
     'VARIABLE',
     'STRING',
     'OPERATOR',
+    'EOL',
     'LPAREN',
     'RPAREN',
     'LBRACE',
@@ -82,6 +84,7 @@ t_LPAREN                = r'\('
 t_RPAREN                = r'\)'
 t_LBRACE                = r'\{'
 t_RBRACE                = r'\}'
+t_EOL                   = r'\;'
 t_ADD_AFTER             = r'\&\*'
 t_ADD_REPLACE_ADDITION  = r'\&\+\+'
 t_ADD_REPLACE_REMOVE    = r'\&--'
@@ -96,149 +99,24 @@ def t_error(t):
     t.lexer.skip(1)
 
 lexer_for_addition  = lex.lex()
-lexer_for_deletion  = lex.lex()
 lexer_for_file      = lex.lex()
 
-def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, additions, deletions, package_name, comment):
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+#                           BFS related functions                          |
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+
+def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, bfs_string):
     
-    perform_Additions(path_of_file_to_modify, path_of_new_file, additions)
-    perform_Deletions(path_of_new_file, deletions)
+    perform_Additions(path_of_file_to_modify, path_of_new_file, bfs_string)
 
     new_string = ""
     for lines in open(path_of_new_file, 'r'):
         new_string += lines.replace("    ", "\t")
     
-    with open(path_of_new_file, 'w') as destination: destination.write(new_string)
-
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-#                           Deletion related functions                     |
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-
-def perform_Deletions(path_of_file_to_modify, deletions):
-    
-    list_Of_Deletion_Tuples = []
-    seperate_deletions      = deletions.split("&*&")
-    start                   = time.time()
-    print(seperate_deletions)
-
-    for split_deletions in seperate_deletions:
-        
-        if split_deletions.startswith("\n"):    split_deletions = split_deletions[1:]
-        if split_deletions.endswith("\n"):      split_deletions = split_deletions[:-1]
-        
-        print(split_deletions)
-
-        lexer_for_deletion.input(split_deletions)
-        if (os.path.exists(path_of_file_to_modify)):
-            with open(path_of_file_to_modify, 'r') as file_to_search:
-                returned_deletions = run_Deletion_Searches(file_to_search, lexer_for_deletion)
-                if returned_deletions: list_Of_Deletion_Tuples.append(returned_deletions)
-        else:   
-            print("File at Path does not exist:", path_of_file_to_modify)
-
-    print("Total time for deletion lexer(s):", time.time() - start)
-    print(list_Of_Deletion_Tuples)
-    remove_Contents_Of_File(path_of_file_to_modify, path_of_file_to_modify, list_Of_Deletion_Tuples)
-
-def run_Deletion_Searches(file_to_modify, lexer_for_deletion):
-     
-    data = file_to_modify.read()
-    lexer_for_file.input(data)
-
-    for tok in lexer_for_file:
-
-        copy_of_lexer_for_deletion  = copy(lexer_for_deletion)
-        start_line                  = tok.lexpos
-        copy_of_lexer               = copy(lexer_for_file)
-        deletion_token              = copy_of_lexer_for_deletion.token()
-        lex_token                   = tok
-
-        if (deletion_token == None or lex_token == None): break
-
-        if (deletion_token.type == 'ADD_AFTER'):
-
-            deletion_token = lexer_for_deletion.token()
-
-            while (deletion_token.value != lex_token.value): 
-                try:    lex_token = lexer_for_file.token()
-                except: return False
-
-            while not matched:
-                
-                matched = False
-                copy_of_lexer_for_deletion  = copy(lexer_for_deletion)
-                copy_of_lexer               = copy(lexer_for_file)
-                copy_of_lex_token           = lex_token
-                copy_of_deletion_token      = deletion_token
-
-                while (copy_of_deletion_token.value == lex_token.value):
-                    try:    copy_of_deletion_token  = copy_of_lexer_for_deletion.token()
-                    except: return False
-                    
-                    if (copy_of_deletion_token.type == 'NEWLINE'):
-                        while (lex_token.lexpos != copy_of_lex_token.lexpos):
-                            lex_token = lexer_for_file.token()
-                        matched = True
-                        break
-
-                    try:    copy_of_lex_token  = copy_of_lexer.token()
-                    except: break  
-
-                if not matched: 
-                    try: lex_token = lexer_for_file.token()
-                    except: return False
-
-        else:
-            print("Tokens to compare:", lex_token.value, deletion_token.value)
-            while (lex_token.value == deletion_token.value):
-                
-                end_line = lex_token.lexpos + len(lex_token.value)
-
-                try:    deletion_token  = copy_of_lexer_for_deletion.token()
-                except: return (start_line, end_line)
-                
-                try:    lex_token  = copy_of_lexer.token()
-                except: break   
-
-                if (deletion_token == None):    return (start_line, end_line)
-                if (lex_token == None):         break 
-
-                print("Matched Tokens to compare:", (lex_token.value, lex_token.lexpos),  (deletion_token.value, deletion_token.lexpos))
-
-    print("Finished searching \n")
-
-def remove_Contents_Of_File(path_of_file_to_modify, path_of_new_file, removal_tuples):
-    
-    current_var_count   = 0
-    current_string      = ""
-
-    if (os.path.exists(path_of_file_to_modify)):
-        with open(path_of_file_to_modify, 'r') as file_to_search:
-            for characters in file_to_search.read():
-                match = False
-                for single_tuple in removal_tuples:
-                    if current_var_count in range(single_tuple[0], single_tuple[1]): match = True
-                if not match: current_string += characters
-                current_var_count += 1
-
-    with open(path_of_file_to_modify, 'r') as file_to_search:
-        var = 0
-        for characters in file_to_search.read():
-            print(characters, var)
-            var += 1
-
-    if current_string:
-        with open(path_of_new_file, "w") as destination:
-            print(current_string)
-            destination.write(current_string)
-
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
-#                           Addition related functions                     |
-# --------------------------------------------------------------------------
-# --------------------------------------------------------------------------
+    with open(path_of_new_file, 'w') as destination: 
+        destination.write(new_string)
 
 def perform_Additions(path_of_file_to_modify, path_of_file_to_write, additions):
     
@@ -415,9 +293,11 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
     
                     if (copy_of_addition_token.type == 'ADD_REPLACE_ADDITION'):    
                         
+                        print("Found ADD_REPLACE_ADDITION:", copy_of_addition_token)
                         try:    copy_of_addition_token = copy_of_lexer_for_addition.token()
                         except: return False
-                    
+                        
+                        print("Found ADD_REPLACE_ADDITION:", copy_of_addition_token)
                         start_pos       = copy_of_addition_token.lexpos
 
                         while (copy_of_addition_token.type != 'NEWLINE'):
@@ -490,7 +370,9 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
                 added = False 
                 for tuples in list_Of_Insertion_Tuples:
                     if (type(tuples[1]) is int):
-                        if (tuples[1] == count_of_characters): print("Adding at:", count_of_characters); string_for_file += tuples[2]
+                        if (tuples[1] == count_of_characters): 
+                            print("Adding at:", count_of_characters)
+                            if tuples[2] != "\n": string_for_file += tuples[2]
                         elif (tuples[0] <= count_of_characters <= tuples[1]): added = True
                     elif (tuples[0] == count_of_characters): string_for_file += tuples[1]
                     
@@ -503,28 +385,11 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
         file_to_write.write(string_for_file)
 
 example_Patch = '''
-hello
 &* class adder:
-&-- def hello():
-&++ def goodbye():
-&-- print("Say hello")
-&++ print("Say goodbye")
-        print("hola")
-    &-- def goodbye(au_dieu):
-    &++ def goodbye(au_revoir):
-        hello
-        y = au_revoir + 1
-        return y
-&*&
-goodbye
+&-- print("Say goodbye")
+&++
+&-- print("hola")
+&++ 
 '''
 
-test_deletion = '''
-&* def hello():
-return "Hello"
-&*&
-y = au_revoir + 1
-return y
-'''
-
-# perform_Deletions('../file_store/test/test1.py', test_deletion)
+# perform_Additions('../file_store/test/test1.py', 'test_patch.py', example_Patch)

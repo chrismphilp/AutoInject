@@ -11,6 +11,7 @@ from AutoInject         import app
 import AutoInject.bin.build_From_Source     as bfs
 import AutoInject.bin.get_Vulnerabilities   as gv
 import AutoInject.bin.get_Packages          as gp
+import AutoInject.bin.patch_Handler         as ph
 import AutoInject.bin.website_Parser        as wp
 import AutoInject.bin.system_functions      as sf
 
@@ -169,31 +170,34 @@ def version_update():
 @login_required
 def manual_update():
 
-    html_To_Parse_Before = bfs.format_HTML(request.form['file-path'])
+    full_file_path = bfs.search_Files(request.form['file-path'])
+    if (full_file_path[-1:] == "\n"): full_file_path = full_file_path[:-1]
+    
+    html_To_Parse_Before = bfs.format_HTML(full_file_path)
 
     bfs.perform_File_Alterations(
-        request.form['file-path'], 
+        full_file_path, 
         'AutoInject/file_store/test/patch_file.py', 
-        request.form['inserted-code'],
-        request.form['removed-code'],
-        request.form['package'],
-        request.form['comment']
+        request.form['inserted-code']
     )
 
     diff_file_path = ph.produce_Diff_Of_Files(
-        request.form['file-path'],
+        full_file_path,
         'AutoInject/file_store/test/patch_file.py',
         request.form['package'],
-        'AutoInject/file_store/test/patch_file.patch',
+        'patch_file__apply__.patch',
         request.form['comment'],
-        'forward_patch'
+        'forward_patch',
+        True
     )
 
-    diff_file_path = ph.produce_Diff_Of_Files(
+    ph.restore_File_Contents(diff_file_path)
+
+    diff_file_path2 = ph.produce_Diff_Of_Files(
         'AutoInject/file_store/test/patch_file.py',
-        request.form['file-path'],
+        full_file_path,
         request.form['package'],
-        'AutoInject/file_store/test/patch_file.patch',
+        'patch_file__reverse__.patch',
         request.form['comment'],
         'backward_patch'
     )
@@ -206,8 +210,14 @@ def manual_update():
         html_To_Parse_Before=html_To_Parse_Before,
         html_To_Parse_After=html_To_Parse_After,
         html_For_Diff_File=html_For_Diff_File,
-        link_For_Button="/vulnerabilities/"+package
+        link_For_Button="/vulnerabilities/"+request.form['package']
     )
+
+@app.route("/vulnerabilities/<package>/revert_patch/<date_of_patch>")
+@login_required
+def reverse_file_patch(package, date_of_patch):
+    ph.reverse_Patch(package, date_of_patch)
+    return redirect(url_for('vulnerabilities') + '/' + package)
     
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------

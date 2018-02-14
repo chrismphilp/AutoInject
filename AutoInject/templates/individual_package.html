@@ -74,11 +74,10 @@
 											>
 										        <thead>
 										            <tr>
+										            	<th>File Path</th>
 										                <th>Update Type</th>
-										                <th>Further Information</th>
 										                <th>Comment</th>
 										                <th>Date</th>
-										                <!-- Manual or Automatic -->
 										                <th>Implementation Type</th> 
 										                <th>Revert</th>
 										            </tr>
@@ -222,10 +221,6 @@
 		          	<div class="form-group">
 		            	<label for="message-text" class="col-form-label">Code to Insert</label>
 		            	<textarea class="form-control" id="inserted-code" name="inserted-code"></textarea>
-		          	</div>
-		          	<div class="form-group">
-		            	<label for="message-text" class="col-form-label">Code to Remove <i>(Optional)</i></label>
-		            	<textarea class="form-control" id="removed-code" name="removed-code"></textarea>
 		          	</div>
 		          	<div class="form-group">
 			            <label for="recipient-name" class="col-form-label">Comment</label>
@@ -392,8 +387,8 @@
 				for (items in JSON_update_data[objects]['log']) {
 					update_data.push( 
 						[ 
+							JSON_update_data[objects]['log'][items]['file_path'],	
 							JSON_update_data[objects]['log'][items]['update_type'],
-							JSON_update_data[objects]['log'][items]['further'],
 							JSON_update_data[objects]['log'][items]['comment'],
 							JSON_update_data[objects]['log'][items]['date'],
 							JSON_update_data[objects]['log'][items]['implementation_type']
@@ -402,15 +397,11 @@
 				}
 			}
 
-
 			var update_log = $('#update_log').DataTable( {
 				data: update_data,
 				"columns" : [
-					{ "data" :  [0] },
-					{ 	
-						"data" : [1],
-						"width" : "25%" 
-					},
+					{ "data" : [0] },
+					{ "data" : [1] },
 					{ "data" : [2] },
 					{ "data" : [3] },
 					{ "data" : [4] },
@@ -423,6 +414,11 @@
 		        "info":         true,
 		        "searching": false,
 		        stateSave: 		true
+			});
+
+			$('#update_log tbody').on('click', 'button', function() {
+				var data = update_log.row( $(this).parents('tr') ).data();
+				location.href += '/revert_patch/' + data[3];
 			});
 		
 		});
