@@ -1,3 +1,4 @@
+drdedede
 class adder:
 	def goodbye():
 		print("Say goodbye")
@@ -16,3 +17,4 @@ class adder
 		return "Hello"
 
 class adder:
+	impelemnt ait all

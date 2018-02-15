@@ -74,21 +74,23 @@
 
 			for (objects in JSON_data) {
 				for (items in JSON_data[objects]['log']) {
-					data.push( 
-						[ 
-							JSON_data[objects]['package_name'],
-							JSON_data[objects]['log'][items]['file_path'],
-							JSON_data[objects]['log'][items]['update_type'],
-							JSON_data[objects]['log'][items]['comment'],
-							JSON_data[objects]['log'][items]['date'],
-							JSON_data[objects]['log'][items]['implementation_type'],
-							JSON_data[objects]['log'][items]['type_of_patch']
-						] 
-					);
+					if (JSON_data[objects]['log'][items]['active'] == 1) {
+						data.push(
+							[ 
+								JSON_data[objects]['formatted_package_name_with_version'],
+								JSON_data[objects]['log'][items]['original_files_path'],
+								JSON_data[objects]['log'][items]['update_type'],
+								JSON_data[objects]['log'][items]['comment'],
+								JSON_data[objects]['log'][items]['date'],
+								JSON_data[objects]['log'][items]['implementation_type'],
+								JSON_data[objects]['log'][items]['type_of_patch']
+							] 						
+						);
+					}
 				}
 			}
 
-			$('#update_log').DataTable( {
+			var update_log = $('#update_log').DataTable( {
 				data: 			data,
 				"columns" : [
 					{ "data" : [0] },
@@ -103,9 +105,14 @@
 		        "lengthMenu":   [ 5, 10, 15 ],
 		        "paging":       true,
 		        "ordering":     true,
-		        "order":        [[ 0, "desc" ]],
+		        "order":        [[ 0, "desc" ], [ 1, "desc" ]],
 		        "info":         true,
 		        stateSave: 		true
+			});
+
+			$('#update_log tbody').on('click', 'button', function() {
+				var data = update_log.row( $(this).parents('tr') ).data();
+				location.href = '/vulnerabilities/' + data[0] + '/revert_patch/' + data[4];
 			});
 		});
 

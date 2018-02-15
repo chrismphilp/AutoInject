@@ -74,7 +74,7 @@
 											>
 										        <thead>
 										            <tr>
-										            	<th>File Path</th>
+										            	<th>Original File Path</th>
 										                <th>Update Type</th>
 										                <th>Comment</th>
 										                <th>Date</th>
@@ -380,21 +380,18 @@
 
 			var JSON_update_data = {{ update_log|safe }};
 			var objects;
-			var items;
 			var update_data = [];
 
-			for (objects in JSON_update_data) {
-				for (items in JSON_update_data[objects]['log']) {
-					update_data.push( 
-						[ 
-							JSON_update_data[objects]['log'][items]['file_path'],	
-							JSON_update_data[objects]['log'][items]['update_type'],
-							JSON_update_data[objects]['log'][items]['comment'],
-							JSON_update_data[objects]['log'][items]['date'],
-							JSON_update_data[objects]['log'][items]['implementation_type']
-						] 
-					);
-				}
+			for (objects in JSON_update_data['log']) {
+				update_data.push( 
+					[ 
+						JSON_update_data['log'][objects]['original_files_path'],
+						JSON_update_data['log'][objects]['update_type'],
+						JSON_update_data['log'][objects]['comment'],
+						JSON_update_data['log'][objects]['date'],
+						JSON_update_data['log'][objects]['implementation_type']
+					] 
+				);
 			}
 
 			var update_log = $('#update_log').DataTable( {
@@ -410,7 +407,7 @@
 		        "lengthMenu":   [ 5, 10, 15 ],
 		        "paging":       true,
 		        "ordering":     true,
-		        "order":        [[ 0, "desc" ]],
+		        "order":        [[ 0, "desc" ], [ 3, "desc" ]],
 		        "info":         true,
 		        "searching": false,
 		        stateSave: 		true
@@ -420,7 +417,6 @@
 				var data = update_log.row( $(this).parents('tr') ).data();
 				location.href += '/revert_patch/' + data[3];
 			});
-		
 		});
 
 	</script>

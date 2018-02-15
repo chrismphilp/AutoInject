@@ -185,21 +185,41 @@ def manual_update():
         full_file_path,
         'AutoInject/file_store/test/patch_file.py',
         request.form['package'],
-        'patch_file__apply__.patch',
-        request.form['comment'],
-        'forward_patch',
-        True
+        'patch_file__apply__.patch'
     )
-
-    ph.restore_File_Contents(diff_file_path)
 
     diff_file_path2 = ph.produce_Diff_Of_Files(
         'AutoInject/file_store/test/patch_file.py',
         full_file_path,
         request.form['package'],
-        'patch_file__reverse__.patch',
+        'patch_file__reverse__.patch'
+    )
+
+    ph.restore_File_Contents(diff_file_path)
+    copy_of_file = ph.make_Copy_Of_File(request.form['package'], full_file_path)
+
+    ph.upload_File(
+        request.form['package'],
+        full_file_path,
+        diff_file_path,
+        'build_from_source',
+        'manual',
         request.form['comment'],
-        'backward_patch'
+        'forward_patch',
+        copy_of_file,
+        0
+    )
+
+    ph.upload_File(
+        request.form['package'],
+        full_file_path,
+        diff_file_path2,
+        'build_from_source',
+        'manual',
+        request.form['comment'],
+        'backward_patch',
+        copy_of_file,
+        1
     )
 
     html_To_Parse_After = bfs.format_HTML('AutoInject/file_store/test/patch_file.py')
@@ -215,8 +235,8 @@ def manual_update():
 
 @app.route("/vulnerabilities/<package>/revert_patch/<date_of_patch>")
 @login_required
-def reverse_file_patch(package, date_of_patch):
-    ph.reverse_Patch(package, date_of_patch)
+def reverse_file_patch(date_of_patch, package):
+    ph.handle_Patch_Maintenance(date_of_patch, package)
     return redirect(url_for('vulnerabilities') + '/' + package)
     
 # --------------------------------------------------------------------------
@@ -386,31 +406,5 @@ def admin_registration():
 @login_required
 def admin_add_manual_update():      
 
-    bfs.perform_File_Alterations(
-        request.form['file-path'], 
-        'AutoInject/file_store/test/patch_file.py', 
-        request.form['inserted-code'],
-        request.form['removed-code'],
-        'admin/' + request.form['package'],
-        request.form['comment']
-    )
-
-    diff_file_path_forward = ph.produce_Diff_Of_Files(
-        request.form['file-path'],
-        'AutoInject/file_store/test/patch_file.py',
-        request.form['package'],
-        'AutoInject/file_store/test/patch_file.patch',
-        request.form['comment'],
-        'forward_patch'
-    )
-
-    diff_file_path_backward = ph.produce_Diff_Of_Files(
-        'AutoInject/file_store/test/patch_file.py',
-        request.form['file-path'],
-        request.form['package'],
-        'AutoInject/file_store/test/patch_file.patch',
-        request.form['comment'],
-        'backward_patch'
-    )
-
+    admin_patches.insert({})
     return redirect(url_for('admin_settings'))

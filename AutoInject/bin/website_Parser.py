@@ -308,13 +308,13 @@ def get_Update_Log(package_name=False):
                 '$not' : { '$size' : 0 } 
             }
         })
+        
+        data = { 'log' : [] }
+        formatted_data = loads(dumps(cursor))
+        for items in formatted_data:
+            for logs in items['log']:
+                if logs['active'] == 1: data['log'].append(logs)
+        cursor = data        
     else:
-        cursor = package_collection.find({
-            'log' : { 
-                '$exists' : True
-            }
-        })
+        cursor = package_collection.find( { 'log' : { '$elemMatch' : { 'active' : 0 } } } )
     return loads(dumps(cursor))
-
-# print(search_URL_For_Version_Update("http://www.ubuntu.com/usn/USN-2569-1"))
-# package_Updater("apport", "2.14.1")
