@@ -150,7 +150,7 @@
 		        <form action="{{ url_for('version_update') }}" method="post" id="version-form">
 		          	<div class="form-group">
 			            <label for="recipient-name" class="col-form-label">Version to Upgrade To</label>
-			            <input type="text" class="form-control" id="version-name" name="version-name" placeholder="1.0.1">
+			            <input type="text" class="form-control" id="version-name" name="version-name" placeholder="1.0.1" required="true">
 		          	</div>
 		          	<div class="form-group">
 			            <label for="recipient-name" class="col-form-label">Version Repository Link <i>(Optional)</i></label>
@@ -216,11 +216,11 @@
 		        <form action="{{ url_for('manual_update') }}" method="post" id="manual-form">
 		          	<div class="form-group">
 			            <label for="recipient-name" class="col-form-label">File Path</label>			
-			            <input type="text" class="form-control" id="file-path" name="file-path" placeholder="test/test.py">
+			            <input type="text" class="form-control" id="file-path" name="file-path" placeholder="test/test.py" required="true">
 		          	</div>
 		          	<div class="form-group">
 		            	<label for="message-text" class="col-form-label">Code to Insert</label>
-		            	<textarea class="form-control" id="inserted-code" name="inserted-code" placeholder="&* print('Hello World')"></textarea>
+		            	<textarea class="form-control" id="inserted-code" name="inserted-code" placeholder="&* print('Hello World')" required="true"></textarea>
 		          	</div>
 		          	<div class="form-group">
 			            <label for="recipient-name" class="col-form-label">Comment</label>

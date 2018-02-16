@@ -403,11 +403,13 @@ def admin_registration():
 @login_required
 def admin_add_manual_update():      
     admin_patches.insert({
+        'id' :'ADMIN-' + str(sf.get_Incremented_Id()),
         'package_name' : request.form['package'],
         'patch_type' : 'build_from_source',
         'file_path' : request.form['file-path'],
         'update_code' : request.form['inserted-code'],
         'link' : request.form['link'],
+        'cvss' : request.form['cvss'],
         'comment' : request.form['comment'],
         'date' : str(datetime.now())
     })
@@ -417,10 +419,12 @@ def admin_add_manual_update():
 @login_required
 def admin_add_version_update():      
     admin_patches.insert({
+        'id' :'ADMIN-' + str(sf.get_Incremented_Id()),
         'package_name' : request.form['package'], 
         'patch_type' : 'version',
         'link' : request.form['link'],
         'version_number' : request.form['version-name'],
+        'cvss' : request.form['cvss'],
         'comment' : request.form['comment'],
         'date' : str(datetime.now())
     })
@@ -429,6 +433,32 @@ def admin_add_version_update():
 @app.route("/admin_settings/release_patch/<date>")
 @login_required
 def admin_release_patch(date):
+    patch_data = admin_patches.find_one( { 'date' : date })
+    if (patch_data['patch_type'] == 'build_from_source'):
+        cve_collection.insert({
+            'id' : patch_data['id'],
+            'vulnerable_configuration' : [ patch_data['package'] ],
+            'summary' : patch_data['comment'],
+            'cvss' : patch_data['cvss'],
+            'patch_type' : 'build_from_source',
+            'file_path' : patch_data['file_path'],
+            'update_code' : patch_data['update_code'],
+            'references' : [ patch_data['link'] ],
+            'reformatted_configs' : [ patch_data['package'] ],
+            'date' : patch_data['date']
+        })
+    elif (patch_data['patch_type'] == 'version'):
+        cve_collection.insert({
+            'id' : patch_data['id'],
+            'vulnerable_configuration' : [ patch_data['package'] ],
+            'summary' : patch_data['comment'],
+            'cvss' : patch_data['cvss'],
+            'patch_type' : 'version',
+            'version_number' : patch_data['version_number'],
+            'references' : [ patch_data['link'] ],
+            'reformatted_configs' : [ patch_data['package'] ],
+            'date' : patch_data['date']
+        })
     admin_patches.remove( { 'date' : date } )
     return redirect(url_for('admin_settings'))
 

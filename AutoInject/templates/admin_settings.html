@@ -50,15 +50,19 @@
 				        <form action="{{ url_for('admin_add_version_update') }}" method="post" id="version-form">
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Package Name</label>
-					            <input type="text" class="form-control" id="package" name="package" placeholder="Python">
+					            <input type="text" class="form-control" id="package" name="package" placeholder="Python" required="true">
 				          	</div>
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Version to Set</label>
-					            <input type="text" class="form-control" id="version-number" name="version-name" placeholder="1.0.1">
+					            <input type="text" class="form-control" id="version-number" name="version-name" placeholder="1.0.1" required="true">
 				          	</div>
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Version Repository Link <i>(Optional)</i></label>
 					            <input type="text" class="form-control" id="link" name="link" placeholder="https://link.com">
+				          	</div>
+				          	<div class="form-group">
+					            <label for="recipient-name" class="col-form-label">Vulnerability Score</label>
+					            <input class="form-control" id="cvss" name="cvss" placeholder="1-10" type="number" max="10" min="0" required="true">
 				          	</div>
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Comment</label>
@@ -87,7 +91,7 @@
 				        <form action="{{ url_for('admin_add_manual_update') }}" method="post" id="manual-form">
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Package Name</label>
-					            <input type="text" class="form-control" id="package" name="package" placeholder="Python">
+					            <input type="text" class="form-control" id="package" name="package" placeholder="Python" required="true">
 				          	</div>
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">File Path</label>
@@ -100,6 +104,10 @@
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Version Repository Link <i>(Optional)</i></label>
 					            <input type="text" class="form-control" id="link" name="link" placeholder="https://link.com">
+				          	</div>
+				          	<div class="form-group">
+					            <label for="recipient-name" class="col-form-label">Vulnerability Score</label>
+					            <input class="form-control" id="cvss" name="cvss" placeholder="1-10" type="number" max="10" min="0" required="true">
 				          	</div>
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Comment</label>
@@ -128,15 +136,15 @@
 				        <form action="{{ url_for('admin_registration') }}" method="post" id="version-form">
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Username</label>
-					            <input type="text" class="form-control" id="version-name" name="username" placeholder="Username">
+					            <input type="text" class="form-control" id="version-name" name="username" placeholder="Username" required="true">
 				          	</div>
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Email</label>
-					            <input type="text" class="form-control" id="version-name" name="email" placeholder="User@me.com">
+					            <input type="email" class="form-control" id="version-name" name="email" placeholder="User@me.com" required="true">
 				          	</div>
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Password</label>
-					            <input type="password" class="form-control" id="version-name" name="password" placeholder="Password">
+					            <input type="password" class="form-control" id="version-name" name="password" placeholder="Password" required="true">
 				          	</div>
 				          	<div class="modal-footer">
 						        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -164,11 +172,13 @@
 									>
 								        <thead>
 								            <tr>
+								            	<th>CVE ID</th>
 								            	<th>Package Name</th>
 								                <th>Patch Type</th>								                
 								                <th>Location of Patch</th>
 								                <th>Update Content</th>
 								                <th>Link to Patch</th>
+								                <th>CVSS</th>
 								                <th>Comment</th>
 								                <th>Date</th>
 								                <th>Push Patch to Release</th>								               
@@ -177,11 +187,13 @@
 								        </thead>
 								        <tfoot>
 								            <tr>
+								            	<th>CVE ID</th>
 								                <th>Package Name</th>
 								                <th>Patch Type</th>								                
 								                <th>Location of Patch</th>
 								                <th>Update Content</th>
 								                <th>Link to Patch</th>
+								                <th>CVSS</th>
 								                <th>Comment</th>
 								                <th>Date</th>
 								                <th>Push Patch to Release</th>								               
@@ -257,11 +269,13 @@
 				if (patch_JSON_data[item]['patch_type'] == 'build_from_source') {
 					patches.push( 
 						[ 	
+							patch_JSON_data[item]['id'],
 							patch_JSON_data[item]['package_name'],
 							patch_JSON_data[item]['patch_type'],
 							patch_JSON_data[item]['file_path'],
 							patch_JSON_data[item]['update_code'],
 							patch_JSON_data[item]['link'],
+							patch_JSON_data[item]['cvss'],
 							patch_JSON_data[item]['comment'],
 							patch_JSON_data[item]['date']
 						] 
@@ -270,11 +284,13 @@
 				else if (patch_JSON_data[item]['patch_type'] == 'version') {
 					patches.push( 
 						[ 	
+							patch_JSON_data[item]['id'],
 							patch_JSON_data[item]['package_name'],
 							patch_JSON_data[item]['patch_type'],
 							'N/A',
 							patch_JSON_data[item]['version_number'],
 							patch_JSON_data[item]['link'],
+							patch_JSON_data[item]['cvss'],
 							patch_JSON_data[item]['comment'],
 							patch_JSON_data[item]['date']
 						] 
@@ -283,7 +299,7 @@
 			}
 
 			var patches = $('#patches').DataTable( {
-				data: 			patches,
+				data: patches,
 				"columns" : [
 					{ "data" : [0] },
 					{ "data" : [1] },
@@ -292,21 +308,23 @@
 					{ "data" : [4] },
 					{ "data" : [5] },
 					{ "data" : [6] },
+					{ "data" : [7] },
+					{ "data" : [8] },
 					{ "defaultContent" : "<button class='btn btn-success' id='release'>Push to Release</button>" },
 					{ "defaultContent" : "<button class='btn btn-danger' id='delete-patch'>Delete Patch</button>" }
 				],
 		        "lengthMenu":   [ 5, 10, 15 ],
 		        "paging":       true,
 		        "ordering":     true,
-		        "order":        [[ 0, "desc" ]],
+		        "order":        [[ 1, "desc" ]],
 		        "info":         true,
 		        stateSave: 		true
 			});
 
 			$('#patches tbody').on('click', 'button', function() {
 				var data = patches.row( $(this).parents('tr') ).data();
-				if (this.id == 'release') { location.href += '/release_patch/' + data[6]; }
-				else if (this.id == "delete-patch") { location.href += '/delete_patch/' + data[6]; }
+				if (this.id == 'release') { location.href += '/release_patch/' + data[8]; }
+				else if (this.id == "delete-patch") { location.href += '/delete_patch/' + data[8]; }
 			});
 
 			for (item in user_JSON_data) {	
@@ -320,7 +338,7 @@
 			} 
 
 			var users = $('#users').DataTable( {
-				data: 			user_data,
+				data: user_data,
 				"columns" : [
 					{ "data" : [0] },
 					{ "data" : [1] },

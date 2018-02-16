@@ -391,5 +391,3 @@ example_Patch = '''
 &-- print("hola")
 &++ 
 '''
-
-# perform_Additions('../file_store/test/test1.py', 'test_patch.py', example_Patch)
