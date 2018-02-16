@@ -1,5 +1,6 @@
-import pymongo, json, datetime
+import pymongo, json
 
+from datetime           import datetime
 from json               import loads
 from bson.json_util     import dumps
 from flask              import Flask, render_template, request, redirect, url_for
@@ -299,12 +300,8 @@ def login():
 
 @app.route("/register", methods=['POST', 'GET'])
 def register():
-    
     form = SignupForm()
-
-    if request.method == 'GET':
-        print("Received GET request for register form")
-        return render_template('login.html', form=form)
+    if request.method == 'GET': return render_template('login.html', form=form)
     elif request.method == 'POST':
         if form.validate_on_submit():
             print("Registering User")
@@ -379,13 +376,13 @@ def admin_settings():
     user_JSON_data    = loads(dumps(user_collection.find()))
     return render_template("admin_settings.html", user_JSON_data=user_JSON_data, patch_JSON_data=patch_JSON_data)
 
-@app.route("/admin_settings/<email>")
+@app.route("/admin_settings/delete_user/<email>")
 @login_required
-def admin_delete(email):
+def admin_delete_user(email):
     user_collection.remove( { 'email' : email } )
     return redirect(url_for('admin_settings'))
 
-@app.route("/admin_registration")
+@app.route("/admin_registration", methods=['POST'])
 @login_required
 def admin_registration():
     if (user_collection.find( { 'email' : request.form['email'] } ).count() 
@@ -402,9 +399,42 @@ def admin_registration():
         })
     return redirect(url_for('admin_settings'))
 
-@app.route("/admin_add_manual_update")
+@app.route("/admin_add_manual_update", methods=['POST'])
 @login_required
 def admin_add_manual_update():      
+    admin_patches.insert({
+        'package_name' : request.form['package'],
+        'patch_type' : 'build_from_source',
+        'file_path' : request.form['file-path'],
+        'update_code' : request.form['inserted-code'],
+        'link' : request.form['link'],
+        'comment' : request.form['comment'],
+        'date' : str(datetime.now())
+    })
+    return redirect(url_for('admin_settings'))
 
-    admin_patches.insert({})
+@app.route("/admin_add_version_update", methods=['POST'])
+@login_required
+def admin_add_version_update():      
+    admin_patches.insert({
+        'package_name' : request.form['package'], 
+        'patch_type' : 'version',
+        'link' : request.form['link'],
+        'version_number' : request.form['version-name'],
+        'comment' : request.form['comment'],
+        'date' : str(datetime.now())
+    })
+    return redirect(url_for('admin_settings'))
+
+@app.route("/admin_settings/release_patch/<date>")
+@login_required
+def admin_release_patch(date):
+    admin_patches.remove( { 'date' : date } )
+    return redirect(url_for('admin_settings'))
+
+@app.route("/admin_settings/delete_patch/<date>")
+@login_required
+def admin_delete_patch(date):
+    print("Deleting item", date)
+    admin_patches.remove( { 'date' : date } )
     return redirect(url_for('admin_settings'))

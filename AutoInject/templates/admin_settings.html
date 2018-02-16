@@ -22,7 +22,7 @@
 		</button>
 		<button 
 			style="margin-left: 10px; margin-bottom: 10px;" 
-			class="btn btn-md btn-danger" 
+			class="btn btn-md btn-info" 
 			data-toggle="modal"
 			data-target="#admin_bfs"
 		>
@@ -30,7 +30,7 @@
 		</button>
 		<button 
 			style="margin-left: 10px; margin-bottom: 10px;" 
-			class="btn btn-md btn-success" 
+			class="btn btn-md btn-info" 
 			data-toggle="modal"
 			data-target="#add_user"
 		>
@@ -41,26 +41,29 @@
 		  	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
 		    	<div class="modal-content">
 		      		<div class="modal-header">
-		        		<h5 class="modal-title" style="display: inline-block;">Update Version for <b>{{ package }}</b></h5>
+		        		<h5 class="modal-title" style="display: inline-block;">Add Admin Version Patch</h5>
 		        		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 		          			<span aria-hidden="true">&times;</span>
 		        		</button>
 		      		</div>
 		      		<div class="modal-body">
-				        <form action="{{ url_for('version_update') }}" method="post" id="version-form">
+				        <form action="{{ url_for('admin_add_version_update') }}" method="post" id="version-form">
 				          	<div class="form-group">
-					            <label for="recipient-name" class="col-form-label">Version to Upgrade To</label>
-					            <input type="text" class="form-control" id="version-name" name="version-name">
+					            <label for="recipient-name" class="col-form-label">Package Name</label>
+					            <input type="text" class="form-control" id="package" name="package" placeholder="Python">
+				          	</div>
+				          	<div class="form-group">
+					            <label for="recipient-name" class="col-form-label">Version to Set</label>
+					            <input type="text" class="form-control" id="version-number" name="version-name" placeholder="1.0.1">
 				          	</div>
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Version Repository Link <i>(Optional)</i></label>
-					            <input type="text" class="form-control" id="link" name="link">
+					            <input type="text" class="form-control" id="link" name="link" placeholder="https://link.com">
 				          	</div>
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Comment</label>
-					            <input type="text" class="form-control" id="comment" name="comment">
+					            <input type="text" class="form-control" id="comment" name="comment" placeholder="Great update">
 				          	</div>
-				          	<input type="hidden" name="package" value="{{ package }}">
 				          	<div class="modal-footer">
 						        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 						        <input type="submit" class="btn btn-primary" id="version-form" value="Submit"></button>
@@ -75,7 +78,7 @@
 		  	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
 		    	<div class="modal-content">
 		      		<div class="modal-header">
-		        		<h5 class="modal-title" style="display: inline-block;">Rebuild Code for <b>{{ package }}</b></h5>
+		        		<h5 class="modal-title" style="display: inline-block;">Add Admin Build-From-Source Patch</h5>
 		        		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 		          			<span aria-hidden="true">&times;</span>
 		        		</button>
@@ -83,22 +86,25 @@
 		      		<div class="modal-body">
 				        <form action="{{ url_for('admin_add_manual_update') }}" method="post" id="manual-form">
 				          	<div class="form-group">
+					            <label for="recipient-name" class="col-form-label">Package Name</label>
+					            <input type="text" class="form-control" id="package" name="package" placeholder="Python">
+				          	</div>
+				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">File Path</label>
-					            <input type="text" class="form-control" id="file-path" name="file-path">
+					            <input type="text" class="form-control" id="file-path" name="file-path" placeholder="test/test.py">
 				          	</div>
 				          	<div class="form-group">
-				            	<label for="message-text" class="col-form-label">Code to Insert</label>
-				            	<textarea class="form-control" id="inserted-code" name="inserted-code"></textarea>
+				            	<label for="message-text" class="col-form-label">Code to Implement</label>
+				            	<textarea class="form-control" id="inserted-code" name="inserted-code" placeholder="&* print('Hello World')"></textarea>
 				          	</div>
 				          	<div class="form-group">
-				            	<label for="message-text" class="col-form-label">Code to Remove <i>(Optional)</i></label>
-				            	<textarea class="form-control" id="removed-code" name="removed-code"></textarea>
+					            <label for="recipient-name" class="col-form-label">Version Repository Link <i>(Optional)</i></label>
+					            <input type="text" class="form-control" id="link" name="link" placeholder="https://link.com">
 				          	</div>
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Comment</label>
-					            <input type="text" class="form-control" id="comment" name="comment">
+					            <input type="text" class="form-control" id="comment" name="comment" placeholder="Great update">
 				          	</div>
-				          	<input type="hidden" name="package" value="{{ package }}">
 				          	<div class="modal-footer">
 						        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 						        <input type="submit" class="btn btn-primary" id="manual-form" value="Submit"></button>
@@ -122,15 +128,15 @@
 				        <form action="{{ url_for('admin_registration') }}" method="post" id="version-form">
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Username</label>
-					            <input type="text" class="form-control" id="version-name" name="username">
+					            <input type="text" class="form-control" id="version-name" name="username" placeholder="Username">
 				          	</div>
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Email</label>
-					            <input type="text" class="form-control" id="version-name" name="email">
+					            <input type="text" class="form-control" id="version-name" name="email" placeholder="User@me.com">
 				          	</div>
 				          	<div class="form-group">
 					            <label for="recipient-name" class="col-form-label">Password</label>
-					            <input type="password" class="form-control" id="version-name" name="password">
+					            <input type="password" class="form-control" id="version-name" name="password" placeholder="Password">
 				          	</div>
 				          	<div class="modal-footer">
 						        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -158,22 +164,28 @@
 									>
 								        <thead>
 								            <tr>
-								                <th>Patch Type</th>
-								                <th>Package Name</th>
-								                <th>File Location</th>
+								            	<th>Package Name</th>
+								                <th>Patch Type</th>								                
+								                <th>Location of Patch</th>
+								                <th>Update Content</th>
+								                <th>Link to Patch</th>
 								                <th>Comment</th>
+								                <th>Date</th>
 								                <th>Push Patch to Release</th>								               
-								                <th>Delete Patch</th>
+								                <th>Delete Staged Patch</th>
 								            </tr>
 								        </thead>
 								        <tfoot>
 								            <tr>
-								                <th>Patch Type</th>
 								                <th>Package Name</th>
-								                <th>File Location</th>
+								                <th>Patch Type</th>								                
+								                <th>Location of Patch</th>
+								                <th>Update Content</th>
+								                <th>Link to Patch</th>
 								                <th>Comment</th>
-								                <th>Push Patch to Release</th>
-								                <th>Delete Patch</th>
+								                <th>Date</th>
+								                <th>Push Patch to Release</th>								               
+								                <th>Delete Staged Patch</th>
 								            </tr>
 										</tfoot>
 										<tbody>
@@ -186,10 +198,11 @@
 				</div>
 			</div>
 		</div>
+		<hr/><br/>
 		<div class="row">
 			<div class="col-lg-12">
 				<div class="panel panel-default">
-		  			<div class="panel-heading">Current Users</div>
+		  			<div class="panel-heading">Current System Users</div>
 		  			<div class="panel-body">
 		    			<div class="row">
 		      				<div class="col-lg-12">
@@ -241,15 +254,60 @@
 			var patches = [];
 
 			for (item in patch_JSON_data) {	
-				patches.push( 
-					[ 
-						patch_JSON_data[item]['update_type'],
-						patch_JSON_data[item]['package_name'],
-						patch_JSON_data[item]['file_path'],
-						patch_JSON_data[item]['comment']
-					] 
-				);
+				if (patch_JSON_data[item]['patch_type'] == 'build_from_source') {
+					patches.push( 
+						[ 	
+							patch_JSON_data[item]['package_name'],
+							patch_JSON_data[item]['patch_type'],
+							patch_JSON_data[item]['file_path'],
+							patch_JSON_data[item]['update_code'],
+							patch_JSON_data[item]['link'],
+							patch_JSON_data[item]['comment'],
+							patch_JSON_data[item]['date']
+						] 
+					);
+				}
+				else if (patch_JSON_data[item]['patch_type'] == 'version') {
+					patches.push( 
+						[ 	
+							patch_JSON_data[item]['package_name'],
+							patch_JSON_data[item]['patch_type'],
+							'N/A',
+							patch_JSON_data[item]['version_number'],
+							patch_JSON_data[item]['link'],
+							patch_JSON_data[item]['comment'],
+							patch_JSON_data[item]['date']
+						] 
+					);
+				}
 			}
+
+			var patches = $('#patches').DataTable( {
+				data: 			patches,
+				"columns" : [
+					{ "data" : [0] },
+					{ "data" : [1] },
+					{ "data" : [2] },
+					{ "data" : [3] },
+					{ "data" : [4] },
+					{ "data" : [5] },
+					{ "data" : [6] },
+					{ "defaultContent" : "<button class='btn btn-success' id='release'>Push to Release</button>" },
+					{ "defaultContent" : "<button class='btn btn-danger' id='delete-patch'>Delete Patch</button>" }
+				],
+		        "lengthMenu":   [ 5, 10, 15 ],
+		        "paging":       true,
+		        "ordering":     true,
+		        "order":        [[ 0, "desc" ]],
+		        "info":         true,
+		        stateSave: 		true
+			});
+
+			$('#patches tbody').on('click', 'button', function() {
+				var data = patches.row( $(this).parents('tr') ).data();
+				if (this.id == 'release') { location.href += '/release_patch/' + data[6]; }
+				else if (this.id == "delete-patch") { location.href += '/delete_patch/' + data[6]; }
+			});
 
 			for (item in user_JSON_data) {	
 				user_data.push( 
@@ -261,24 +319,6 @@
 				);
 			} 
 
-			var patches = $('#patches').DataTable( {
-				data: 			patches,
-				"columns" : [
-					{ "data" : [0] },
-					{ "data" : [1] },
-					{ "data" : [2] },
-					{ "data" : [3] },
-					{ "defaultContent" : "<button class='btn btn-info'>Delete Patch</button>" },
-					{ "defaultContent" : "<button class='btn btn-danger'>Delete Patch</button>" }
-				],
-		        "lengthMenu":   [ 5, 10, 15 ],
-		        "paging":       true,
-		        "ordering":     true,
-		        "order":        [[ 0, "desc" ]],
-		        "info":         true,
-		        stateSave: 		true
-			});
-
 			var users = $('#users').DataTable( {
 				data: 			user_data,
 				"columns" : [
@@ -286,7 +326,7 @@
 					{ "data" : [1] },
 					{ "data" : [2] },
 					{ 
-						"defaultContent" : "<button class='btn btn-danger'>Delete User</button>",
+						"defaultContent" : "<button class='btn btn-danger' id='delete-user'>Delete User</button>",
 						"width" : "15%" 
 					}
 				],
@@ -299,8 +339,10 @@
 			});
 
 			$('#users tbody').on('click', 'button', function() {
-				var data = users.row( $(this).parents('tr') ).data();
-				location.href += '/' + data[1];
+				if (this.id == "delete-user") {
+					var data = users.row( $(this).parents('tr') ).data();
+					location.href += '/delete_user/' + data[1];
+				}
 			});
 		});
 

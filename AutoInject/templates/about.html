@@ -16,15 +16,17 @@
         interval: 3000
     })
     </script>
-    <h1></h1>
     <div class="container">
         <div class="page-header">
-            <h1>FAQ
+            <h1 id="faq-header-text">FAQ
                 <small>Frequently Asked Questions</small>
+            </h1>
+            <h1 id="doc-header-text" style="display: none;">DOCS
+                <small>User Documentation</small>
             </h1>
         </div>
         <div class="row">
-            <div id="faq" class="col-md-9">
+            <div id="faq-div" class="col-md-9">
                 <div class="panel-group" id="accordion">
                     <div class="panel panel-default">
                         <div class="panel-heading">
@@ -36,10 +38,7 @@
                         </div>
                         <div id="collapse-1" class="panel-collapse collapse">
                             <div class="panel-body">
-                                <p>C
-                                </p>
-                                <p>P
-                                </p>
+                                <p>AutoInject is a tool that allows you to keep your system secure from potential vulnerabilites, by keeping your software protected and up-to-date against the most recently discovered threats.</p>
                             </div>
                         </div>
                     </div>
@@ -53,17 +52,50 @@
                         </div>
                         <div id="collapse-2" class="panel-collapse collapse">
                             <div class="panel-body">
-                              CMP
+                                <p>Use the <b>vulnerabilities</b> page to find what your system is currently insecure against, the <b>logs</b> page to see the updates your system has undergone, and the <b>dashboard</b> to disable particular packages from being updated.</p>
+                                <p>Also check out the <b>profile</b> page to ensure the system is best suited to you.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="doc-div" class="col-md-9" style="display: none;">
+                <div class="panel-group" id="accordion">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapse-3">
+                                    Version
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapse-3" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                <p>The system is current operating at version <b>0.1</b>.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h4 class="panel-title">
+                                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapse-4">
+                                    Dependencies?
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapse-4" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                <p><b>AutoInject</b> dependencies are listed in the <code>setup.py</code> file, at the root of the <b>AutoInject</b> file structure.</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <p class="lead">Other links</p>
+                <p class="lead">Links</p>
                 <div class="list-group">
-                    <a href="#" class="list-group-item active">Documentation</a>
-                    <a href="#" class="list-group-item">FAQ</a>
+                    <button class="list-group-item active" id="faq">FAQ</a>
+                    <button class="list-group-item" id="doc">Documentation</a>
                 </div>
             </div>
         </div>
@@ -71,6 +103,29 @@
 </div>
 {% endblock %}
 {% block scripts %}
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
+<script type='text/javascript'>
+    
+    $(document).ready(function() {
+        $('#faq').click(function() {
+            $('div#faq-div').show();
+            $('div#doc-div').hide();
+            $('h1#faq-header-text').show();
+            $('h1#doc-header-text').hide();
+            $('#faq').addClass('active');
+            $('#doc').removeClass('active');
+            return false;
+        });
+
+        $('#doc').click(function() {
+            $('div#doc-div').show();
+            $('div#faq-div').hide();
+            $('h1#doc-header-text').show();
+            $('h1#faq-header-text').hide();
+            $('#doc').addClass('active');
+            $('#faq').removeClass('active');
+            return false;
+        });
+    });
+
+</script>
 {% endblock %}

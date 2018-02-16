@@ -69,9 +69,9 @@ def upload_File(package_name, original_files_path, diff_file_path, type_of_updat
                 'original_files_path' : original_files_path,
                 'file_path_of_diff' : diff_file_path, 
                 'date' : str(datetime.now()),
-                'update_type' : type_of_update,
+                'update_type' : type_of_update, # build_from_source / version
                 'comment' : comment, 
-                'implementation_type' : type_of_implementation,
+                'implementation_type' : type_of_implementation, # manual / automatic
                 'type_of_patch' : type_of_patch, # forward / backward
                 'file_path_of_copy' : copy_of_file_path,
                 'active' : active, # 1 -> active, 0 -> not active
