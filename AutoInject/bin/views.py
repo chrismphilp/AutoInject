@@ -404,7 +404,7 @@ def admin_registration():
 def admin_add_manual_update():      
     admin_patches.insert({
         'id' :'ADMIN-' + str(sf.get_Incremented_Id()),
-        'package_name' : request.form['package'],
+        'package_name' : request.form['package'] + ''.join(e for e in request.form['package_version'] if e.isalnum()),
         'patch_type' : 'build_from_source',
         'file_path' : request.form['file-path'],
         'update_code' : request.form['inserted-code'],
@@ -420,7 +420,7 @@ def admin_add_manual_update():
 def admin_add_version_update():      
     admin_patches.insert({
         'id' :'ADMIN-' + str(sf.get_Incremented_Id()),
-        'package_name' : request.form['package'], 
+        'package_name' : request.form['package'] + ''.join(e for e in request.form['package_version'] if e.isalnum()), 
         'patch_type' : 'version',
         'link' : request.form['link'],
         'version_number' : request.form['version-name'],
@@ -433,30 +433,34 @@ def admin_add_version_update():
 @app.route("/admin_settings/release_patch/<date>")
 @login_required
 def admin_release_patch(date):
-    patch_data = admin_patches.find_one( { 'date' : date })
+    
+    patch_data                  = admin_patches.find_one( { 'date' : date } )
+    vulnerable_configuration    = [ patch_data['package_name'] ]
+    references                  = [ patch_data['link'] ]
+
     if (patch_data['patch_type'] == 'build_from_source'):
         cve_collection.insert({
             'id' : patch_data['id'],
-            'vulnerable_configuration' : [ patch_data['package'] ],
+            'vulnerable_configuration' : vulnerable_configuration,
             'summary' : patch_data['comment'],
             'cvss' : patch_data['cvss'],
             'patch_type' : 'build_from_source',
             'file_path' : patch_data['file_path'],
             'update_code' : patch_data['update_code'],
-            'references' : [ patch_data['link'] ],
-            'reformatted_configs' : [ patch_data['package'] ],
+            'references' : references,
+            'reformatted_configs' : vulnerable_configuration,
             'date' : patch_data['date']
         })
     elif (patch_data['patch_type'] == 'version'):
         cve_collection.insert({
             'id' : patch_data['id'],
-            'vulnerable_configuration' : [ patch_data['package'] ],
+            'vulnerable_configuration' : vulnerable_configuration,
             'summary' : patch_data['comment'],
             'cvss' : patch_data['cvss'],
             'patch_type' : 'version',
             'version_number' : patch_data['version_number'],
-            'references' : [ patch_data['link'] ],
-            'reformatted_configs' : [ patch_data['package'] ],
+            'references' : references,
+            'reformatted_configs' : vulnerable_configuration,
             'date' : patch_data['date']
         })
     admin_patches.remove( { 'date' : date } )
