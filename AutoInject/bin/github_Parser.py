@@ -7,6 +7,7 @@ import lxml.etree   as etree
 from subprocess     import check_output, check_call
 
 def parse_Github(url):
+    if not urls(endwith("?diff=split")): url += "?diff=split"
     request_time    = time.time()
     page            = requests.get(url)
     print('Total request time:', time.time() - request_time)
