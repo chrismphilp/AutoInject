@@ -44,7 +44,8 @@ def parse_Github(url):
                     if first_line[length_of_space_first] == '-': first_line = first_line[length_of_space_first + 1:]
                     if second_line[length_of_space_second] == '+': second_line = second_line[length_of_space_second + 1:]
                     l_o_i += "&--" + first_line + "\n" + " &++" + second_line + "\n"
-                if 'blob-code blob-code-empty empty-cell'in str(etree.tostring(lines[1])):
+                if 'blob-code blob-code-empty empty-cell'in str(etree.tostring(lines[3])):
+                    if first_line[length_of_space_first] == '-': first_line = first_line[length_of_space_first + 1:]
                     l_o_i += "&--" + first_line + "\n" + " &++" + "\n"
 
             if 'blob-code blob-code-empty empty-cell'in str(etree.tostring(lines[1])):
@@ -62,5 +63,3 @@ def parse_Github(url):
 
 def special_Match(strg, search=re.compile(r"[^\n\t\r' ']").search):
     return not bool(search(strg))
-
-# parse_Github('https://github.com/chrismphilp/AutoInject/commit/575637a5e859de0453e22aedf89ce704411a1e37?diff=split')

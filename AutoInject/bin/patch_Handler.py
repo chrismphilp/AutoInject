@@ -90,7 +90,7 @@ def handle_Patch_Maintenance(package, date_of_patch):
             } } 
         } 
     )
-    print("Reverser:", reverser)
+
     if reverser:
         formatted_data = loads(dumps(reverser))
         for elements in formatted_data['log']:
@@ -175,11 +175,17 @@ def delete_Patch(package, date_of_patch):
     if tmp:
         for values in tmp['log']:
             if (values['date'] == date_of_patch):
+                if values['path_of_intermediate_store']:
+                    if (os.path.isfile(get_Source_Path(values['path_of_intermediate_store']))): 
+                        os.remove(values['path_of_intermediate_store'])
                 if (os.path.isfile(get_Source_Path(values['file_path_of_copy']))): os.remove(values['file_path_of_copy'])
                 if (os.path.isfile(get_Source_Path(values['file_path_of_diff']))): os.remove(values['file_path_of_diff'])
                 file_path_of_copy = values['file_path_of_copy']     
         for values in tmp['log']:       
             if (values['file_path_of_copy'] == file_path_of_copy and values['active'] == 0): 
+                if values['path_of_intermediate_store']:
+                    if (os.path.isfile(get_Source_Path(values['path_of_intermediate_store']))): 
+                        os.remove(values['path_of_intermediate_store'])
                 if (os.path.isfile(values['file_path_of_diff'])): os.remove(values['file_path_of_diff'])
 
         if file_path_of_copy:

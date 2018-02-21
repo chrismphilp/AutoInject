@@ -131,7 +131,7 @@ def update_individual_package(package, cve_id):
 @app.route("/vulnerabilities/<package>/admin_update/<admin_id>")
 @login_required
 def update_using_admin_patch(package, admin_id):
-    ap.handle_Admin_Patch(cve_collection.find_one( { 'id' : admin_id } ))
+    ap.handle_Admin_Patch(cve_collection.find_one( { 'id' : admin_id } ) )
     return redirect(url_for('vulnerabilities') + '/' + package)
 
 @app.route("/vulnerabilities/<package>/delete_patch/<date_of_patch>")

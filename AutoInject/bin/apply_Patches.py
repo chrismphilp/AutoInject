@@ -17,7 +17,11 @@ cve_collection                          = client['cvedb']['cves']
 def handle_Admin_Patch(patch_cursor):
     if (patch_cursor['patch_type'] == 'build_from_source'):
         if (patch_cursor['references']): 
-            handle_Github_Patch(patch_cursor['references'])
+            handle_Github_Patch(
+                patch_cursor,
+                patch_cursor['vulnerable_configuration'][0], 
+                patch_cursor['references'][0]
+            )
         else:
             print("No link provided")
             handle_Manual_Patch_By_User(
@@ -33,10 +37,14 @@ def handle_Admin_Patch(patch_cursor):
         else:
             print("No link provided")
 
-def handle_Github_Patch(package, url):
-    list_of_updates = []
+def handle_Github_Patch(cursor, package, url):
+    set_to = False
     for (file_path, code) in gp.parse_Github(url): 
-        handle_Manual_Patch_By_User(bfs.search_Files(url), package, code, 'Github patch: ' + url)
+        if not set_to: 
+            handle_Manual_Patch_By_User(bfs.search_Files(file_path), package, code, 'Github patch: ' + url, cursor)
+            set_to = True
+        else:
+            handle_Manual_Patch_By_User(bfs.search_Files(file_path), package, code, 'Github patch: ' + url)
 
 def handle_Manual_Patch_By_User(full_file_path, package, inserted_code, comment, cursor=None):
 
