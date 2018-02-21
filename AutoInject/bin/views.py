@@ -183,16 +183,11 @@ def load_user(user_id):
 
 @app.route("/login", methods=['POST', 'GET'])
 def login():
-
     form = LoginForm()
-    
     if request.method == 'POST':
         if form.validate_on_submit():
-
             result = user_collection.find_one( { 'id' : request.form['username'] } )
-
-            if not result:
-                return redirect(url_for("login"))
+            if not result: return redirect(url_for("login"))
             elif check_password_hash(result['password'], request.form['password']):
                 user    = User()
                 user.id = result['id']

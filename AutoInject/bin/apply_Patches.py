@@ -96,7 +96,6 @@ def handle_Manual_Patch_By_User(full_file_path, package, inserted_code, comment,
     )
 
     if cursor: cve_collection.delete_one( { '_id' : cursor['_id'] } )
-
     return diff_file_path
 
 def determine_File_Status(file_path):

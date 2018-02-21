@@ -5,10 +5,12 @@ Hello Moi Boi
 dewded
 fffffff
 eeee
-class adder:
+class addr:
 	def goodbye():
 		print("Say goodbye")
 		print("hola")		
+
+	class adder:
 
 	def goodbye(au_revoir):ddd
 		hello
