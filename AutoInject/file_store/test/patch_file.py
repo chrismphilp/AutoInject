@@ -1,6 +1,6 @@
-class addr:
-
 class adder:
+
+class add:
 	def hello():
 		return "Hello"
 
