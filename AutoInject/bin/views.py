@@ -9,6 +9,7 @@ from pymongo            import MongoClient
 from AutoInject         import app
 
 # Importing scripts to sort data
+import AutoInject.bin.apply_Patches         as ap
 import AutoInject.bin.build_From_Source     as bfs
 import AutoInject.bin.get_Vulnerabilities   as gv
 import AutoInject.bin.get_Packages          as gp
@@ -40,70 +41,6 @@ def index():
     package_JSON_data = gp.get_Packages_JSON()
     return render_template('index.html', package_JSON_data=package_JSON_data)
 
-@app.route("/drop")
-@login_required
-def drop():  
-    print("Dropping and refreshing packages")
-    cve_collection.update( 
-        {}, 
-        { '$unset' : { 'matched_To_CVE' : 1 } }, 
-        multi=True 
-    )
-    package_JSON_data = gp.get_Package_Data()
-    gp.insert_Packages(package_JSON_data)
-    gv.remove_Special_Characters()
-    gv.collect_Checkable_Packages()
-    return redirect("/", code=302)
-
-@app.route("/refresh")
-@login_required
-def refresh():  
-    print("Refreshing vulnerabilities")
-    gv.run_Database_Updater_Script()
-    gv.remove_Special_Characters()
-    gv.collect_Checkable_Packages()
-    return redirect("/", code=302)
-
-@app.route("/enable/<package>")
-@login_required
-def enabler(package):
-    package_collection.update(
-        { 'package_name' : package },
-        { '$set' : { 'updateable' : 1 } },
-        multi=True
-    )
-    return redirect("/", code=302)
-
-@app.route("/disable/<package>")
-@login_required
-def disabler(package):
-    package_collection.update(
-        { 'package_name' : package },
-        { '$set' : { 'updateable' : 0 } },
-        multi=True
-    )
-    return redirect("/", code=302)
-
-@app.route("/enable_all")
-@login_required
-def enable_all():
-    package_collection.update(
-        {},
-        { '$set' : { 'updateable' : 1 } },
-        multi=True
-    )
-    return redirect("/", code=302)
-
-@app.route("/disable_all")
-@login_required
-def disable_all():
-    package_collection.update(
-        {},
-        { '$set' : { 'updateable' : 0 } },
-        multi=True
-    )
-    return redirect("/", code=302)
-
 @app.route("/vulnerabilities")
 @login_required
 def vulnerabilities():
@@ -130,12 +67,6 @@ def return_CVE_IDs(package):
         update_log=update_log
     )
 
-@app.route("/vulnerabilities/<package>/<cve_id>")
-@login_required
-def update_individual_package(package, cve_id):
-    wp.collect_Specific_Package_URL(package_name, cve_id)
-    return redirect(url_for('vulnerabilities') + '/' + package)
-
 @app.route("/log")
 @login_required
 def log():
@@ -153,7 +84,7 @@ def about():
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
-#                           Manual Updates                                 |
+#                           Update Related Functions                       |
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 
@@ -170,57 +101,14 @@ def version_update():
 @app.route("/manual_update", methods=['POST'])
 @login_required
 def manual_update():
-
     full_file_path = bfs.search_Files(request.form['file-path'])
-    if (full_file_path[-1:] == "\n"): full_file_path = full_file_path[:-1]
-    
     html_To_Parse_Before = bfs.format_HTML(full_file_path)
 
-    bfs.perform_File_Alterations(
-        full_file_path, 
-        'AutoInject/file_store/test/patch_file.py', 
-        request.form['inserted-code']
-    )
-
-    diff_file_path = ph.produce_Diff_Of_Files(
-        full_file_path,
-        'AutoInject/file_store/test/patch_file.py',
-        request.form['package'],
-        'patch_file__apply__.patch'
-    )
-
-    diff_file_path2 = ph.produce_Diff_Of_Files(
-        'AutoInject/file_store/test/patch_file.py',
+    diff_file_path = ap.handle_Manual_Patch_By_User(
         full_file_path,
         request.form['package'],
-        'patch_file__reverse__.patch'
-    )
-
-    ph.restore_File_Contents(diff_file_path)
-    copy_of_file = ph.make_Copy_Of_File(request.form['package'], full_file_path)
-
-    ph.upload_File(
-        request.form['package'],
-        full_file_path,
-        diff_file_path,
-        'build_from_source',
-        'manual',
-        request.form['comment'],
-        'forward_patch',
-        copy_of_file,
-        0
-    )
-
-    ph.upload_File(
-        request.form['package'],
-        full_file_path,
-        diff_file_path2,
-        'build_from_source',
-        'manual',
-        request.form['comment'],
-        'backward_patch',
-        copy_of_file,
-        1
+        request.form['inserted-code'],
+        request.form['comment']
     )
 
     html_To_Parse_After = bfs.format_HTML('AutoInject/file_store/test/patch_file.py')
@@ -234,10 +122,28 @@ def manual_update():
         link_For_Button="/vulnerabilities/"+request.form['package']
     )
 
+@app.route("/vulnerabilities/<package>/standard_update/<cve_id>")
+@login_required
+def update_individual_package(package, cve_id):
+    wp.collect_Specific_Package_URL(package_name, cve_id)
+    return redirect(url_for('vulnerabilities') + '/' + package)
+
+@app.route("/vulnerabilities/<package>/admin_update/<admin_id>")
+@login_required
+def update_using_admin_patch(package, admin_id):
+    ap.handle_Admin_Patch(cve_collection.find_one( { 'id' : admin_id } ))
+    return redirect(url_for('vulnerabilities') + '/' + package)
+
+@app.route("/vulnerabilities/<package>/delete_patch/<date_of_patch>")
+@login_required
+def delete_file_patch(package, date_of_patch):
+    ph.delete_Patch(package, date_of_patch)
+    return redirect(url_for('vulnerabilities') + '/' + package)
+
 @app.route("/vulnerabilities/<package>/revert_patch/<date_of_patch>")
 @login_required
-def reverse_file_patch(date_of_patch, package):
-    ph.handle_Patch_Maintenance(date_of_patch, package)
+def reverse_file_patch(package, date_of_patch):
+    ph.handle_Patch_Maintenance(package, date_of_patch)
     return redirect(url_for('vulnerabilities') + '/' + package)
     
 # --------------------------------------------------------------------------
@@ -436,7 +342,9 @@ def admin_release_patch(date):
     
     patch_data                  = admin_patches.find_one( { 'date' : date } )
     vulnerable_configuration    = [ patch_data['package_name'] ]
-    references                  = [ patch_data['link'] ]
+    
+    if      patch_data['link']: references = [ patch_data['link'] ]
+    else:   references = []
 
     if (patch_data['patch_type'] == 'build_from_source'):
         cve_collection.insert({
@@ -472,3 +380,73 @@ def admin_delete_patch(date):
     print("Deleting item", date)
     admin_patches.remove( { 'date' : date } )
     return redirect(url_for('admin_settings'))
+
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+#                           Navbar related functions                       |
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+
+@app.route("/drop")
+@login_required
+def drop():  
+    print("Dropping and refreshing packages")
+    cve_collection.update( 
+        {}, 
+        { '$unset' : { 'matched_To_CVE' : 1 } }, 
+        multi=True 
+    )
+    package_JSON_data = gp.get_Package_Data()
+    gp.insert_Packages(package_JSON_data)
+    gv.remove_Special_Characters()
+    gv.collect_Checkable_Packages()
+    return redirect("/", code=302)
+
+@app.route("/refresh")
+@login_required
+def refresh():  
+    print("Refreshing vulnerabilities")
+    gv.run_Database_Updater_Script()
+    gv.remove_Special_Characters()
+    gv.collect_Checkable_Packages()
+    return redirect("/", code=302)
+
+@app.route("/enable/<package>")
+@login_required
+def enabler(package):
+    package_collection.update(
+        { 'package_name' : package },
+        { '$set' : { 'updateable' : 1 } },
+        multi=True
+    )
+    return redirect("/", code=302)
+
+@app.route("/disable/<package>")
+@login_required
+def disabler(package):
+    package_collection.update(
+        { 'package_name' : package },
+        { '$set' : { 'updateable' : 0 } },
+        multi=True
+    )
+    return redirect("/", code=302)
+
+@app.route("/enable_all")
+@login_required
+def enable_all():
+    package_collection.update(
+        {},
+        { '$set' : { 'updateable' : 1 } },
+        multi=True
+    )
+    return redirect("/", code=302)
+
+@app.route("/disable_all")
+@login_required
+def disable_all():
+    package_collection.update(
+        {},
+        { '$set' : { 'updateable' : 0 } },
+        multi=True
+    )
+    return redirect("/", code=302)

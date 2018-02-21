@@ -36,6 +36,7 @@
 							                <th>Implementation Type</th>
 							                <th>Type of Patch</th>
 							                <th>Revert?</th> 
+							                <th>Delete?</th>
 							            </tr>
 							        </thead>
 							        <tfoot>
@@ -47,7 +48,8 @@
 							                <th>Date</th>
 							                <th>Implementation Type</th>
 							                <th>Type of Patch</th>
-							                <th>Revert?</th>  
+							                <th>Revert?</th> 
+							                <th>Delete?</th> 
 							            </tr>
 									</tfoot>
 									<tbody>
@@ -100,7 +102,8 @@
 					{ "data" : [4] },
 					{ "data" : [5] },
 					{ "data" : [6] },
-					{ "defaultContent" : "<button class='btn btn-danger'>Revert Update</button>" }
+					{ "defaultContent" : "<button class='btn btn-danger' id='delete_update'>Delete Update</button>" },
+					{ "defaultContent" : "<button class='btn btn-danger' id='revert_update'>Revert Update</button>" }
 				],
 		        "lengthMenu":   [ 5, 10, 15 ],
 		        "paging":       true,
@@ -112,7 +115,12 @@
 
 			$('#update_log tbody').on('click', 'button', function() {
 				var data = update_log.row( $(this).parents('tr') ).data();
-				location.href = '/vulnerabilities/' + data[0] + '/revert_patch/' + data[4];
+				if (this.id == 'delete_update') {
+					location.href = '/vulnerabilities/' + data[0] + '/delete_patch/' + data[4];
+				} 
+				else if (this.id == 'revert_update') {
+					location.href = '/vulnerabilities/' + data[0] + '/revert_patch/' + data[4];
+				}
 			});
 		});
 

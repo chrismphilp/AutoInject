@@ -37,12 +37,12 @@ def search_URL_For_BFS_Update():
 def search_Files(file_name):
     path_to_script = resource_filename("AutoInject", "/bin/sudo_scripts/update_db")
     os.system(path_to_script)
-    list_Of_Files_Found_With_Name = check_output(
+    full_file_path = check_output(
         ["locate", file_name],
         universal_newlines=True
     )
-    print(list_Of_Files_Found_With_Name)
-    return list_Of_Files_Found_With_Name
+    if (full_file_path[-1:] == "\n"): full_file_path = full_file_path[:-1]
+    return full_file_path
 
 def format_HTML(filepath):
     with open(filepath, 'r') as file_to_read:
@@ -63,6 +63,7 @@ tokens = (
     'NUMBER',
     'VARIABLE',
     'STRING',
+    'STRING2',
     'OPERATOR',
     'EOL',
     'LPAREN',
@@ -78,8 +79,10 @@ tokens = (
 # Regular expression rules 
 t_NUMBER                = r'[-+]?[0-9]*\.?[0-9]+'
 t_VARIABLE              = r'[a-zA-Z][a-zA-Z0-9_]*'
-t_STRING                = r'\"(.+?)\" | \'(.+?)\''
-t_OPERATOR              = r'\= | \+ | \- | \/ | \:'
+t_STRING                = r'\"(.+?)\"'
+t_STRING2               = r'\'(.+?)\''
+t_NEWLINE               = r'\n'
+t_OPERATOR              = r'\= | \+ | \- | \/ | \: | \< | \>'
 t_LPAREN                = r'\('
 t_RPAREN                = r'\)'
 t_LBRACE                = r'\{'
@@ -88,7 +91,6 @@ t_EOL                   = r'\;'
 t_ADD_AFTER             = r'\&\*'
 t_ADD_REPLACE_ADDITION  = r'\&\+\+'
 t_ADD_REPLACE_REMOVE    = r'\&--'
-t_NEWLINE               = r'\n'
 
 # Ignore characters
 t_ignore                = ' \t\r'
@@ -98,8 +100,8 @@ def t_error(t):
     print("Illegal character '%s'" % t.value)
     t.lexer.skip(1)
 
-lexer_for_addition  = lex.lex()
-lexer_for_file      = lex.lex()
+lexer_for_addition  = lex.lex(reflags=re.S)
+lexer_for_file      = lex.lex(reflags=re.S)
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------

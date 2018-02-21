@@ -81,7 +81,7 @@ def upload_File(package_name, original_files_path, diff_file_path, type_of_updat
         multi=True
     )
 
-def handle_Patch_Maintenance(date_of_patch, package):
+def handle_Patch_Maintenance(package, date_of_patch):
     reverser = package_collection.find_one( 
         { 'log' : 
             { '$elemMatch' :  { 
@@ -167,6 +167,28 @@ def apply_Forward(json_of_patch):
         },
         { '$set' : { 'log.$.active' : 1 } }
     )
+
+def delete_Patch(package, date_of_patch):
+    tmp = package_collection.find_one( { 'log' : { '$elemMatch' :  { 'date' : date_of_patch, 'active' : 1 } } } )
+    file_path_of_copy = False
+
+    if tmp:
+        for values in tmp['log']:
+            if (values['date'] == date_of_patch):
+                if (os.path.isfile(get_Source_Path(values['file_path_of_copy']))): os.remove(values['file_path_of_copy'])
+                if (os.path.isfile(get_Source_Path(values['file_path_of_diff']))): os.remove(values['file_path_of_diff'])
+                file_path_of_copy = values['file_path_of_copy']     
+        for values in tmp['log']:       
+            if (values['file_path_of_copy'] == file_path_of_copy and values['active'] == 0): 
+                if (os.path.isfile(values['file_path_of_diff'])): os.remove(values['file_path_of_diff'])
+
+        if file_path_of_copy:
+            package_collection.update(
+                { '_id' : tmp['_id'] },
+                { '$pull' : { 'log' : { 'file_path_of_copy' : file_path_of_copy } } }
+            )
+
+    else: return False
 
 def make_Copy_Of_File(package_name, file_path, set_Path=False):
 

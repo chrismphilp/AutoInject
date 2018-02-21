@@ -361,7 +361,7 @@
 						"width" : "25%" 
 					},
 					{ "data" : [3] },
-					{ "defaultContent" : "<button class='btn btn-success'>Update Package</button>" }
+					{ "defaultContent" : "<button class='btn btn-success' id='update_package'>Update Package</button>" }
 				],
 		        "lengthMenu":   [ 5, 10, 15 ],
 		        "paging":       true,
@@ -372,8 +372,15 @@
 			});
 
 			$('#package_vulnerabilities tbody').on('click', 'button', function() {
-				var data = package_vulnerabilities.row( $(this).parents('tr') ).data();
-				location.href += '/' + data[0];
+				if (this.id == 'update_package') {
+					var data = package_vulnerabilities.row( $(this).parents('tr') ).data();
+					if (data[0].includes("ADMIN")) {
+						location.href += '/admin_update/' + data[0];
+					}
+					else {
+						location.href += '/standard_update/' + data[0];
+					}
+				}
 			});
 
 			// Other table

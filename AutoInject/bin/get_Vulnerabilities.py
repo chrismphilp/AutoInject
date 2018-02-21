@@ -1,14 +1,14 @@
 import pymongo, re, time, sys, subprocess
 
-from pymongo        import MongoClient
-from json           import loads
-from bson.json_util import dumps
+from pymongo                        import MongoClient
+from json                           import loads
+from bson.json_util                 import dumps
 
-import AutoInject.bin.get_Packages as gp
+import AutoInject.bin.get_Packages  as gp
 
 client                  = MongoClient()
-db                      = client['cvedb']
-collection              = db['cves']
+collection              = client['cvedb']['cves']
+package_collection      = client['package_db']['package_list']
 
 list_Of_CVE_IDs         = []
 global count_Of_Fails
@@ -29,12 +29,6 @@ Order of operations:
         ### Ensures regular updates ensure optimal performance ###
 '''
 
-def run_Database_Updater_Script():
-    print("Running script")
-    subprocess.call(
-        ["python3", "../cve-search/sbin/db_updater.py", "-v"]
-    )
-
 def remove_Special_Characters():
     
     global count_Of_Fails
@@ -53,10 +47,8 @@ def remove_Special_Characters():
         )
 
     print("Attempting to remove indexes")
-    try:
-        collection.drop_index("summary_text")
-    except:
-        print("vulnerable_configuration_1 does not exist")
+    try:    collection.drop_index("summary_text")
+    except: print("vulnerable_configuration_1 does not exist")
     
     print("Creating index on new values")
     collection.create_index(
@@ -116,8 +108,7 @@ def collect_Checkable_Packages():
     '''
 
     # Use this for package updates, when the squashed_name will have changed
-    package_Collection = client['package_db']['package_list']
-    new_Package_Cursor = package_Collection.find(
+    new_Package_Cursor = package_collection.find(
         { 'formatted_package_name_with_version' : { '$nin' : gp.package_Names_With_Versions } }
     )
 
@@ -158,7 +149,7 @@ def collect_Checkable_Packages():
         for items in gp.list_To_Insert:
             if (items['squashed_Name_With_Version'] == values['squashed_Name_With_Version']):
                 items['matching_ids'] = list_Of_IDs
-                package_Collection.insert_one(items)
+                package_collection.insert_one(items)
                 break
 
     # Search all new packages 
@@ -184,7 +175,7 @@ def collect_Checkable_Packages():
             )
             list_Of_IDs.append(values['id'])
 
-        package_Collection.update(
+        package_collection.update(
             { 'formatted_package_name_with_version' : items },
             { '$set' : { 'matching_ids' : list_Of_IDs } },
             upsert=True,
@@ -202,9 +193,13 @@ def update_Database_Matched_Field():
 
 def return_Matched_Vulnerability_Values():
 
-    package_Collection = client['package_db']['package_list']
-    package_Vulnerability_JSON = package_Collection.find({ 
+    package_collection = client['package_db']['package_list']
+    package_Vulnerability_JSON = package_collection.find({ 
         'matching_ids' : { '$exists' : True, '$not' : { '$size' : 0 } },
         'updateable' : 1
     })
     return loads(dumps(package_Vulnerability_JSON))
+
+def run_Database_Updater_Script():
+    print("Running script")
+    subprocess.call(["python3", "../cve-search/sbin/db_updater.py", "-v"])

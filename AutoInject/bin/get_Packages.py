@@ -13,7 +13,6 @@ package_Names_With_Versions = []
 list_To_Insert              = []
 
 def get_Package_Data():
-
     out                 = check_output(["dpkg-query", "-W", "-f=${binary:Package}\t${Version}\t${Architecture}\n"], 
                             universal_newlines=True)
     tmp                 = out.split('\n')
@@ -51,7 +50,6 @@ def get_Package_Data():
     return(list_To_Insert)
 
 def insert_Packages(package_List):
-
     # Deleting any current package details
     db.package_list.drop()
     print('Collection names (should be empty):', db.collection_names())

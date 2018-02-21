@@ -192,3 +192,16 @@
     height: 100%;
     overflow-x: auto;
 }
+
+.navbar .navbar-inverse {
+	border: none;
+}
+
+.navbar .navbar-brand {
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+.navbar .navbar-brand img {
+	height: 100px;
+}

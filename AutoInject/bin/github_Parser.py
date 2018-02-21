@@ -1,8 +1,8 @@
 import requests, time, re
 
 # Parsing related modules
-import lxml.html as lh 
-import lxml.etree as etree
+import lxml.html    as lh 
+import lxml.etree   as etree
 
 from subprocess     import check_output, check_call
 
@@ -57,10 +57,10 @@ def parse_Github(url):
         if l_o_i: list_of_divs.append((name_of_file, l_o_i))
         l_o_i = ""
 
-    print(list_of_divs)
     print("Total time for GitHub parse:", time.time() - request_time)
+    return list_of_divs
 
 def special_Match(strg, search=re.compile(r"[^\n\t\r' ']").search):
     return not bool(search(strg))
 
-parse_Github('https://github.com/chrismphilp/AutoInject/commit/575637a5e859de0453e22aedf89ce704411a1e37?diff=split')
+# parse_Github('https://github.com/chrismphilp/AutoInject/commit/575637a5e859de0453e22aedf89ce704411a1e37?diff=split')
