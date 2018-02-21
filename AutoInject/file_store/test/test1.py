@@ -1,10 +1,3 @@
-Hello Moi Boi
-Hello Moi Boi
-Hello Moi Boi
-Hello Moi Boi
-dewded
-fffffff
-eeee
 class adder:
 	def goodbye():
 		print("Say goodbye")
