@@ -260,100 +260,106 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
                 print("Done with finding area to append at")
                 if file_token: point_to_insert = file_token.lexpos + 1
 
-            # elif (addition_token.type == 'ADD_REPLACE_REMOVE'):
-            #     print("Found add replace remove")
+            elif (addition_token.type == 'ADD_REPLACE_REMOVE'):
+                
+                print("Found add replace remove")
 
-            #     matched = False
+                try:    addition_token  = lexer_for_addition.token()
+                except: return False
 
-            #     try:    addition_token  = lexer_for_addition.token()
-            #     except: return False
+                matched = False
+                while not matched:    
 
-            #     while (matched == False):    
-
-            #         copy_of_lexer_for_addition  = copy(lexer_for_addition)
-            #         copy_of_addition_token      = addition_token
-
-            #         while (token != None and copy_of_addition_token != None 
-            #             and token.value != copy_of_addition_token.value):      
-                        
-            #             try:    token = lexer_for_file.token()
-            #             except: return False
+                    copy_of_lexer_for_addition  = copy(lexer_for_addition)
+                    copy_of_addition_token      = addition_token
                     
-            #         start_position_to_remove = token.lexpos
+                    while (file_token.value != copy_of_addition_token.value): 
+                        try:    
+                            file_token = lexer_for_file.token()
+                            if not file_token: return False
+                        except: return False
 
-            #         copy_of_lexer_for_file      = copy(lexer_for_file)
-            #         copy_of_token_for_file      = token
+                    start_position_to_remove    = file_token.lexpos
+                    copy_of_lexer_for_file      = copy(lexer_for_file)
+                    copy_of_token_for_file      = file_token
 
-            #         while (copy_of_token_for_file != None and copy_of_addition_token != None 
-            #             and copy_of_token_for_file.value == copy_of_addition_token.value and matched == False):
-                        
-            #             if (copy_of_addition_token.type == 'NEWLINE'):
+                    while (copy_of_token_for_file != None and copy_of_addition_token != None 
+                        and copy_of_token_for_file.value == copy_of_addition_token.value and matched == False):
+
+                        if not matched:
+                            try:    copy_of_addition_token = copy_of_lexer_for_addition.token()
+                            except: return False
+
+                            try:    
+                                tmp                     = copy_of_token_for_file
+                                copy_of_token_for_file  = copy_of_lexer_for_file.token()
+                            except: return False
+
+                        if (copy_of_addition_token.type == 'NEWLINE'):
                             
-            #                 while (addition_token.lexpos != copy_of_addition_token.lexpos):
-            #                     addition_token = lexer_for_addition.token()
+                            try:    copy_of_addition_token = copy_of_lexer_for_addition.token()
+                            except: return list_Of_Insertion_Tuples
+
+                            while (addition_token.lexpos != copy_of_addition_token.lexpos):
+                                addition_token = lexer_for_addition.token()
                             
-            #                 while (token != None and copy_of_addition_token != None 
-            #                     and token.value != copy_of_addition_token.value):      
-                                
-            #                     try:    token = lexer_for_file.token()
-            #                     except: return False
+                            if copy_of_token_for_file:
+                                while (file_token.lexpos != copy_of_token_for_file.lexpos):
+                                    file_token = lexer_for_file.token()
+                            else:
+                                while (file_token.lexpos != tmp.lexpos):
+                                    file_token = lexer_for_file.token()
                             
-            #                 end_position_to_remove = token.lexpos
-            #                 matched = True
-            #             else:
-            #                 try:    copy_of_addition_token = copy_of_lexer_for_addition.token()
-            #                 except: 
-            #                     while (addition_token.lexpos != copy_of_addition_token.lexpos):
-            #                         addition_token = lexer_for_addition.token()
-            #                     matched = True
+                            end_position_to_remove = file_token.lexpos
+                            matched = True
+                    
+                    if not matched: 
+                        try:    
+                            file_token              = lexer_for_file.token()
+                            copy_of_addition_token  = addition_token
+                        except: return False
 
-            #                 try:    copy_of_token_for_file = copy_of_lexer_for_file.token()
-            #                 except: return False
+                if (copy_of_addition_token.type == 'NEWLINE'): 
+                    
+                    try:    copy_of_addition_token = copy_of_lexer_for_addition.token()
+                    except: return False
 
-            #         if (copy_of_addition_token.type == 'NEWLINE'): 
+                    while (addition_token.lexpos != copy_of_addition_token.lexpos):
+                        try:    addition_token = lexer_for_addition.token()
+                        except: return False
+
+                if (copy_of_addition_token.type == 'ADD_REPLACE_ADDITION'):    
                         
-            #             try:    copy_of_addition_token = copy_of_lexer_for_addition.token()
-            #             except: return False
+                        start_pos = copy_of_addition_token.lexpos + len(copy_of_addition_token.value)
 
-            #             while (addition_token.lexpos != copy_of_addition_token.lexpos):
-            #                 try:    addition_token = lexer_for_addition.token()
-            #                 except: return False
-    
-            #         if (copy_of_addition_token.type == 'ADD_REPLACE_ADDITION'):    
+                        try:    copy_of_addition_token = copy_of_lexer_for_addition.token()
+                        except: return False
+
+                        while (copy_of_addition_token.type != 'NEWLINE'):
+                            try:    copy_of_addition_token = copy_of_lexer_for_addition.token()
+                            except: return False
                         
-            #             print("Found ADD_REPLACE_ADDITION:", copy_of_addition_token)
-            #             try:    copy_of_addition_token = copy_of_lexer_for_addition.token()
-            #             except: return False
+                        string_to_add   = ""
+                        end_pos         = copy_of_addition_token.lexpos + len(copy_of_addition_token.value) - 1
+                        count           = 0
+
+                        for characters in addition_string:
+                            if (start_pos <= count <= end_pos):
+                                string_to_add   += characters
+                            count           += 1
                         
-            #             print("Found ADD_REPLACE_ADDITION:", copy_of_addition_token)
-            #             start_pos       = copy_of_addition_token.lexpos
+                        list_Of_Insertion_Tuples.append((start_position_to_remove, end_position_to_remove, string_to_add))
+                        print(list_Of_Insertion_Tuples)
 
-            #             while (copy_of_addition_token.type != 'NEWLINE'):
-            #                 try:    copy_of_addition_token = copy_of_lexer_for_addition.token()
-            #                 except: return list_Of_Insertion_Tuples
-                        
-            #             string_to_add   = ""
-            #             end_pos         = copy_of_addition_token.lexpos + len(copy_of_addition_token.value) - 1
-            #             count           = 0
+                        while (addition_token.lexpos != copy_of_addition_token.lexpos):
+                            try:    addition_token = lexer_for_addition.token()
+                            except: return False
 
-            #             for characters in addition_string:
-            #                 if (start_pos <= count <= end_pos):
-            #                     string_to_add   += characters
-            #                     count           += 1
-            #                 else: count += 1
-                        
-            #             list_Of_Insertion_Tuples.append((start_position_to_remove, end_position_to_remove, string_to_add))
-            #             print(list_Of_Insertion_Tuples)
+                        matched = True
 
-            #             while (addition_token.lexpos != copy_of_addition_token.lexpos):
-            #                 try:    addition_token = lexer_for_addition.token()
-            #                 except: return False
+                if file_token: point_to_insert = file_token.lexpos
 
-            #             matched = True
-
-            #     if token: point_to_insert = token.lexpos
-
-            #     start_pos = addition_token.lexpos
+                start_pos = addition_token.lexpos
             
             elif (addition_token.type == 'NEWLINE'):
                 print("Found newline")
@@ -399,7 +405,7 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
                     if (type(tuples[1]) is int):
                         if (tuples[1] == count_of_characters): 
                             print("Adding at:", count_of_characters)
-                            if tuples[2] != "\n": string_for_file += tuples[2]
+                            if tuples[2] != "\n": string_for_file += tuples[2] 
                         elif (tuples[0] <= count_of_characters <= tuples[1]): added = True
                     elif (tuples[0] == count_of_characters): string_for_file += tuples[1]
                     
@@ -420,7 +426,11 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
 example_Patch = '''
 &* class adder:
 &* def hello():
+&-- return "Hello"
+&++ hi
+hi
 hlrlo
+ffrfr
 '''
 
 print(perform_Additions('../file_store/test/patch_file.py', '../file_store/test/patch_file.patch', example_Patch))

@@ -2,7 +2,11 @@ class adder:
 
 class add:
 	def hello():
+&- return "Hello"
+&++ hi
+hi
 hlrlo
+ffrfr
 		return "Hello"
 
 class ader:
