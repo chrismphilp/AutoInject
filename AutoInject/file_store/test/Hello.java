@@ -1,6 +1,5 @@
 public class Hello {
-	Hi Philpy
-
+	int n;
 	public Hello(int n) {
 		this.n = n;
 	}

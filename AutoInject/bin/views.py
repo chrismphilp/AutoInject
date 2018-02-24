@@ -408,7 +408,7 @@ def refresh():
     gv.run_Database_Updater_Script()
     gv.remove_Special_Characters()
     gv.collect_Checkable_Packages()
-    return redirect("/", code=302)
+    return redirect(url_for('vulnerabilities'), code=302)
 
 @app.route("/enable/<package>")
 @login_required

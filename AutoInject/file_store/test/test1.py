@@ -5,14 +5,14 @@ Hello Moi Boi
 dewded
 fffffff
 eeee
-class addr:
+class adder:
 	def goodbye():
 		print("Say goodbye")
 		print("hola")		
 
 	class adder:
 
-	def goodbye(au_revoir):ddd
+	def goodbye(au_revoir):
 		hello
 		y = au_revoir + 1
 		return y

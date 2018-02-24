@@ -1,5 +1,6 @@
 import pymongo, re, time, os
 
+from collections        import defaultdict
 from datetime           import datetime
 from pymongo            import MongoClient
 from subprocess         import check_output, call
@@ -237,9 +238,11 @@ def compile_File(path_of_file):
         except: return False
 
 def check_If_Needs_To_Be_Compiled(path_of_file):
-    if (os.path.exists(path_of_file)): file_ext = get_File_Name_From_Path(path_of_file)
-    for key, value in list_Of_Compiler_Procedures:
-        if key == file_ext:
+    if (os.path.exists(path_of_file)): 
+        file_ext = get_File_Name_From_Path(path_of_file)
+        print(file_ext)
+    for key, value in list_Of_Compiler_Procedures.items():
+        if key in file_ext:
             if value['compile']: return value['command']
     return False
 

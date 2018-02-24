@@ -24,7 +24,7 @@ def handle_Admin_Patch(patch_cursor):
             )
         else:
             print("No link provided")
-            if not determine_File_Status(bfs.search_Files(patch_cursor['file_path'])): return False
+            if determine_File_Status(bfs.search_Files(patch_cursor['file_path'])): return False
             handle_Manual_Patch_By_User(
                 bfs.search_Files(patch_cursor['file_path']),
                 patch_cursor['vulnerable_configuration'][0],
@@ -43,25 +43,24 @@ def handle_Admin_Patch(patch_cursor):
 def handle_Github_Patch(cursor, package, url):
     set_to = False
     for (file_path, code) in gp.parse_Github(url):
-        if bfs.perform_File_Alterations(
-            bfs.perform_Additions(file_path, None, code, False)
-        ) == False: return False
-        if not determine_File_Status(bfs.search_Files(file_path)): return False
+        if bfs.perform_Additions(bfs.search_Files(file_path), None, code, False) == False: return False
+        if determine_File_Status(file_path): return False
 
     for (file_path, code) in gp.parse_Github(url): 
+        print(file_path, code)
         if not set_to: 
-            handle_Manual_Patch_By_User(bfs.search_Files(file_path), package, code, 'Github patch: ' + url, cursor)
+            handle_Manual_Patch_By_User(file_path, package, code, 'Github patch: ' + url, cursor)
             set_to = True
         else:
             handle_Manual_Patch_By_User(bfs.search_Files(file_path), package, code, 'Github patch: ' + url)
 
 def handle_Manual_Patch_By_User(full_file_path, package, inserted_code, comment, cursor=None):
 
-    if bfs.perform_File_Alterations(
+    if not bfs.perform_File_Alterations(
         full_file_path, 
         'AutoInject/file_store/test/patch_file.py', 
         inserted_code
-    ) == False: return False
+    ): return False
 
     diff_file_path = ph.produce_Diff_Of_Files(
         full_file_path,
@@ -122,8 +121,8 @@ def determine_File_Status(file_path):
         )
         p1.stdout.close()
         out, err = output = p2.communicate()
-        
-        if (len(out) > 2):  return True
+        print("OUT", out, len(out))
+        if len(out) > 2:    return True
         else:               return False
     except:
         return False

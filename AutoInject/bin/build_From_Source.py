@@ -1,7 +1,7 @@
 import pymongo, re, time, datetime, os
 
 # Parsing related modules
-# import AutoInject.bin.patch_Handler as ph
+import AutoInject.bin.patch_Handler as ph
 
 import ply.lex                      as lex
 from pygments                       import highlight
@@ -17,7 +17,6 @@ from bson.json_util                 import dumps
 
 from subprocess                     import check_output, check_call
 from copy                           import copy
-from collections                    import defaultdict
 
 client                              = MongoClient()
 package_collection                  = client['package_db']['package_list']
@@ -120,12 +119,13 @@ lexer_for_file      = lex.lex(reflags=re.S)
 def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, bfs_string):
     
     if perform_Additions(path_of_file_to_modify, path_of_new_file, bfs_string):
-        with open(path_of_new_file, 'w') as destination: 
-            new_string = ""
-            with open(path_of_new_file, 'r') as read_file:
-                for lines in read_file:
-                    new_string += lines.replace("    ", "\t")
-                destination.write(new_string)
+        new_string = ""
+        with open(path_of_new_file, 'r') as read_file:
+            for lines in read_file:
+                new_string += lines.replace("    ", "\t")
+        with open(path_of_new_file, 'w') as destination:
+            destination.write(new_string)
+        return True
     else: print("Alterations failed"); return False
 
 def perform_Additions(path_of_file_to_modify, path_of_file_to_write, additions, run_additons=True):
@@ -136,7 +136,6 @@ def perform_Additions(path_of_file_to_modify, path_of_file_to_write, additions, 
     for addition_Strings in split_Additions:
         
         addition_Strings = "\n" + addition_Strings + "\n"
-
         lexer_for_addition.input(addition_Strings) 
 
         if (os.path.exists(path_of_file_to_modify)): 
@@ -153,9 +152,9 @@ def perform_Additions(path_of_file_to_modify, path_of_file_to_write, additions, 
                 path_of_file_to_write, 
                 list_Of_Insertion_Tuples
             )  
-            print(list_Of_Insertion_Tuples)
         else:   
             print("No additions to add"); return False
+    return True
 
 def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition_string):
 
@@ -379,15 +378,10 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
 
 def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of_Insertion_Tuples):
     
-    string_for_file = ""
+    string_for_file     = ""
     count_of_characters = 0
-    count = 0
+    count               = 0
     print("List to use:", list_Of_Insertion_Tuples)
-
-    with open(path_of_file_to_modify, 'r') as file_to_modify:
-        for characters in file_to_modify.read():
-            count += 1
-            print(characters, count)
 
     if (os.path.exists(path_of_file_to_modify)):   
         with open(path_of_file_to_modify, 'r') as file_to_modify:
@@ -408,8 +402,9 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
                 if not (type(tuples[1]) is int):
                     if (tuples[0] == len(file_to_modify.read())):
                         string_for_file += '\n' + tuples[1]
-    
     else: print("Path does not exist to file")
+
+    print(string_for_file)
 
     with open(path_of_file_to_write, 'w') as file_to_write:
         file_to_write.write(string_for_file)
@@ -427,4 +422,4 @@ hlrlo
 ffrfr
 '''
 
-print(perform_Additions('../file_store/test/patch_file.py', '../file_store/test/patch_file.patch', example_Patch))
+# print(perform_Additions('../file_store/test/patch_file.py', '../file_store/test/patch_file.patch', example_Patch))
