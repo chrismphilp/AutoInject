@@ -220,3 +220,28 @@ def get_Current_Time():
     formatted_time = datetime.utcnow()
     formatted_time = str(formatted_time).split(' ')[1] + ' +0000'
     return formatted_time
+
+kwargs  = {
+    'java' : { 
+        'compile' : True,
+        'command' : 'javac <package>'
+    }
+}
+list_Of_Compiler_Procedures = defaultdict(dict, **kwargs)
+
+def compile_File(path_of_file):
+    os_call = check_If_Needs_To_Be_Compiled(path_of_file)
+    if os_call:
+        os_call = os_call.replace("<package>", path_of_file)
+        try:    os.system(os_call)
+        except: return False
+
+def check_If_Needs_To_Be_Compiled(path_of_file):
+    if (os.path.exists(path_of_file)): file_ext = get_File_Name_From_Path(path_of_file)
+    for key, value in list_Of_Compiler_Procedures:
+        if key == file_ext:
+            if value['compile']: return value['command']
+    return False
+
+def get_File_Name_From_Path(path_of_file):
+    return os.path.basename(path_of_file)

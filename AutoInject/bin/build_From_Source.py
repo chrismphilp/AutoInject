@@ -23,17 +23,6 @@ client                              = MongoClient()
 package_collection                  = client['package_db']['package_list']
 cve_collection                      = client['cvedb']['cves']
 
-kwargs  = {
-    'java' : { 
-        'compile' : 'y',
-        'command' : 'javac'
-    }
-}
-list_Of_Compiler_Procedures = defaultdict(dict, **kwargs)
-
-def search_URL_For_BFS_Update():
-    pass
-
 def search_Files(file_name):
     path_to_script = resource_filename("AutoInject", "/bin/sudo_scripts/update_db")
     os.system(path_to_script)
@@ -139,7 +128,7 @@ def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, bfs_strin
                 destination.write(new_string)
     else: print("Alterations failed"); return False
 
-def perform_Additions(path_of_file_to_modify, path_of_file_to_write, additions):
+def perform_Additions(path_of_file_to_modify, path_of_file_to_write, additions, run_additons=True):
     
     split_Additions             = additions.split("&*&")
     list_Of_Insertion_Tuples    = []
@@ -157,15 +146,16 @@ def perform_Additions(path_of_file_to_modify, path_of_file_to_write, additions):
         if tuple_Array: list_Of_Insertion_Tuples.extend(tuple_Array)
         else:           return False 
 
-    if list_Of_Insertion_Tuples: 
-        run_Addition_Searches(
-            path_of_file_to_modify, 
-            path_of_file_to_write, 
-            list_Of_Insertion_Tuples
-        )  
-        print(list_Of_Insertion_Tuples)
-    else:   
-        print("No additions to add"); return False
+    if run_additons:
+        if list_Of_Insertion_Tuples: 
+            run_Addition_Searches(
+                path_of_file_to_modify, 
+                path_of_file_to_write, 
+                list_Of_Insertion_Tuples
+            )  
+            print(list_Of_Insertion_Tuples)
+        else:   
+            print("No additions to add"); return False
 
 def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition_string):
 
@@ -202,13 +192,10 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
                 copy_of_addition_token      = addition_token
 
                 while (copy_of_token_for_file != None and matched == False):
-                    # Matching the start of the addition lexer start to the lexer for the file token
-                    print("Before File token:", file_token.value, "Before Addition copy:", copy_of_addition_token.value)
                     while (file_token.value != copy_of_addition_token.value): 
                         try:    
                             file_token = lexer_for_file.token()
                             if not file_token: return False
-                            print("File token:", file_token.value, "Addition copy:", copy_of_addition_token.value)
                         except: return False
 
                     copy_of_lexer_for_addition  = copy(lexer_for_addition)
@@ -240,11 +227,9 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
                                 addition_token = lexer_for_addition.token()
                             
                             if copy_of_token_for_file:
-                                # Getting the token for the file in line with the copy that has matched
                                 while (file_token.lexpos != copy_of_token_for_file.lexpos):
                                     file_token = lexer_for_file.token()
                             else:
-                                # Getting the token for the file in line with the copy that has matched
                                 while (file_token.lexpos != tmp.lexpos):
                                     file_token = lexer_for_file.token()
 
@@ -356,8 +341,9 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
                             except: return False
 
                         matched = True
+                else: return False
 
-                if file_token: point_to_insert = file_token.lexpos
+                if file_token: point_to_insert = file_token.lexpos + 1
 
                 start_pos = addition_token.lexpos
             
@@ -395,7 +381,13 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
     
     string_for_file = ""
     count_of_characters = 0
+    count = 0
     print("List to use:", list_Of_Insertion_Tuples)
+
+    with open(path_of_file_to_modify, 'r') as file_to_modify:
+        for characters in file_to_modify.read():
+            count += 1
+            print(characters, count)
 
     if (os.path.exists(path_of_file_to_modify)):   
         with open(path_of_file_to_modify, 'r') as file_to_modify:
@@ -404,7 +396,6 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
                 for tuples in list_Of_Insertion_Tuples:
                     if (type(tuples[1]) is int):
                         if (tuples[1] == count_of_characters): 
-                            print("Adding at:", count_of_characters)
                             if tuples[2] != "\n": string_for_file += tuples[2] 
                         elif (tuples[0] <= count_of_characters <= tuples[1]): added = True
                     elif (tuples[0] == count_of_characters): string_for_file += tuples[1]
@@ -427,8 +418,11 @@ example_Patch = '''
 &* class adder:
 &* def hello():
 &-- return "Hello"
-&++ hi
-hi
+&++ 
+ff
+&-- class ader:
+&++
+greg
 hlrlo
 ffrfr
 '''

@@ -306,6 +306,7 @@ def admin_add_manual_update():
     admin_patches.insert({
         'id' :'ADMIN-' + str(sf.get_Incremented_Id()),
         'package_name' : request.form['package'] + ''.join(e for e in request.form['package_version'] if e.isalnum()),
+        'individual_package_name' : request.form['package'],
         'patch_type' : 'build_from_source',
         'file_path' : request.form['file-path'],
         'update_code' : request.form['inserted-code'],
@@ -322,6 +323,7 @@ def admin_add_version_update():
     admin_patches.insert({
         'id' :'ADMIN-' + str(sf.get_Incremented_Id()),
         'package_name' : request.form['package'] + ''.join(e for e in request.form['package_version'] if e.isalnum()), 
+        'individual_package_name' : request.form['package'],
         'patch_type' : 'version',
         'link' : request.form['link'],
         'version_number' : request.form['version-name'],
@@ -345,6 +347,7 @@ def admin_release_patch(date):
         cve_collection.insert({
             'id' : patch_data['id'],
             'vulnerable_configuration' : vulnerable_configuration,
+            'individual_package_name' : patch_data['individual_package_name'],
             'summary' : patch_data['comment'],
             'cvss' : patch_data['cvss'],
             'patch_type' : 'build_from_source',
@@ -358,6 +361,7 @@ def admin_release_patch(date):
         cve_collection.insert({
             'id' : patch_data['id'],
             'vulnerable_configuration' : vulnerable_configuration,
+            'individual_package_name' : patch_data['individual_package_name'],
             'summary' : patch_data['comment'],
             'cvss' : patch_data['cvss'],
             'patch_type' : 'version',

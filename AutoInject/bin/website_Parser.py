@@ -253,9 +253,7 @@ def update_Vulnerability_Information(package_name, new_package_version_name, jus
 
     # 4) Re-search new package version to potentially find new vulnerabilities 
 
-    new_package_cursor = package_collection.find( { 'package_name' : package_name } )
-
-    for package in new_package_cursor:
+    for package in package_collection.find( { 'package_name' : package_name } ):
 
         finder_cursor = cve_collection.find(
             { 

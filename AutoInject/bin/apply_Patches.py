@@ -16,7 +16,7 @@ cve_collection                          = client['cvedb']['cves']
 
 def handle_Admin_Patch(patch_cursor):
     if (patch_cursor['patch_type'] == 'build_from_source'):
-        if (patch_cursor['references']): 
+        if (patch_cursor['references']):
             handle_Github_Patch(
                 patch_cursor,
                 patch_cursor['vulnerable_configuration'][0], 
@@ -24,6 +24,7 @@ def handle_Admin_Patch(patch_cursor):
             )
         else:
             print("No link provided")
+            if not determine_File_Status(bfs.search_Files(patch_cursor['file_path'])): return False
             handle_Manual_Patch_By_User(
                 bfs.search_Files(patch_cursor['file_path']),
                 patch_cursor['vulnerable_configuration'][0],
@@ -34,11 +35,19 @@ def handle_Admin_Patch(patch_cursor):
     elif (patch_cursor['patch_type'] == 'version'):
         if (patch_cursor['references']):
             print("Link provided")
+            if not determine_Package_Status(patch_cursor['individual_package_name']): return False
         else:
             print("No link provided")
+            if not determine_Package_Status(patch_cursor['individual_package_name']): return False
 
 def handle_Github_Patch(cursor, package, url):
     set_to = False
+    for (file_path, code) in gp.parse_Github(url):
+        if bfs.perform_File_Alterations(
+            bfs.perform_Additions(file_path, None, code, False)
+        ) == False: return False
+        if not determine_File_Status(bfs.search_Files(file_path)): return False
+
     for (file_path, code) in gp.parse_Github(url): 
         if not set_to: 
             handle_Manual_Patch_By_User(bfs.search_Files(file_path), package, code, 'Github patch: ' + url, cursor)
@@ -48,11 +57,11 @@ def handle_Github_Patch(cursor, package, url):
 
 def handle_Manual_Patch_By_User(full_file_path, package, inserted_code, comment, cursor=None):
 
-    bfs.perform_File_Alterations(
+    if bfs.perform_File_Alterations(
         full_file_path, 
         'AutoInject/file_store/test/patch_file.py', 
         inserted_code
-    )
+    ) == False: return False
 
     diff_file_path = ph.produce_Diff_Of_Files(
         full_file_path,
@@ -95,6 +104,8 @@ def handle_Manual_Patch_By_User(full_file_path, package, inserted_code, comment,
         1
     )
 
+    # Compile file is needed
+    ph.compile_File(full_file_path)
     if cursor: cve_collection.delete_one( { '_id' : cursor['_id'] } )
     return diff_file_path
 
