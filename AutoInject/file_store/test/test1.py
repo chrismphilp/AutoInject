@@ -20,7 +20,7 @@ class adder:
 		return au_dieu
 		hello
 
-class adder
+class ader:
 	def hello():
 		return "Hello"
 

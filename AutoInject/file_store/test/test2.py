@@ -5,8 +5,5 @@ class adder:
 
 class ader:
 	def hello():
-		hekllo
-		
-gg 
-gg
-rreerf
+		hi
+		return "Hello"
