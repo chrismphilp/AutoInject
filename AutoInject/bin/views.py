@@ -50,15 +50,17 @@ def vulnerabilities():
 @app.route("/vulnerabilities/<package>")
 @login_required
 def return_CVE_IDs(package):
-
-    cursor = package_collection.find( { 'formatted_package_name_with_version' : package } )
-
     list_Of_Values = []
-    for values in cursor:
+    for values in package_collection.find( { 'formatted_package_name_with_version' : package } ):
         list_Of_Values.extend(values['matching_ids'])
 
-    vulnerabilities = loads(dumps( cve_collection.find( { 'id' : { '$in' : list_Of_Values } } ) ))
-    update_log      = wp.get_Update_Log(package)
+    vulnerabilities = loads(dumps( 
+        cve_collection.find( { 
+            'id' : { '$in' : list_Of_Values },
+            'deleted' : { '$ne' : 1 } } 
+        ) 
+    ))
+    update_log = wp.get_Update_Log(package)
 
     return render_template(
         'individual_package.html', 
@@ -426,6 +428,15 @@ def disabler(package):
         multi=True
     )
     return redirect("/", code=302)
+
+@app.route("/vulnerabilities/<package>/disable_cve/<cve_id>")
+@login_required
+def disable_cve(package, cve_id):
+    cve_collection.update(
+        { 'id' : cve_id },
+        { '$set' : { 'deleted' : 1 } }
+    )
+    return redirect(url_for('vulnerabilities') + '/' + package, code=302)
 
 @app.route("/enable_all")
 @login_required

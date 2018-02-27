@@ -426,7 +426,5 @@ example_Patch = '''
 &++hekllo
 &-- return "Hello"
 &++
-gg 
-gg
-rreerf
+Oh Lord it Works </\>
 '''

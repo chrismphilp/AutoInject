@@ -1,7 +1,10 @@
-public class Hello {
-	Hi Philpy
+Hello worls
+start
+class adder:
+	def goodbye():
+		print("Say goodbye")
 
-	public Hello(int n) {
-		this.n = n;
-	}
-}
+class ader:
+	def hello():
+		hi
+		return "Hello"

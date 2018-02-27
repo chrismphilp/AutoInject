@@ -296,6 +296,7 @@
 						                <th>Summary</th>
 						                <th>CVSS Rating</th>
 						                <th>Update Package</th>
+						                <th>Disable Package</th>
 						            </tr>
 						        </thead>
 						        <tfoot>
@@ -305,6 +306,7 @@
 						                <th>Summary</th>
 						                <th>CVSS Rating</th>
 						                <th>Update Package</th>
+						                <th>Disable Package</th>
 						            </tr>
 								</tfoot>
 								<tbody>
@@ -361,7 +363,8 @@
 						"width" : "25%" 
 					},
 					{ "data" : [3] },
-					{ "defaultContent" : "<button class='btn btn-success' id='update_package'>Update Package</button>" }
+					{ "defaultContent" : "<button class='btn btn-success' id='update_package'>Update Package</button>" },
+					{ "defaultContent" : "<button class='btn btn-danger' id='disable_cve'>Disable Update</button>" }
 				],
 		        "lengthMenu":   [ 5, 10, 15 ],
 		        "paging":       true,
@@ -372,14 +375,17 @@
 			});
 
 			$('#package_vulnerabilities tbody').on('click', 'button', function() {
+				var data = package_vulnerabilities.row( $(this).parents('tr') ).data();
 				if (this.id == 'update_package') {
-					var data = package_vulnerabilities.row( $(this).parents('tr') ).data();
 					if (data[0].includes("ADMIN")) {
 						location.href += '/admin_update/' + data[0];
 					}
 					else {
 						location.href += '/standard_update/' + data[0];
 					}
+				}
+				else if (this.id == 'disable_cve') {
+					location.href += '/disable_cve/' + data[0]; 
 				}
 			});
 
