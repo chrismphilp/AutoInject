@@ -75,6 +75,11 @@ def collect_Specific_Package_URL(package_name, cve_id):
     
     cursor = cve_collection.find( { 'id' : cve_id } )
 
+    for urls in cursor['references']: 
+        if 'github' in url:
+            print("Found github link to BFS:", urls)
+            return True
+
     for urls in cursor['references']:
         version_name = search_URL_For_Version_Update(urls)
         if version_name:
@@ -94,7 +99,7 @@ def search_URL_For_Version_Update(url):
 
     start       = time.time()
     matched     = False
-    
+
     for key, value in list_Of_Parsing_Procedures.items():
         
         if matched: 

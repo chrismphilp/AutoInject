@@ -386,28 +386,25 @@ def admin_delete_patch(date):
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
 
-@app.route("/drop")
+@app.route("/hard_reset")
 @login_required
-def drop():  
+def hard_reset(): 
     print("Dropping and refreshing packages")
-    cve_collection.update( 
-        {}, 
-        { '$unset' : { 'matched_To_CVE' : 1 } }, 
-        multi=True 
-    )
-    package_JSON_data = gp.get_Package_Data()
-    gp.insert_Packages(package_JSON_data)
-    gv.remove_Special_Characters()
-    gv.collect_Checkable_Packages()
+    gv.hard_Reset_Packages()
     return redirect("/", code=302)
 
 @app.route("/refresh")
 @login_required
 def refresh():  
     print("Refreshing vulnerabilities")
-    gv.run_Database_Updater_Script()
     gv.remove_Special_Characters()
     gv.collect_Checkable_Packages()
+    return redirect(url_for('vulnerabilities'), code=302)
+
+@app.route("/update_vulnerabilities")
+@login_required
+def update_vulnerabilities():  
+    gv.run_Database_Updater_Script()
     return redirect(url_for('vulnerabilities'), code=302)
 
 @app.route("/enable/<package>")

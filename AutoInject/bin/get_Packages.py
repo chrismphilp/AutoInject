@@ -9,7 +9,6 @@ client                      = MongoClient()
 db                          = client['package_db']
 collection                  = db['package_list']
 
-package_Names_With_Versions = []
 list_To_Insert              = []
 
 def get_Package_Data():
@@ -18,9 +17,10 @@ def get_Package_Data():
     tmp                 = out.split('\n')
     
     print('Retrieving list of packages on system')
-    list_To_Insert      = []
+    list_To_Insert              = []
+    package_Names_With_Versions = []
     for line in tmp:
-        package_array   = line.split('\t')
+        package_array = line.split('\t')
 
         try:
             package_Version                         = get_Formatted_Version(package_array[1])
@@ -39,7 +39,8 @@ def get_Package_Data():
                 'architecture' : package_array[2],
                 # 1 = updateable, 0 means do not update
                 'updateable' : 1,
-                'has_been_updated' : 0
+                'has_been_updated' : 0,
+                'matching_ids' : []
             }
             list_To_Insert.append(package_item)
             package_Names_With_Versions.append(squashed_Name_With_Version)
@@ -47,7 +48,7 @@ def get_Package_Data():
         except:
             print("Error inserting", package_array)
             continue
-    return(list_To_Insert)
+    return(list_To_Insert, package_Names_With_Versions)
 
 def insert_Packages(package_List):
     # Deleting any current package details
@@ -57,7 +58,7 @@ def insert_Packages(package_List):
     print('Finished inserting into DB')
 
 def get_Formatted_Name(package_Name):
-    re_string = re.compile(r"""(([A-Za-z])+(\-[A-Za-z])*)+""")
+    re_string = re.compile(r"""([0-9]{0,1}([A-Za-z])+(\-[A-Za-z])*)+""")
     return (re.match(re_string, package_Name)).group(0)
 
 def get_Formatted_Version(package_Version):
