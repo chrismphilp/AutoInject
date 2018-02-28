@@ -18,6 +18,8 @@ from bson.json_util                 import dumps
 from subprocess                     import check_output, check_call
 from copy                           import copy
 
+import AutoInject.file_store.test.test_patches as test_patches
+
 client                              = MongoClient()
 package_collection                  = client['package_db']['package_list']
 cve_collection                      = client['cvedb']['cves']
@@ -163,7 +165,7 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
     with open(path_of_file_to_modify, 'r') as file_to_modify:
         
         data            = file_to_modify.read()
-        lexer_for_file.input(data)
+        lexer_for_file.input(data + "\n")
         
         file_token      = lexer_for_file.token()
         addition_token  = lexer_for_addition.token()
@@ -171,6 +173,7 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
         start_pos       = file_token.lexpos
         end_pos         = file_token.lexpos
         point_to_insert = 0
+        token_tmp       = file_token
 
         while loop:
 
@@ -299,7 +302,8 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
                                 while (file_token.lexpos != tmp.lexpos):
                                     file_token = lexer_for_file.token()
                             
-                            end_position_to_remove = file_token.lexpos + len(file_token.value)
+                            if copy_of_token_for_file: token_tmp = copy_of_token_for_file
+                            end_position_to_remove = tmp.lexpos + len(tmp.value) 
                             matched = True
                     
                     if not matched: 
@@ -329,7 +333,7 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
                             except: return False
                         
                         string_to_add   = ""
-                        end_pos         = copy_of_addition_token.lexpos + len(copy_of_addition_token.value) - 1
+                        end_pos         = copy_of_addition_token.lexpos - 1
                         count           = 0
 
                         for characters in addition_string:
@@ -345,14 +349,14 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
                             except: return False
 
                         while (file_token != None and file_token.type != 'NEWLINE'):
-                            token_pos = file_token.lexpos
+                            # token_tmp = file_token
                             if file_token: file_token = lexer_for_file.token()
 
                         matched = True
                 else: return False
 
                 if file_token: point_to_insert = file_token.lexpos
-                else: point_to_insert = token_pos
+                else: point_to_insert = token_tmp.lexpos + len(token_tmp.value)
                 start_pos = addition_token.lexpos
             
             elif (addition_token.type == 'NEWLINE'):
@@ -361,6 +365,8 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
                 try:    addition_token = lexer_for_addition.token()
                 except: print("No token after Newline"); return list_Of_Insertion_Tuples
             
+            elif (addition_token.type == 'ADD_REPLACE_ADDITION'): return False
+
             else:
                 # Standard addition 
                 while (addition_token != None and addition_token.type != 'NEWLINE'):
@@ -392,13 +398,18 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
     count               = 0
     print("List to use:", list_Of_Insertion_Tuples)
 
+    with open(path_of_file_to_modify, 'r') as file_to_modify:
+        length_of_data = len(file_to_modify.read())
+
     if (os.path.exists(path_of_file_to_modify)):   
         with open(path_of_file_to_modify, 'r') as file_to_modify:
             for characters in file_to_modify.read():  
                 added = False 
                 for tuples in list_Of_Insertion_Tuples:
                     if (type(tuples[1]) is int):
-                        if (tuples[1] == count_of_characters): 
+                        if (tuples[1] == length_of_data and count_of_characters == length_of_data - 1): 
+                            string_for_file += tuples[2]; added = True
+                        elif (tuples[1] == count_of_characters): 
                             if tuples[2] != "\n" and tuples[2] != " \n": string_for_file += tuples[2] 
                         elif (tuples[0] <= count_of_characters <= tuples[1]): added = True
                     elif (tuples[0] == count_of_characters and tuples[0] == 0): string_for_file += tuples[1] + "\n"
@@ -406,11 +417,12 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
                     
                 if not added: string_for_file += characters; added = True
                 count_of_characters += 1
+
         # Account for if addition at the end of the file
         with open(path_of_file_to_modify, 'r') as file_to_modify:        
             for tuples in list_Of_Insertion_Tuples:
                 if not (type(tuples[1]) is int):
-                    if (tuples[0] == len(file_to_modify.read())):
+                    if (tuples[0] == len(file_to_modify.read()) - 1):
                         string_for_file += '\n' + tuples[1]
     else: print("Path does not exist to file")
 
@@ -419,12 +431,12 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
     with open(path_of_file_to_write, 'w') as file_to_write:
         file_to_write.write(string_for_file)
 
-example_Patch = '''
-&* class adder:
-&* def hello():
-&-- hi
-&++hekllo
-&-- return "Hello"
-&++
-Oh Lord it Works </\>
-'''
+##############################################################
+
+with open('../file_store/test/test2.py', 'r') as file_to_read:
+    count = 0
+    for characters in file_to_read.read():
+        print(characters, count)
+        count += 1
+
+print(perform_Additions('../file_store/test/test2.py', '../file_store/test/patch_file.py', test_patches.example_Patch8))

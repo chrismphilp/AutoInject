@@ -377,12 +377,7 @@
 			$('#package_vulnerabilities tbody').on('click', 'button', function() {
 				var data = package_vulnerabilities.row( $(this).parents('tr') ).data();
 				if (this.id == 'update_package') {
-					if (data[0].includes("ADMIN")) {
-						location.href += '/admin_update/' + data[0];
-					}
-					else {
-						location.href += '/standard_update/' + data[0];
-					}
+					location.href += '/package_update/' + data[0];
 				}
 				else if (this.id == 'disable_cve') {
 					location.href += '/disable_cve/' + data[0]; 

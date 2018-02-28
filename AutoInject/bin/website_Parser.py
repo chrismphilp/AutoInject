@@ -67,7 +67,7 @@ def collect_All_Package_URLs():
         'updateable' : 1
     } )
 
-    for items in cursor:
+    for packages in cursor:
         # Call multi-threader function
         pass
 
@@ -80,19 +80,19 @@ def collect_Specific_Package_URL(package_name, cve_id):
             print("Found github link to BFS:", urls)
             return True
 
-    for urls in cursor['references']:
-        version_name = search_URL_For_Version_Update(urls)
-        if version_name:
-            package_Updater(package_name, version_name)
-            return True
+    # for urls in cursor['references']:
+    #     version_name = search_URL_For_Version_Update(urls)
+    #     if version_name:
+    #         package_Updater(package_name, version_name)
+    #         return True
 
-    # If none match then do this
-    package_collection.update( 
-        { 'cve_id' : cve_id },
-        { '$set' : { 'cannot_be_updated' : 1 } },
-        multi=True
-    )
-    return False
+    # # If none match then do this
+    # package_collection.update( 
+    #     { 'cve_id' : cve_id },
+    #     { '$set' : { 'cannot_be_updated' : 1 } },
+    #     multi=True
+    # )
+    # return False
 
 def search_URL_For_Version_Update(url):
     print('Scanning:', url)
@@ -301,23 +301,3 @@ def get_Ubuntu_Version():
             ubuntu_version  = new_line[1]
             if new_line[2]: ubuntu_version += ' ' + new_line[2]
             print(ubuntu_version)
-
-def get_Update_Log(package_name=False):
-    if package_name:    
-        cursor = package_collection.find({
-            'formatted_package_name_with_version' : package_name,
-            'log' : { 
-                '$exists' : True,
-                '$not' : { '$size' : 0 } 
-            }
-        })
-        
-        data = { 'log' : [] }
-        formatted_data = loads(dumps(cursor))
-        for items in formatted_data:
-            for logs in items['log']:
-                if logs['active'] == 1: data['log'].append(logs)
-        cursor = data        
-    else:
-        cursor = package_collection.find( { 'log' : { '$elemMatch' : { 'active' : 0 } } } )
-    return loads(dumps(cursor))

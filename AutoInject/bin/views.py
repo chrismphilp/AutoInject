@@ -11,10 +11,9 @@ from AutoInject         import app
 # Importing scripts to sort data
 import AutoInject.bin.apply_Patches         as ap
 import AutoInject.bin.build_From_Source     as bfs
-import AutoInject.bin.get_Vulnerabilities   as gv
 import AutoInject.bin.get_Packages          as gp
+import AutoInject.bin.get_Vulnerabilities   as gv
 import AutoInject.bin.patch_Handler         as ph
-import AutoInject.bin.website_Parser        as wp
 import AutoInject.bin.system_functions      as sf
 
 # Flask-login
@@ -60,7 +59,7 @@ def return_CVE_IDs(package):
             'deleted' : { '$ne' : 1 } } 
         ) 
     ))
-    update_log = wp.get_Update_Log(package)
+    update_log = ap.get_Update_Log(package)
 
     return render_template(
         'individual_package.html', 
@@ -72,7 +71,7 @@ def return_CVE_IDs(package):
 @app.route("/log")
 @login_required
 def log():
-    package_JSON_data = wp.get_Update_Log()
+    package_JSON_data = ap.get_Update_Log()
     return render_template('log.html', package_JSON_data=package_JSON_data)
 
 @app.route("/profile")
@@ -124,16 +123,10 @@ def manual_update():
         link_For_Button="/vulnerabilities/"+request.form['package']
     )
 
-@app.route("/vulnerabilities/<package>/standard_update/<cve_id>")
-@login_required
-def update_individual_package(package, cve_id):
-    wp.collect_Specific_Package_URL(package_name, cve_id)
-    return redirect(url_for('vulnerabilities') + '/' + package)
-
-@app.route("/vulnerabilities/<package>/admin_update/<admin_id>")
+@app.route("/vulnerabilities/<package>/package_update/<admin_id>")
 @login_required
 def update_using_admin_patch(package, admin_id):
-    ap.handle_Admin_Patch(cve_collection.find_one( { 'id' : admin_id } ) )
+    ap.handle_Patch_Update(cve_collection.find_one( { 'id' : admin_id } ) )
     return redirect(url_for('vulnerabilities') + '/' + package)
 
 @app.route("/vulnerabilities/<package>/delete_patch/<date_of_patch>")

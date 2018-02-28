@@ -1,10 +1,8 @@
-Hello worls
-start
-class adder:
+mass:
 	def goodbye():
 		print("Say goodbye")
 
 class ader:
 	def hello():
 		hi
-		return "Hello"
+		return goodbye "Hello"

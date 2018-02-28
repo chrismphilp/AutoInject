@@ -1,4 +1,3 @@
-start
 class adder:
 	def goodbye():
 		print("Say goodbye")
@@ -6,4 +5,4 @@ class adder:
 class ader:
 	def hello():
 		hi
-		return "Hello"
+		return goodbye "Hello"

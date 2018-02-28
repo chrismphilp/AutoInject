@@ -4,6 +4,7 @@ import pymongo, time, datetime, os
 import AutoInject.bin.build_From_Source as bfs
 import AutoInject.bin.github_Parser     as gp
 import AutoInject.bin.patch_Handler     as ph
+import AutoInject.bin.website_Parser    as wp
 
 from pymongo                            import MongoClient
 from json                               import loads
@@ -14,31 +15,36 @@ client                                  = MongoClient()
 package_collection                      = client['package_db']['package_list']
 cve_collection                          = client['cvedb']['cves']
 
-def handle_Admin_Patch(patch_cursor):
-    if (patch_cursor['patch_type'] == 'build_from_source'):
-        if (patch_cursor['references']):
-            handle_Github_Patch(
-                patch_cursor,
-                patch_cursor['vulnerable_configuration'][0], 
-                patch_cursor['references'][0]
-            )
-        else:
-            print("No link provided")
-            if determine_File_Status(bfs.search_Files(patch_cursor['file_path'])): return False
-            handle_Manual_Patch_By_User(
-                bfs.search_Files(patch_cursor['file_path']),
-                patch_cursor['vulnerable_configuration'][0],
-                patch_cursor['update_code'],
-                patch_cursor['summary'],
-                patch_cursor
-            )
-    elif (patch_cursor['patch_type'] == 'version'):
-        if (patch_cursor['references']):
-            print("Link provided")
-            if not determine_Package_Status(patch_cursor['individual_package_name']): return False
-        else:
-            print("No link provided")
-            if not determine_Package_Status(patch_cursor['individual_package_name']): return False
+def handle_Patch_Update(patch_cursor):
+    if ('ADMIN' in patch_cursor['id']):
+        if (patch_cursor['patch_type'] == 'build_from_source'):
+            if (patch_cursor['references']):
+                handle_Github_Patch(
+                    patch_cursor,
+                    patch_cursor['vulnerable_configuration'][0], 
+                    patch_cursor['references'][0]
+                )
+            else:
+                print("No link provided")
+                if determine_File_Status(bfs.search_Files(patch_cursor['file_path'])): return False
+                handle_Manual_Patch_By_User(
+                    bfs.search_Files(patch_cursor['file_path']),
+                    patch_cursor['vulnerable_configuration'][0],
+                    patch_cursor['update_code'],
+                    patch_cursor['summary'],
+                    patch_cursor
+                )
+            return True
+        elif (patch_cursor['patch_type'] == 'version'):
+            if (patch_cursor['references']):
+                print("Link provided")
+                if not determine_Package_Status(patch_cursor['individual_package_name']): return False
+            else:
+                print("No link provided")
+                if not determine_Package_Status(patch_cursor['individual_package_name']): return False
+            return True
+    elif ('CVE' in patch_cursor['id']):
+        print("Standard update")
 
 def handle_Github_Patch(cursor, package, url):
     set_to = False
@@ -161,3 +167,6 @@ def determine_Package_Status(package_name):
             else:               count += 1
     except:
         return False
+
+def get_Update_Log(package_name=False):
+    return ph.get_Update_Log(package_name)

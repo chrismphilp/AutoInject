@@ -6,5 +6,5 @@ class adder:
 class ader:
 	def hello():
 		hekllo
-		
-Oh Lord it Works </\> 
+		return 
+Oh Lord it Works </\>"Hello"
