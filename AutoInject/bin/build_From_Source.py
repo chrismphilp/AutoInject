@@ -137,7 +137,7 @@ def perform_Additions(path_of_file_to_modify, path_of_file_to_write, additions, 
 
     for addition_Strings in split_Additions:
         
-        addition_Strings = "\n" + addition_Strings + "\n"
+        addition_Strings = "\n" + addition_Strings.replace("\r", "") + "\n"
         lexer_for_addition.input(addition_Strings) 
 
         if (os.path.exists(path_of_file_to_modify)): 
@@ -190,6 +190,8 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
 
                 try:    addition_token  = lexer_for_addition.token()
                 except: return False
+
+                if addition_token.type == 'NEWLINE': return False
                 
                 copy_of_lexer_for_addition  = copy(lexer_for_addition) 
                 copy_of_addition_token      = addition_token
@@ -224,11 +226,13 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
                         if (copy_of_addition_token.type == 'NEWLINE'):
                             
                             start_pos = copy_of_addition_token.lexpos
-
+                            
                             try:    copy_of_addition_token = copy_of_lexer_for_addition.token()
                             except: return list_Of_Insertion_Tuples
 
+                            if not copy_of_addition_token: return list_Of_Insertion_Tuples
                             while (addition_token.lexpos != copy_of_addition_token.lexpos):
+                                print(addition_token)
                                 addition_token = lexer_for_addition.token()
                             
                             if copy_of_token_for_file:
@@ -371,7 +375,7 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
                 # Standard addition 
                 while (addition_token != None and addition_token.type != 'NEWLINE'):
                     try:    addition_token = lexer_for_addition.token()
-                    except: end_pos = addition_token.lexpos
+                    except: end_pos = addition_token.lexpos - 1
 
                 string_to_add   = ""
                 if addition_token: end_pos = addition_token.lexpos
@@ -433,10 +437,10 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
 
 ##############################################################
 
-with open('../file_store/test/test2.py', 'r') as file_to_read:
-    count = 0
-    for characters in file_to_read.read():
-        print(characters, count)
-        count += 1
+# with open('../file_store/test/test2.py', 'r') as file_to_read:
+#     count = 0
+#     for characters in file_to_read.read():
+#         print(characters, count)
+#         count += 1
 
-print(perform_Additions('../file_store/test/test2.py', '../file_store/test/patch_file.py', test_patches.example_Patch8))
+# print(perform_Additions('../file_store/test/test2.py', '../file_store/test/patch_file.py', test_patches.example_Patch4))

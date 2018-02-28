@@ -212,7 +212,7 @@ def make_Copy_Of_File(package_name, file_path, set_Path=False):
         return get_Source_Path(copy)
 
 def restore_File_Contents(path_of_diff):
-    os.system("patch --force -d/ -p0 < " + path_of_diff)
+    os.system("patch --no-backup-if-mismatch --force -d/ -p0 < " + path_of_diff)
 
 def get_Source_Path(path_of_file):
     return os.path.realpath(path_of_file)

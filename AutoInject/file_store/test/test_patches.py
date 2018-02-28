@@ -1,10 +1,10 @@
 example_Patch1 = '''
 &* class adder:
 &-- def goodbye
-&++yoo
+&++def new_Function
 hhh
 &* def hello():
-eddegge
+Test Text
 '''
 
 example_Patch2 = '''
@@ -29,7 +29,7 @@ HI
 example_Patch6 = '''
 &-- class
 &++
-&* def goodbye():
+&*def goodbye():
 '''
 
 example_Patch7 = '''
@@ -40,6 +40,9 @@ example_Patch7 = '''
 example_Patch8 = '''
 &-- class adder
 &++mass
+&* def hello
+&*hi
+&*return goodbye "Hello"
 '''
 
 example_Patch9 = '''
@@ -50,4 +53,5 @@ example_Patch9 = '''
 example_Patch10 = '''
 &-- return goodbye "Hello"
 &++Yooo
+&* ggg
 '''

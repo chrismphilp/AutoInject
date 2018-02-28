@@ -4,5 +4,4 @@ class adder:
 
 class ader:
 	def hello():
-		hi
 		return goodbye "Hello"

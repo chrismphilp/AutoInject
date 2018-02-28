@@ -6,13 +6,10 @@ dewded
 fffffff
 eeee
 class adder:
-	def goodbye():
 		print("Say goodbye")
 		print("hola")		
 
 	class adder:
-
-	def goodbye(au_revoir):
 		hello
 		y = au_revoir + 1
 		return y
@@ -22,6 +19,8 @@ class adder:
 
 class ader:
 	def hello():
+eddegge
+eddegge
 		return "Hello"
 
 class adder:

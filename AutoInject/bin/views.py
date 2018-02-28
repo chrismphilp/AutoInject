@@ -112,6 +112,8 @@ def manual_update():
         request.form['comment']
     )
 
+    if not diff_file_path: return redirect(url_for('vulnerabilities') + '/' + request.form['package'])
+
     html_To_Parse_After = bfs.format_HTML('AutoInject/file_store/test/patch_file.py')
     html_For_Diff_File  = bfs.format_HTML(diff_file_path)
     
@@ -133,13 +135,19 @@ def update_using_admin_patch(package, admin_id):
 @login_required
 def delete_file_patch(package, date_of_patch):
     ph.delete_Patch(package, date_of_patch)
-    return redirect(url_for('vulnerabilities') + '/' + package)
+    return redirect(url_for('log'))
 
 @app.route("/vulnerabilities/<package>/revert_patch/<date_of_patch>")
 @login_required
-def reverse_file_patch(package, date_of_patch):
+def reverse_file_patch_package_page(package, date_of_patch):
     ph.handle_Patch_Maintenance(package, date_of_patch)
     return redirect(url_for('vulnerabilities') + '/' + package)
+
+@app.route("/log/<package>/revert_patch/<date_of_patch>")
+@login_required
+def reverse_file_patch_log_page(package, date_of_patch):
+    ph.handle_Patch_Maintenance(package, date_of_patch)
+    return redirect(url_for('log'))
     
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
