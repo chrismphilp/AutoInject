@@ -1,7 +1,0 @@
---- /home/chrismphilp/Documents/thirdYearProject/AutoInject/AutoInject/file_store/test/patch_file.py 21:29:30.911307 +0000
-+++ /home/chrismphilp/Documents/thirdYearProject/AutoInject/AutoInject/file_store/test/test2.py 21:29:30.911346 +0000
-@@ -1,4 +1,3 @@
--Hello
- class adder:
- 	def goodbye():
- 		print("Say goodbye")

@@ -119,7 +119,7 @@ lexer_for_file      = lex.lex(reflags=re.S)
 # --------------------------------------------------------------------------
 
 def perform_File_Alterations(path_of_file_to_modify, path_of_new_file, bfs_string):
-    
+
     if perform_Additions(path_of_file_to_modify, path_of_new_file, bfs_string):
         new_string = ""
         with open(path_of_new_file, 'r') as read_file:
@@ -148,6 +148,8 @@ def perform_Additions(path_of_file_to_modify, path_of_file_to_write, additions, 
         else:           return False 
 
     if run_additons:
+        with open(path_of_file_to_modify, 'a') as file_to_write:
+            file_to_write.write("\n")
         if list_Of_Insertion_Tuples: 
             run_Addition_Searches(
                 path_of_file_to_modify, 
@@ -261,7 +263,8 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
                 try:    addition_token  = lexer_for_addition.token()
                 except: return False
 
-                if (copy_of_token_for_file == None): return False
+                if not copy_of_token_for_file: return False
+                if (addition_token.type == 'NEWLINE'): return False
 
                 matched = False
                 while not matched:    
@@ -400,6 +403,7 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
     string_for_file     = ""
     count_of_characters = 0
     count               = 0
+    added_newline       = False
     print("List to use:", list_Of_Insertion_Tuples)
 
     with open(path_of_file_to_modify, 'r') as file_to_modify:
@@ -417,27 +421,21 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
                             if tuples[2] != "\n" and tuples[2] != " \n": string_for_file += tuples[2] 
                         elif (tuples[0] <= count_of_characters <= tuples[1]): added = True
                     elif (tuples[0] == count_of_characters and tuples[0] == 0): string_for_file += tuples[1] + "\n"
+                    elif (tuples[0] == length_of_data and count_of_characters == length_of_data - 1): 
+                        string_for_file += characters + '\n' + tuples[1]; added = True; added_newline = True
                     elif (tuples[0] == count_of_characters): string_for_file += "\n" + tuples[1]
                     
                 if not added: string_for_file += characters; added = True
                 count_of_characters += 1
 
-        # Account for if addition at the end of the file
-        with open(path_of_file_to_modify, 'r') as file_to_modify:        
-            for tuples in list_Of_Insertion_Tuples:
-                if not (type(tuples[1]) is int):
-                    if (tuples[0] == len(file_to_modify.read()) - 1):
-                        string_for_file += '\n' + tuples[1]
     else: print("Path does not exist to file")
-
-    print(string_for_file)
 
     with open(path_of_file_to_write, 'w') as file_to_write:
         file_to_write.write(string_for_file)
 
 ##############################################################
 
-# with open('../file_store/test/test2.py', 'r') as file_to_read:
+# with open('AutoInject/file_store/test/test2.py', 'r') as file_to_read:
 #     count = 0
 #     for characters in file_to_read.read():
 #         print(characters, count)

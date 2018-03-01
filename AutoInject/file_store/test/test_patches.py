@@ -41,7 +41,6 @@ example_Patch8 = '''
 &-- class adder
 &++mass
 &* def hello
-&*hi
 &*return goodbye "Hello"
 '''
 
@@ -54,4 +53,41 @@ example_Patch10 = '''
 &-- return goodbye "Hello"
 &++Yooo
 &* ggg
+'''
+
+example_Patch11 = '''
+&-- print("Say
+&++Yooo
+&* class
+'''
+
+example_Patch12 = '''
+&-- "Say goodbye"
+&++"Say hello"
+au revoir
+'''
+
+example_Patch13 = '''
+&*class adder:
+&*	def goodbye():
+&*		print("Say goodbye")
+&*class ader:
+&*	def hello():
+&*		return goodbye "Hello"
+'''
+
+example_Patch14 = '''
+Hola
+&*class adder:
+&*	def goodbye():
+&*		print("Say goodbye")
+&*class ader:
+&*	def hello():
+&*		return goodbye
+Au revoir
+'''
+
+example_Patch15 = '''
+&--
+&++
 '''

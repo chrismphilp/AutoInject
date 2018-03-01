@@ -34,25 +34,13 @@ def produce_Diff_Of_Files(file_path1, file_path2, package_name, diff_file_name):
         while (os.path.exists(full_file_path)):
             iteration += 1
             full_file_path = file_path_of_diff_file + "/" + str(iteration) + diff_file_name
-        
-        with open(full_file_path, "w") as outfile:
-            
-            line_no = 0
-            file1   = open(file_path1, "r")
-            file2   = open(file_path2, "r")
 
-            for lines in unified_diff(file1.readlines(), file2.readlines()):
-                print(lines)
-                if (line_no == 0):
-                    line_no += 1
-                    new_string = "--- " + get_Source_Path(file_path1) + " " + get_Current_Time() + '\n'
-                    outfile.write(new_string)
-                elif (line_no == 1):
-                    line_no += 1
-                    new_string = "+++ " + get_Source_Path(file_path2) + " " + get_Current_Time() + '\n'
-                    outfile.write(new_string)
-                else:   
-                    outfile.write(lines)
+        with open(full_file_path, "w") as outfile:
+            with open(file_path1, "U") as file1:
+                with open(file_path2, "U") as file2:
+                    for lines in unified_diff(file1.readlines(), file2.readlines(), 
+                        fromfile=file_path2, tofile=file_path1, fromfiledate=get_Current_Time(), tofiledate=get_Current_Time()):
+                        outfile.write(lines)
     else:
         print("Path to files does not exist")
     
