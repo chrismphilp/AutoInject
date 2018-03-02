@@ -12,9 +12,6 @@ from subprocess     import check_output, check_call
 from bs4            import BeautifulSoup
 from collections    import defaultdict
 
-global ubuntu_version
-ubuntu_version = "14"
-
 client                      = MongoClient()
 package_collection          = client['package_db']['package_list']
 cve_collection              = client['cvedb']['cves']
@@ -258,20 +255,15 @@ def update_Vulnerability_Information(package_name, new_package_version_name, jus
     # 4) Re-search new package version to potentially find new vulnerabilities 
 
     for package in package_collection.find( { 'package_name' : package_name } ):
-
-        finder_cursor = cve_collection.find(
-            { 
-                '$text' : { '$search' : items },
-                'matched_To_CVE' : 0 
-            }
-        )
+        finder_cursor = cve_collection.find( { 
+            '$text' : { '$search' : items },
+            'matched_To_CVE' : 0 
+        } )
 
 def package_Update_Reversal(package_name):
     print("Reversing package update")
     
-    cursor = package_collection.find(
-        { 'package_name' : package_name }
-    )
+    cursor = package_collection.find( { 'package_name' : package_name } )
 
     for package in cursor['previous_version']:
         try:
@@ -283,20 +275,3 @@ def package_Update_Reversal(package_name):
                 return True
         except:
             print("Couldn't reverse update:", package_name)
-
-def get_Ubuntu_Version():
-    global ubuntu_version
-
-    print("Getting Ubuntu version")
-    out = check_output(
-        ["lsb_release", "-a"], 
-        universal_newlines=True
-    )
-    tmp = out.split('\n')
-
-    for line in tmp:
-        if "Description" in line:
-            new_line        = line.split(' ')
-            ubuntu_version  = new_line[1]
-            if new_line[2]: ubuntu_version += ' ' + new_line[2]
-            print(ubuntu_version)

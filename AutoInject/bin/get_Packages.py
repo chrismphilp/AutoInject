@@ -27,7 +27,7 @@ def get_Package_Data():
             formatted_Package_Name_Without_Version  = get_Formatted_Name(package_array[0])
             squashed_Version                        = ''.join(e for e in package_Version if e.isalnum())
             package_Name_With_Version               = formatted_Package_Name_Without_Version + squashed_Version
-            squashed_Name_With_Version              = ''.join(e for e in package_Name_With_Version if e.isalnum())
+            squashed_Name_With_Version              = ''.join(e for e in package_Name_With_Version if e.isalnum() or e == ':')
             package_item = {
                 'package_name_with_version' : package_Name_With_Version,
                 'package_name' : package_array[0],
@@ -62,7 +62,7 @@ def get_Formatted_Name(package_Name):
     return (re.match(re_string, package_Name)).group(0)
 
 def get_Formatted_Version(package_Version):
-    re_num = re.compile(r"""([0-9]\.*)+""")
+    re_num = re.compile(r"""(([0-9]:){0,1}[0-9]\.*)+""")
     return (re.match(re_num, package_Version)).group(0)
 
 def get_Packages_JSON():

@@ -51,12 +51,14 @@ def check_For_Updated_Packages():
     print("Getting packages that have been updated")
     for values in package_collection.find( { 'formatted_package_name_with_version' : { '$nin' : gp.get_Package_Data()[1] } } ):
 
+        changed_package_name = False
+        
         for items in gp.get_Package_Data()[1]:
             if items == values['formatted_package_name_with_version']:
                 changed_package_name = values['formatted_package_name_with_version']
                 package_collection.insert_one(values)
 
-        for ids in values['matched_ids']:
+        for ids in values['matching_ids']:
             vulnerability_collection.update(
                 { 'id' : ids },
                 { '$unset' : { 
@@ -65,7 +67,7 @@ def check_For_Updated_Packages():
                 } }, 
             )
 
-        package_collection.remove_one( { '_id' : values['_id'] } )
+        package_collection.remove( { '_id' : values['_id'] } )
 
         if changed_package_name:
             cursor = vulnerability_collection.find( 

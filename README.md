@@ -32,7 +32,7 @@ sudo pip3 install -e .
 flask run
 ```
 
-Or use the provided script, found at 
+Or use the provided script: 
 
 ```
 auto_inject_script
