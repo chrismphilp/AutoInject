@@ -24,9 +24,16 @@ Firstly, remove these lines from */cve-search/sbin/db_updater.py*
 {'name': "cpeother", 'updater': "python3 " + os.path.join(runPath, "db_mgmt_cpe_other_dictionary.py")}
 ```     
 
+Then, either run these commands:
 ```
 export FLASK_APP=AutoInject
 export FLASK_DEBUG=true
 sudo pip3 install -e .
 flask run
+```
+
+Or use the provided script, found at 
+
+```
+auto_inject_script
 ```
