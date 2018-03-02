@@ -12,6 +12,8 @@ setup(
         'flask-login',
         'flask-mongoengine',
         'ply',
-        'pygments'
+        'pygments',
+        'beautifulsoup4',
+        'pymongo'
     ],
 )
