@@ -1,10 +1,3 @@
-Hello Moi Boi
-Hello Moi Boi
-Hello Moi Boi
-Hello Moi Boi
-dewded
-fffffff
-eeee
 class adder:
 		print("Say goodbye")
 		print("hola")		
@@ -19,8 +12,6 @@ class adder:
 
 class ader:
 	def hello():
-eddegge
-eddegge
 		return "Hello"
 
 class adder:

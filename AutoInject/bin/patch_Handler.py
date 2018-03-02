@@ -16,11 +16,11 @@ cve_collection              = client['cvedb']['cves']
 
 def produce_Diff_Of_Files(file_path1, file_path2, package_name, diff_file_name):    
 
-    if not os.path.exists('../file_store'):
-        os.makedirs('../file_store')
+    if not os.path.exists('AutoInject/file_store'):
+        os.makedirs('AutoInject/file_store')
 
-    if not os.path.exists('../file_store/' + package_name):
-        os.makedirs('../file_store/' + package_name)
+    if not os.path.exists('AutoInject/file_store/' + package_name):
+        os.makedirs('AutoInject/file_store/' + package_name)
 
     if (os.path.exists(file_path1) and os.path.exists(file_path2)):
         file_path_of_diff_file = "AutoInject/file_store/" + package_name
@@ -41,10 +41,11 @@ def produce_Diff_Of_Files(file_path1, file_path2, package_name, diff_file_name):
                     for lines in unified_diff(file1.readlines(), file2.readlines(), 
                         fromfile=file_path2, tofile=file_path1, fromfiledate=get_Current_Time(), tofiledate=get_Current_Time()):
                         outfile.write(lines)
-    else:
-        print("Path to files does not exist")
     
-    return full_file_path
+    else: print("Path to files does not exist")
+    
+    if full_file_path: return full_file_path
+    else: return False
 
 def upload_File(package_name, original_files_path, diff_file_path, type_of_update, type_of_implementation, comment, 
     type_of_patch, copy_of_file_path, active):

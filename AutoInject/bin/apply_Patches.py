@@ -80,19 +80,19 @@ def handle_Manual_Patch_By_User(full_file_path, package, inserted_code, comment,
 
     if not bfs.perform_File_Alterations(
         full_file_path, 
-        'AutoInject/file_store/test/patch_file.py', 
+        bfs.search_Files('AutoInject/file_store/test/patch_file.py'), 
         inserted_code
     ): return False
 
     diff_file_path = ph.produce_Diff_Of_Files(
         full_file_path,
-        'AutoInject/file_store/test/patch_file.py',
+        bfs.search_Files('AutoInject/file_store/test/patch_file.py'),
         package,
         'patch_file__apply__.patch'
     )
 
     diff_file_path2 = ph.produce_Diff_Of_Files(
-        'AutoInject/file_store/test/patch_file.py',
+        bfs.search_Files('AutoInject/file_store/test/patch_file.py'),
         full_file_path,
         package,
         'patch_file__reverse__.patch'
