@@ -17,15 +17,12 @@ See this guide for further details on how to provide sudo permissions:
 
 ## Running the package
 
-Firstly, remove these lines from 
-*/cve-search/sbin/db_updater.py*
+Firstly, remove these lines from */cve-search/sbin/db_updater.py*
 
-'''
-{'name': "cpe",
-'updater': "python3 " + os.path.join(runPath, "db_mgmt_cpe_dictionary.py")},
-{'name': "cpeother",
-'updater': "python3 " + os.path.join(runPath, "db_mgmt_cpe_other_dictionary.py")}
-'''     
+```
+{'name': "cpe", 'updater': "python3 " + os.path.join(runPath, "db_mgmt_cpe_dictionary.py")},
+{'name': "cpeother", 'updater': "python3 " + os.path.join(runPath, "db_mgmt_cpe_other_dictionary.py")}
+```     
 
 ```
 export FLASK_APP=AutoInject
