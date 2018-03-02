@@ -52,7 +52,7 @@ def check_For_Updated_Packages():
     for values in package_collection.find( { 'formatted_package_name_with_version' : { '$nin' : gp.get_Package_Data()[1] } } ):
 
         for items in gp.get_Package_Data()[1]:
-            if items['formatted_package_name_with_version'] == values['formatted_package_name_with_version']:
+            if items == values['formatted_package_name_with_version']:
                 changed_package_name = values['formatted_package_name_with_version']
                 package_collection.insert_one(values)
 

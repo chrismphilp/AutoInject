@@ -1,4 +1,4 @@
-Hola
+Hello
 class adder:
 	def goodbye():
 		print("Say goodbye")
@@ -6,4 +6,3 @@ class adder:
 class ader:
 	def hello():
 		return goodbye "Hello"
-Au revoir

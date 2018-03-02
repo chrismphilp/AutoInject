@@ -91,3 +91,35 @@ example_Patch15 = '''
 &--
 &++
 '''
+
+example_Patch16 = '''
+&--class adder:
+&++
+&--	def goodbye():
+&++
+&--		print("Say goodbye")
+&++
+&--class ader:
+&++
+&--	def hello():
+&++
+&--		return goodbye "Hello"
+&++
+'''
+
+example_Patch17 = '''
+Hello
+&--class adder:
+&++
+&--	def goodbye():
+&++
+&--		print("Say goodbye")
+&++
+&--class ader:
+&++
+&--	def hello():
+&++
+&--		return goodbye "Hello"
+&++
+Hello
+'''

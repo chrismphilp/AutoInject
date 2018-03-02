@@ -16,6 +16,12 @@ package_collection                      = client['package_db']['package_list']
 cve_collection                          = client['cvedb']['cves']
 
 def handle_Patch_Update(patch_cursor):
+    
+    if (patch_cursor['file_path']):
+        for filename in bfs.search_Files(patch_cursor['file_path']).split('\n'):
+            if filename.endswith('.orig') or filename.endswith('.rej'):
+                os.remove(filename)
+
     if ('ADMIN' in patch_cursor['id']):
         if (patch_cursor['patch_type'] == 'build_from_source'):
             if (patch_cursor['references']):
@@ -45,6 +51,15 @@ def handle_Patch_Update(patch_cursor):
             return True
     elif ('CVE' in patch_cursor['id']):
         print("Standard update")
+        for urls in cursor['references']: 
+            if 'github' in url:
+                if handle_Github_Patch(
+                    patch_cursor,
+                    patch_cursor['vulnerable_configuration'][0], 
+                    url
+                ): return True
+                else: return False
+        wp.collect_Specific_Package_URL(patch_cursor)
 
 def handle_Github_Patch(cursor, package, url):
     set_to = False
@@ -59,6 +74,7 @@ def handle_Github_Patch(cursor, package, url):
             set_to = True
         else:
             handle_Manual_Patch_By_User(bfs.search_Files(file_path), package, code, 'Github patch: ' + url)
+    return True
 
 def handle_Manual_Patch_By_User(full_file_path, package, inserted_code, comment, cursor=None):
 

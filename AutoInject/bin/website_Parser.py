@@ -71,20 +71,19 @@ def collect_All_Package_URLs():
         # Call multi-threader function
         pass
 
-def collect_Specific_Package_URL(package_name, cve_id):
+def collect_Specific_Package_URL(cursor):
     
-    cursor = cve_collection.find( { 'id' : cve_id } )
-
     for urls in cursor['references']: 
         if 'github' in url:
             print("Found github link to BFS:", urls)
             return True
 
-    # for urls in cursor['references']:
-    #     version_name = search_URL_For_Version_Update(urls)
-    #     if version_name:
-    #         package_Updater(package_name, version_name)
-    #         return True
+    for urls in cursor['references']:
+        version_name = search_URL_For_Version_Update(urls)
+        if version_name:
+            print(version_name)
+            # package_Updater(package_name, version_name)
+            return True
 
     # # If none match then do this
     # package_collection.update( 
