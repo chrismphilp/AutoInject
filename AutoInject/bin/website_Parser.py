@@ -261,12 +261,12 @@ def update_Vulnerability_Information(package_name, current_version, previous_ver
 def package_Update_Reversal(package_name):
     print("Reversing package update")
     
-    cursor = package_collection.find( { 'package_name' : package_name } )
+    cursor = package_collection.find_one( { 'package_name' : package_name } )
 
     for package in cursor['previous_version']:
         try:
             package_upgrade = check_call(
-                ["sudo", "apt-get", "install", "-y", "--force-yes", "--only-upgrade", package]
+                ["sudo", "apt-get", "install", "-y", "--force-yes", package]
             )
             if (package_upgrade == 0):
                 update_Vulnerability_Information(package_name, combi)
