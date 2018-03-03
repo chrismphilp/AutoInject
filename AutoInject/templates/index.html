@@ -30,6 +30,7 @@
 							                <th>Package Name</th>
 							                <th>Package Version</th>
 							                <th>Package Index</th>
+							                <th>Ubuntu Version</th>
 							                <th>Affected System</th>
 							                <th>Updateable?</th>
 							            </tr>
@@ -39,6 +40,7 @@
 							                <th>Package Name</th>
 							                <th>Package Version</th>
 							                <th>Package Index</th>
+							                <th>Ubuntu Version</th>
 							                <th>Affected System</th>
 							                <th>Updateable?</th>
 							            </tr>
@@ -71,6 +73,7 @@
 						JSON_data[package]['package_name'], 
 						JSON_data[package]['version'], 
 						JSON_data[package]['formatted_package_name_with_version'],
+						JSON_data[package]['current_ubuntu_version'],
 						JSON_data[package]['architecture'],
 						JSON_data[package]['updateable']
 					] 
@@ -85,8 +88,9 @@
 					{ "data" : [1] },
 					{ "data" : [2] },
 					{ "data" : [3] },
+					{ "data" : [4] },
 					{ 
-						"data" : [4],
+						"data" : [5],
 						"render" : function(data, type, row, meta) {
 							var button = "<button class='btn btn-success'>Updater</button>";
 							if (type == 'display') {

@@ -1,54 +1,56 @@
-import pymongo, re, time
+import  pymongo, re, time
 
-from json           import loads
-from bson.json_util import dumps
-from pymongo        import MongoClient
-from subprocess     import check_output
+import  AutoInject.bin.system_Functions as sf
+
+from    json                            import loads
+from    bson.json_util                  import dumps
+from    pymongo                         import MongoClient
+from    subprocess                      import check_output
 
 client                      = MongoClient()
 db                          = client['package_db']
 collection                  = db['package_list']
 
-list_To_Insert              = []
-
 def get_Package_Data():
-    out                 = check_output(["dpkg-query", "-W", "-f=${binary:Package}\t${Version}\t${Architecture}\n"], 
-                            universal_newlines=True)
-    tmp                 = out.split('\n')
+    
+    tmp = check_output(
+        ["dpkg-query", "-W", "-f=${binary:Package}\t${Version}\t${Architecture}\n"], 
+        universal_newlines=True
+    ).split('\n')
     
     print('Retrieving list of packages on system')
-    list_To_Insert              = []
-    package_Names_With_Versions = []
+    list_to_insert              = []
+    package_names_with_versions = []
     for line in tmp:
         package_array = line.split('\t')
 
         try:
-            package_Version                         = get_Formatted_Version(package_array[1])
-            formatted_Package_Name_Without_Version  = get_Formatted_Name(package_array[0])
-            squashed_Version                        = ''.join(e for e in package_Version if e.isalnum())
-            package_Name_With_Version               = formatted_Package_Name_Without_Version + squashed_Version
-            squashed_Name_With_Version              = ''.join(e for e in package_Name_With_Version if e.isalnum() or e == ':')
+            package_version                         = sf.get_Formatted_Version(package_array[1])
+            formatted_package_name_without_version  = sf.get_Formatted_Name(package_array[0])
+            squashed_version                        = ''.join(e for e in package_version if e.isalnum())
+            package_name_with_version               = formatted_package_name_without_version + squashed_Version
+            squashed_name_with_version              = ''.join(e for e in package_name_with_version if e.isalnum() or e == ':')
+
             package_item = {
-                'package_name_with_version' : package_Name_With_Version,
+                'package_name_with_version' : package_name_with_version,
                 'package_name' : package_array[0],
-                'formatted_package_name_with_version' :  squashed_Name_With_Version,
-                'formatted_package_name_without_version' : formatted_Package_Name_Without_Version,
-                'version' : package_Version, 
-                'formatted_version' : squashed_Version,
-                'previous_version' : package_Version,
+                'formatted_package_name_with_version' :  squashed_name_with_version,
+                'formatted_package_name_without_version' : formatted_package_name_without_version,
+                'version' : package_version, 
+                'formatted_version' : squashed_version,
                 'architecture' : package_array[2],
                 # 1 = updateable, 0 means do not update
                 'updateable' : 1,
-                'has_been_updated' : 0,
+                'current_ubuntu_version' : package_array[1],
                 'matching_ids' : []
             }
-            list_To_Insert.append(package_item)
-            package_Names_With_Versions.append(squashed_Name_With_Version)
+            list_to_insert.append(package_item)
+            package_names_with_versions.append(squashed_name_with_version)
         
         except:
             print("Error inserting", package_array)
             continue
-    return(list_To_Insert, package_Names_With_Versions)
+    return(list_to_insert, package_names_with_versions)
 
 def insert_Packages(package_List):
     # Deleting any current package details
@@ -57,15 +59,6 @@ def insert_Packages(package_List):
     collection.insert(package_List)
     print('Finished inserting into DB')
 
-def get_Formatted_Name(package_Name):
-    re_string = re.compile(r"""([0-9]{0,1}([A-Za-z])+(\-[A-Za-z])*)+""")
-    return (re.match(re_string, package_Name)).group(0)
-
-def get_Formatted_Version(package_Version):
-    re_num = re.compile(r"""(([0-9]:){0,1}[0-9]\.*)+""")
-    return (re.match(re_num, package_Version)).group(0)
-
 def get_Packages_JSON():
     package_JSON = collection.find({})
     return loads(dumps(package_JSON))
-    

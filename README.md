@@ -24,6 +24,8 @@ Firstly, remove these lines from */cve-search/sbin/db_updater.py*
 {'name': "cpeother", 'updater': "python3 " + os.path.join(runPath, "db_mgmt_cpe_other_dictionary.py")}
 ```     
 
+Secondly, you must provide *sudo* permissions for the AutoInject directory, as it will need to make file and folder changes.
+
 Then, either run these commands:
 ```
 export FLASK_APP=AutoInject

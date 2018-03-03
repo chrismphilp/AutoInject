@@ -1,7 +1,6 @@
 import pymongo, re, time, datetime, os
 
 # Parsing related modules
-# import AutoInject.bin.patch_Handler as ph
 
 import ply.lex                      as lex
 from pygments                       import highlight

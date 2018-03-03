@@ -14,7 +14,7 @@ import AutoInject.bin.build_From_Source     as bfs
 import AutoInject.bin.get_Packages          as gp
 import AutoInject.bin.get_Vulnerabilities   as gv
 import AutoInject.bin.patch_Handler         as ph
-import AutoInject.bin.system_functions      as sf
+import AutoInject.bin.system_Functions      as sf
 
 # Flask-login
 from flask_login        import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
@@ -92,11 +92,14 @@ def about():
 @app.route("/version_update", methods=['POST'])
 @login_required
 def version_update():
-    version_name    = request.form['version-name']
-    link            = request.form['link']
-    comment         = request.form['comment']
-    package         = request.form['package']
-    print(version_name, link, comment, package)
+    ap.handle_Version_Patch_By_User(
+        request.form['package']
+        request.form['version-name']
+        request.form['link']
+        request.form['comment']
+    )
+    gv.remove_Special_Characters()
+    gv.collect_Checkable_Packages()
     return redirect("/vulnerabilities/" + package, code=302)
 
 @app.route("/manual_update", methods=['POST'])
@@ -116,7 +119,7 @@ def manual_update():
 
     html_To_Parse_After = bfs.format_HTML('AutoInject/file_store/test/patch_file.py')
     html_For_Diff_File  = bfs.format_HTML(diff_file_path)
-    
+
     return render_template(
         'file_alterations.html', 
         html_To_Parse_Before=html_To_Parse_Before,

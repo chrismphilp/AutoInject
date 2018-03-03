@@ -16,7 +16,6 @@ package_collection                      = client['package_db']['package_list']
 cve_collection                          = client['cvedb']['cves']
 
 def handle_Patch_Update(patch_cursor):
-    
     if (patch_cursor['file_path']):
         for filename in bfs.search_Files(patch_cursor['file_path']).split('\n'):
             if filename.endswith('.orig') or filename.endswith('.rej'):
@@ -42,13 +41,9 @@ def handle_Patch_Update(patch_cursor):
                 )
             return True
         elif (patch_cursor['patch_type'] == 'version'):
-            if (patch_cursor['references']):
-                print("Link provided")
-                if not determine_Package_Status(patch_cursor['individual_package_name']): return False
-            else:
-                print("No link provided")
-                if not determine_Package_Status(patch_cursor['individual_package_name']): return False
-            return True
+            if not determine_Package_Status(patch_cursor['individual_package_name']): return False
+            if wp.resolve_Admin_Version_Update(patch_cursor): return True
+            else: return False
     elif ('CVE' in patch_cursor['id']):
         print("Standard update")
         for urls in cursor['references']: 
@@ -129,6 +124,10 @@ def handle_Manual_Patch_By_User(full_file_path, package, inserted_code, comment,
     ph.compile_File(full_file_path)
     if cursor: cve_collection.delete_one( { '_id' : cursor['_id'] } )
     return diff_file_path
+
+def handle_Version_Patch_By_User(package, version_name, link, comment):
+    if link: wp.collect_Specific_Package_URL(None, link)
+    elif version_name: wp.get_Matching_Ubuntu_Version(package, version_name, comment)
 
 def determine_File_Status(file_path):
     try:

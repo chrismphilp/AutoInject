@@ -67,8 +67,7 @@ def upload_File(package_name, original_files_path, diff_file_path, type_of_updat
                 'active' : active, # 1 -> active, 0 -> not active
                 'path_of_intermediate_store' : 'N/A'
             }
-        } },
-        multi=True
+        } }
     )
 
 def handle_Patch_Maintenance(package, date_of_patch):

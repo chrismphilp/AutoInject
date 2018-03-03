@@ -1,13 +1,12 @@
-import pymongo, re, time, datetime, types
+import pymongo, re, time, datetime, types, requests
 
+import AutoInject.bin.system_Functions as sf
 # Parsing related modules
-import lxml.html as lh 
-import requests
+import lxml.html    as lh 
 
 from pymongo        import MongoClient
 from json           import loads
 from bson.json_util import dumps
-
 from subprocess     import check_output, check_call
 from bs4            import BeautifulSoup
 from collections    import defaultdict
@@ -49,10 +48,10 @@ list_Of_Parsing_Procedures = defaultdict(dict, **kwargs)
 1) Collect list of references for package, in order of severity
 2) Place each package into a multi-threaded queue 
 3) For each package CVE:
+    - Check packages, find tells to see if BFS update
     - Collect the version to be updated to by searching URLs
-    - While checking packages, find tells to see if BFS update
-    - Once version is retrieved, update the package acordingly (if package cannot be updated, set to non-
-    updateable/if update returns error)
+    - Once version is retrieved, update the package acordingly (if package cannot be updated, 
+    set CVE to non-updateable/if update returns error)
 4) If packages cannot be updated, set to unupdateable, and remove all matched CVEs, and set new field
 to state this package can never be updated
 '''
@@ -68,27 +67,40 @@ def collect_All_Package_URLs():
         # Call multi-threader function
         pass
 
-def collect_Specific_Package_URL(cursor):
-    
-    for urls in cursor['references']: 
-        if 'github' in url:
-            print("Found github link to BFS:", urls)
-            return True
+def resolve_Admin_Version_Update(cursor):
 
-    for urls in cursor['references']:
-        version_name = search_URL_For_Version_Update(urls)
+    if not sf.connected_To_Internet(): return False
+
+    if cursor['references']:
+        collect_Specific_Package_URL(cursor)
+    elif cursor['version_number']:
+        get_Matching_Ubuntu_Version(cursor['package_name'], cursor['version_number'])
+
+def collect_Specific_Package_URL(cursor, link=False):
+    
+    if not sf.connected_To_Internet(): return False
+
+    if link:
+        version_name = search_URL_For_Version_Update(link)
         if version_name:
             print(version_name)
-            # package_Updater(package_name, version_name)
-            return True
+            if get_Matching_Ubuntu_Version(package_name, version_name): return True
+            else: return False
+    else:        
+        for urls in cursor['references']:
+            version_name = search_URL_For_Version_Update(urls)
+            if version_name:
+                print(version_name)
+                if get_Matching_Ubuntu_Version(package_name, version_name): return True
+                else: return False
 
-    # # If none match then do this
-    # package_collection.update( 
-    #     { 'cve_id' : cve_id },
-    #     { '$set' : { 'cannot_be_updated' : 1 } },
-    #     multi=True
-    # )
-    # return False
+        # If none match then do this
+        cve_collection.update( 
+            { '_id' : cursor['_id'] },
+            { '$set' : { 'deleted' : 1 } },
+            multi=True
+        )
+        return False
 
 def search_URL_For_Version_Update(url):
     print('Scanning:', url)
@@ -130,9 +142,11 @@ def search_URL_For_Version_Update(url):
     if matched: return version_name
     else:       return False 
 
-def package_Updater(package_name, version_name):
+def get_Matching_Ubuntu_Version(package_name, version_name):
     
     list_Of_Potential_Versions  = []
+    version_name                = ''.join(e for e in version_name if e.isalnum())
+    current_version             = package_collection.find_one( { 'package_name' : package_name } )['current_ubuntu_version']
 
     madison_versions = check_output(
         ["apt-cache", "madison", package_name],
@@ -144,46 +158,38 @@ def package_Updater(package_name, version_name):
     )
     
     total_output = [x.strip() for x in madison_versions.split("\n")] + [x.strip() for x in policy_versions.split("\n")]
-    print(total_output)
 
     for items in total_output:
-        # Update version so that it can be reversed lated if required
-        if ("Installed:" in items):
-            current = items.split(' ')[1]
-            print("Updated previous_version to:", current)
-            package_collection.update(
-                { 'package_name' : package_name },
-                { '$set' : { 'previous_version' : current } },
-                multi=True
-            )
         # Get the ubuntu version to update to and append to list
-        split_substring = items.split(" ")
-        for sub_items in split_substring:
-            if version_name in sub_items:
-                print('Found', version_name, ' in:', sub_items)
-                try:
-                    if (sub_items not in list_Of_Potential_Versions):   
-                        list_Of_Potential_Versions.append(sub_items)
-                except:
-                    print('Could not add:', items)
+        for sub_items in items.split(" "):
+            if (version_name in ''.join(e for e in sub_items if e.isalnum())):
+                print("Sub items:", sub_items)
+                print("Current version:", current_version)
+                if (sub_items != current_version and (package_name + "=" + sub_items) not in list_Of_Potential_Versions): 
+                    print('Found', version_name, ' in:', sub_items)
+                    list_Of_Potential_Versions.append(package_name + "=" + sub_items)
 
-    print(list_Of_Potential_Versions)
-    
-    for versions in list_Of_Potential_Versions:
-        combi = package_name + '=' + versions
+    if list_Of_Potential_Versions: 
+        print("List of potential versions:", list_Of_Potential_Versions)
+        perform_Package_Version_Update(list_Of_Potential_Versions, package_name, current_version)
+    else: return False
+
+def perform_Package_Version_Update(list_Of_Potential_Versions, package_name, previous_version):
+    for version in list_Of_Potential_Versions:
         try:
-            # # package_upgrade = check_call(
-            # #     ["sudo", "apt-get", "install", "-y", "--force-yes", "--only-upgrade", combi],
-            # #     universal_newlines=True
-            # # )
-            # if (package_upgrade == 0):
-            #     update_Vulnerability_Information(package_name, combi, versions)
-            #     return True
-            print("Could upgrade with:", combi)
-        except:
-            print("Couldn't upgrade with:", combi)
+            package_upgrade = check_call(
+                ["sudo", "apt-get", "install", "-y", "--force-yes", version],
+                universal_newlines=True
+            )
+            if ((package_name + "=" + sf.get_Ubuntu_Package_Version(package_name)) != previous_version):
+                print("Upgraded from:", previous_version, "to:", version)
+                # return update_Vulnerability_Information(package_name, version, previous_version)
+            else: 
+                print("Not upgraded with:", version)
+                return False
+        except: print("Could not upgrade with:", version); return False
 
-def update_Vulnerability_Information(package_name, new_package_version_name, just_version):
+def update_Vulnerability_Information(package_name, current_version, previous_version, implementation_type, comment=False):
     print("Updating vulnerability information")
 
     # 1) Get all CVE's unmatched from current package and release them
@@ -192,73 +198,65 @@ def update_Vulnerability_Information(package_name, new_package_version_name, jus
     for items in cursor['id']:
         cve_collection.update(
             { 'id' : items },
-            { '$set' : { 'matched_To_CVE' : 0 } },
-            multi=True
+            { '$set' : { 
+                'matched_To_CVE' : 0,
+                'matched_to' : 0 
+            } }
         )
 
     # 2)1) Change new version number accordingly with new_package_version_name
     # 2)2) Also could check whether old version can be downgraded back to?
-    
-    try:
-        re_num                          = re.compile(r"""(?:(\d+\.(?:\d+\.)*\d+))""")
-        version                         = re.match(re_num, just_version).group(0)
-    except:
-        print("Couln't reformat:", just_version)
-
-    formatted_package_name_with_version = package_name + formatted_version
-    formatted_version                   = ''.join(e for e in formatted_version if e.isalnum())
-    squashed_name_with_version          = package_name + formatted_version        
 
     try:
-        # Update current package data to match updated values 
-        package_collection.update(
-            { 'package_name' : package_name },
-            { '$set' : 
-                { 
-                    'package_name_with_version' : squashed_name_with_version, #apport2141
-                    'formatted_package_name_with_version' :  squashed_name_with_version, #apport2141 
-                    'formatted_package_name_without_version' : package_name, #apport
-                    'version' : version, #2.1.41
-                    'formatted_version' : formatted_version #2141
-                } 
-            },
-            multi=True
-        )
-        # Push new log data to array
-        package_collection.update(
-            { 'package_name' : package_name },
-            { '$push' : {
-                'log' : {
-                    'update_type' : 'version',
-                    'further' : new_package_version_name,
-                    'comment' : 'N/A',
-                    'date' : datetime.datetime.now(), 
-                    'implementation_type' : 'automatic'
-                }
-            } },
-            multi=False
-        )
-    except: print("Couldn't update:", package_name)
+        package_version                         = sf.get_Formatted_Version(version)
+        formatted_package_name_without_version  = sf.get_Formatted_Name(package_name)
+        squashed_version                        = ''.join(e for e in package_version if e.isalnum())
+        package_name_with_version               = formatted_package_name_without_version + squashed_version
+        squashed_name_with_version              = ''.join(e for e in package_name_with_version if e.isalnum() or e == ':')
+    except: print("Couln't reformat:", version); return False
 
-    # 3) Set the package to no longer be updateable
+    # Update current package data to match updated values 
     package_collection.update(
         { 'package_name' : package_name },
-        { '$set' : 
-            { 
-                'updateable' : 0,
-                'has_been_updated' : 1 
-            } 
-        },
-        multi=True
+        { '$set' : { 
+            'package_name_with_version' : package_name_with_version, #apport2141
+            'formatted_package_name_with_version' :  squashed_name_with_version, #apport2141 
+            'formatted_package_name_without_version' : package_name, #apport
+            'version' : package_version, #2.1.41
+            'formatted_version' : formatted_version #2141
+        } }
     )
+    # Push new log data to array
+    if not comment: comment = ('From:' + previous_version + 'To:' + current_version)
 
-    # 4) Re-search new package version to potentially find new vulnerabilities 
-
-    for package in package_collection.find( { 'package_name' : package_name } ):
-        finder_cursor = cve_collection.find( { 
-            '$text' : { '$search' : items },
-            'matched_To_CVE' : 0 
-        } )
+    package_collection.update(
+        { 'package_name' : package_name },
+        { '$push' : {
+            'log' : {
+                '$each' : [ {
+                        'update_type' : 'version',
+                        'comment' : comment,
+                        'date' : str(datetime.datetime.now()), 
+                        'implementation_type' : implementation_type,
+                        'active' : 1,
+                        'type_of_patch' : 'forward',
+                        'original_files_path' : package_name,
+                        'file_path_of_diff' : 'N/A'
+                    },
+                    {
+                        'update_type' : 'version',
+                        'comment' : comment,
+                        'date' : str(datetime.datetime.now()), 
+                        'implementation_type' : implementation_type,
+                        'active' : 0,
+                        'type_of_patch' : 'backward',
+                        'original_files_path' : package_name,
+                        'file_path_of_diff' : 'N/A'
+                    }
+                ]
+            }
+        } }
+    )
 
 def package_Update_Reversal(package_name):
     print("Reversing package update")
@@ -275,3 +273,6 @@ def package_Update_Reversal(package_name):
                 return True
         except:
             print("Couldn't reverse update:", package_name)
+
+if __name__ == '__main__':
+    print(get_Matching_Ubuntu_Version('golang', '2.1.2'))
