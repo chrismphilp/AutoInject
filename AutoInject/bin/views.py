@@ -93,9 +93,9 @@ def about():
 @login_required
 def version_update():
     ap.handle_Version_Patch_By_User(
-        request.form['package']
-        request.form['version-name']
-        request.form['link']
+        request.form['package'],
+        request.form['version-name'],
+        request.form['link'],
         request.form['comment']
     )
     gv.remove_Special_Characters()

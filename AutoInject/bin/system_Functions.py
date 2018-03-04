@@ -33,9 +33,7 @@ def get_Incremented_Id():
         for item in count:
             auto_increment_coll.update( 
                 { 'id' : item['id'] },
-                { '$set' : { 'id' : item['id'] + 1 } },
-                False,
-                True 
+                { '$set' : { 'id' : item['id'] + 1 } } 
             )
             return item['id']
 

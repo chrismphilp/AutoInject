@@ -33,6 +33,7 @@
 							                <th>Ubuntu Version</th>
 							                <th>Affected System</th>
 							                <th>Updateable?</th>
+							                <th>Inspect Package</th>
 							            </tr>
 							        </thead>
 							        <tfoot>
@@ -43,6 +44,7 @@
 							                <th>Ubuntu Version</th>
 							                <th>Affected System</th>
 							                <th>Updateable?</th>
+							                <th>Inspect Package</th>
 							            </tr>
 									</tfoot>
 									<tbody>
@@ -81,7 +83,7 @@
 				console.log(JSON_data[package]['updateable']);
 			}
 
-			$('#packages').DataTable( {
+			var packages = $('#packages').DataTable( {
 				data: 			data,
 				"columns" : [
 					{ "data" : [0] },
@@ -103,7 +105,8 @@
 							}
 							return button;
 						}
-					}
+					},
+					{ "defaultContent" : "<button class='btn btn-success' id='inspect_package'>Inspect Package</button>" }
 				],
 		        "lengthMenu":   [ 5, 10, 15 ],
 		        "paging":       true,
@@ -113,6 +116,13 @@
 		        "info":         true,
 		        stateSave: 		true
 		    } );
+
+		    $('#packages tbody').on('click', 'button', function() {
+				var data = packages.row( $(this).parents('tr') ).data();
+				if (this.id == 'inspect_package') {
+					location.href = '/vulnerabilities/' + data[0];
+				}
+			});
 		} );
 
 	</script>

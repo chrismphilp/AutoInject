@@ -229,6 +229,8 @@ def update_Vulnerability_Information(package_name, current_version, previous_ver
     # Push new log data to array
     if not comment: comment = ('From:' + previous_version + 'To:' + current_version)
 
+    shared_log_id = sf.get_Incremented_Id()
+
     package_collection.update(
         { 'package_name' : package_name },
         { '$push' : {
@@ -241,7 +243,8 @@ def update_Vulnerability_Information(package_name, current_version, previous_ver
                         'active' : 1,
                         'type_of_patch' : 'forward',
                         'original_files_path' : package_name,
-                        'file_path_of_diff' : 'N/A'
+                        'file_path_of_diff' : 'N/A',
+                        'linking_id' : shared_log_id
                     },
                     {
                         'update_type' : 'version',
@@ -251,7 +254,8 @@ def update_Vulnerability_Information(package_name, current_version, previous_ver
                         'active' : 0,
                         'type_of_patch' : 'backward',
                         'original_files_path' : package_name,
-                        'file_path_of_diff' : 'N/A'
+                        'file_path_of_diff' : 'N/A',
+                        'linking_id' : shared_log_id
                     }
                 ]
             }
