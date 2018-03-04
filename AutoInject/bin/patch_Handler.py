@@ -1,5 +1,7 @@
 import pymongo, re, time, os
 
+from AutoInject.bin.website_Parser import perform_Package_Version_Update
+
 from collections        import defaultdict
 from datetime           import datetime
 from pymongo            import MongoClient
@@ -89,14 +91,20 @@ def handle_Patch_Maintenance(package, date_of_patch):
     if reverser:
         formatted_data = loads(dumps(reverser))
         for elements in formatted_data['log']:
-            if elements['date'] == date_of_patch:
-                if (elements['type_of_patch'] == 'backward_patch'): 
-                    apply_Reversal(elements, package)
-                elif (elements['type_of_patch'] == 'forward_patch'):
-                    apply_Forward(elements)
+            if (elements['date'] == date_of_patch):
+                if (elements['update_type'] == 'version'):
+                    if (elements['type_of_patch'] == 'backward_patch'): 
+                        apply_Version_Reversal(elements, reverser['package_name'])
+                    elif (elements['type_of_patch'] == 'forward_patch'):
+                        apply_Version_Forward(elements, reverser['package_name'])
+                elif (elements['update_type'] == 'build_from_source'):
+                    if (elements['type_of_patch'] == 'backward_patch'): 
+                        apply_BFS_Reversal(elements, package)
+                    elif (elements['type_of_patch'] == 'forward_patch'):
+                        apply_BFS_Forward(elements)
     else: print("No file matching")
 
-def apply_Reversal(json_of_patch, package):
+def apply_BFS_Reversal(json_of_patch, package):
 
     if (json_of_patch['path_of_intermediate_store'] == 'N/A'):
         copy_name = make_Copy_Of_File(package, json_of_patch['original_files_path'])
@@ -133,7 +141,7 @@ def apply_Reversal(json_of_patch, package):
 
     restore_File_Contents(json_of_patch['file_path_of_diff'])
 
-def apply_Forward(json_of_patch):
+def apply_BFS_Forward(json_of_patch):
 
     with open(json_of_patch['path_of_intermediate_store'], 'r') as file_to_read:
         content_of_file = file_to_read.read()
@@ -172,8 +180,8 @@ def delete_Patch(package, date_of_patch):
     if tmp:
         for values in tmp['log']:
             if (values['date'] == date_of_patch):
-                if (values['update_type'] == 'version'):    version_delete = True
-                elif (values['update_type'] == 'version'):  bfs_delete = True
+                if (values['update_type'] == 'version'): version_delete = True
+                elif (values['update_type'] == 'build_from_source'): bfs_delete = True
     
     if version_delete:
         for values in tmp['log']:
@@ -252,18 +260,25 @@ def check_If_Needs_To_Be_Compiled(path_of_file):
 #                           Version Related Functions                      |
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------
-
-def package_Version_Update_Reversal(cursor):
-    print("Reversing package update")
         
-    perform_Package_Version_Update(cursor['package'])
+def apply_Version_Reversal(json_of_patch, package):
+    print("Reversing version update")
 
+    if not perform_Package_Version_Update(
+        None, 
+        package,
+        None,
+        json_of_patch['original_files_path']
+    ): return False
+
+    print("Updating log information")
     # Update the reversal patch
     package_collection.update_one(
         {   'log' : 
             { '$elemMatch' : {   
-                'linking_id' : cursor['linking_id'],
-                'active' : 1 } 
+                'linking_id' : json_of_patch['linking_id'],
+                'active' : 1,
+                'type_of_patch' : 'backward_patch' } 
             } 
         },
         { '$set' : { 'log.$.active' : 0 } }
@@ -272,8 +287,42 @@ def package_Version_Update_Reversal(cursor):
     package_collection.update_one(
         {   'log' : 
             { '$elemMatch' : {   
-                'linking_id' : cursor['linking_id'],
-                'active' : 0 } 
+                'linking_id' : json_of_patch['linking_id'],
+                'active' : 0,
+                'type_of_patch' : 'forward_patch' } 
+            } 
+        },
+        { '$set' : { 'log.$.active' : 1 } }
+    )
+
+def apply_Version_Forward(json_of_patch, package):
+    print("Reversing version update")
+
+    if not perform_Package_Version_Update(
+        None, 
+        package,
+        None,
+        json_of_patch['original_files_path']
+    ): return False
+
+    # Update the reversal patch
+    package_collection.update_one(
+        {   'log' : 
+            { '$elemMatch' : {   
+                'linking_id' : json_of_patch['linking_id'],
+                'active' : 1,
+                'type_of_patch' : 'forward_patch' } 
+            } 
+        },
+        { '$set' : { 'log.$.active' : 0 } }
+    )
+    # Update the forward patch
+    package_collection.update_one(
+        {   'log' : 
+            { '$elemMatch' : {   
+                'linking_id' : json_of_patch['linking_id'],
+                'active' : 0,
+                'type_of_patch' : 'backward_patch' } 
             } 
         },
         { '$set' : { 'log.$.active' : 1 } }

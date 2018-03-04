@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+<!-- Title -->
+{% block title %}Index{% endblock %}
+<!-- Active TitleBar Name -->
+{% block navitems %}
+	<li><a href="/">Dashboard</a></li>
+    <li class="active"><a href="/vulnerabilities">Vulnerabilities</a></li>
+    <li><a href="/log">Log</a></li>
+    <li><a href="/about">About</a></li>
+    <li><a href="/profile">Profile</a></li>
+{% endblock %}
+{% block content %}
+    <a class="btn btn-success" style="float: right; margin-right: 10px;" href="{{ link_For_Button }}">Return to Package</a>
+    <br><br><br>
+    <div class="container-fluid">
+        <div class="row equal">
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">Original Version</div>
+                    <div class="panel-body">{{ previous_version|safe }}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">New Version</div>
+                    <div class="panel-body">{{ new_version|safe }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+{% endblock %}

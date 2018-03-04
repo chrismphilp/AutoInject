@@ -1,6 +1,7 @@
 import pymongo, re, time, datetime, types, requests
 
 import AutoInject.bin.system_Functions as sf
+
 # Parsing related modules
 import lxml.html    as lh 
 
@@ -74,7 +75,22 @@ def resolve_Admin_Version_Update(cursor):
     if cursor['references']:
         collect_Specific_Package_URL(cursor)
     elif cursor['version_number']:
-        get_Matching_Ubuntu_Version(cursor['package_name'], cursor['version_number'])
+        package_name = package_collection.find_one( { 'formatted_package_name_with_version' : package } )['package_name']
+        if not determine_Package_Status(package_name): return False
+        versions = wp.get_Matching_Ubuntu_Version(package, version_name)
+        if versions: 
+            if wp.perform_Package_Version_Update(versions[0], package, versions[1]):
+                if wp.update_Vulnerability_Information(
+                    package,                            
+                    sf.get_Ubuntu_Package_Version(package_name),
+                    versions[1],
+                    'manual',
+                    comment
+                ): 
+                    cve_collection.remove_one( { '_id' : cursor['_id'] } )
+                    return True
+                else: return False
+
 
 def collect_Specific_Package_URL(cursor, implementation_type='automatic', comment=False, link=False):
     
@@ -187,20 +203,35 @@ def get_Matching_Ubuntu_Version(formatted_package_name, version_name):
         return (list_Of_Potential_Versions, current_version)
     else: return False
 
-def perform_Package_Version_Update(list_Of_Potential_Versions, package_name, previous_version):
-    for version in list_Of_Potential_Versions:
+def perform_Package_Version_Update(list_Of_Potential_Versions, package_name, previous_version, full_version=False):
+    if full_version:
+        full_package_install_name = package_name + "=" + full_version
+        print("Install name:", full_package_install_name)
         try:
             package_upgrade = check_call(
-                ["sudo", "apt-get", "install", "-y", "--force-yes", version],
+                ["sudo", "apt-get", "install", "-y", "--force-yes", full_package_install_name],
                 universal_newlines=True
             )
-            if ((package_name + "=" + sf.get_Ubuntu_Package_Version(package_name)) != previous_version):
-                print("Upgraded from:", previous_version, "to:", version)
-                return (package_name, version, previous_version)
+            if ((package_name + "=" + sf.get_Ubuntu_Package_Version(package_name)) == full_package_install_name):
+                return full_package_install_name
             else: 
-                print("Not upgraded with:", version)
+                print("Not upgraded with:", full_package_install_name)
                 return False
-        except: print("Could not upgrade with:", version); return False
+        except: print("Could not upgrade with:", full_version); return False
+    else:
+        for version in list_Of_Potential_Versions:
+            try:
+                package_upgrade = check_call(
+                    ["sudo", "apt-get", "install", "-y", "--force-yes", version],
+                    universal_newlines=True
+                )
+                if ((package_name + "=" + sf.get_Ubuntu_Package_Version(package_name)) != previous_version):
+                    print("Upgraded from:", previous_version, "to:", version)
+                    return (package_name, version, previous_version)
+                else: 
+                    print("Not upgraded with:", version)
+                    return False
+            except: print("Could not upgrade with:", version); return False
 
 def update_Vulnerability_Information(package_name, current_version, previous_version, implementation_type, comment=False):
     print("Updating vulnerability information")
@@ -239,7 +270,7 @@ def update_Vulnerability_Information(package_name, current_version, previous_ver
                         'date' : str(datetime.datetime.now()), 
                         'implementation_type' : implementation_type,
                         'active' : 1,
-                        'type_of_patch' : 'backward',
+                        'type_of_patch' : 'backward_patch',
                         'original_files_path' : previous_version,
                         'file_path_of_diff' : 'N/A',
                         'linking_id' : shared_log_id
@@ -250,7 +281,7 @@ def update_Vulnerability_Information(package_name, current_version, previous_ver
                         'date' : str(datetime.datetime.now()), 
                         'implementation_type' : implementation_type,
                         'active' : 0,
-                        'type_of_patch' : 'forward',
+                        'type_of_patch' : 'forward_patch',
                         'original_files_path' : current_version,
                         'file_path_of_diff' : 'N/A',
                         'linking_id' : shared_log_id
@@ -260,6 +291,7 @@ def update_Vulnerability_Information(package_name, current_version, previous_ver
         },
         '$set' : { 'matching_ids' : [] } }
     )
+    return True
 
 if __name__ == '__main__':
     print(get_Matching_Ubuntu_Version('golang', '2.1.2'))

@@ -92,15 +92,29 @@ def about():
 @app.route("/version_update", methods=['POST'])
 @login_required
 def version_update():
-    ap.handle_Version_Patch_By_User(
+    prev_package = package_collection.find_one( 
+        { 'formatted_package_name_with_version' : request.form['package'] } 
+    )
+
+    if not ap.handle_Version_Patch_By_User(
         request.form['package'],
         request.form['version-name'],
         request.form['link'],
         request.form['comment']
-    )
+    ): return redirect(url_for('vulnerabilities') + '/' + request.form['package'])
     gv.remove_Special_Characters()
     gv.collect_Checkable_Packages()
-    return redirect("/vulnerabilities/" + request.form['package'], code=302)
+
+    new_package_name = package_collection.find_one( 
+        { 'package_name' : prev_package['package_name'] } 
+    )
+
+    return render_template(
+        'package_alterations.html',
+        previous_version=prev_package['current_ubuntu_version'],
+        new_version=new_package_name['current_ubuntu_version'],
+        link_For_Button="/vulnerabilities/"+new_package_name['formatted_package_name_with_version']
+    )
 
 @app.route("/manual_update", methods=['POST'])
 @login_required
@@ -144,12 +158,16 @@ def delete_file_patch(package, date_of_patch):
 @login_required
 def reverse_file_patch_package_page(package, date_of_patch):
     ph.handle_Patch_Maintenance(package, date_of_patch)
+    gv.remove_Special_Characters()
+    gv.collect_Checkable_Packages()
     return redirect(url_for('vulnerabilities') + '/' + package)
 
 @app.route("/log/<package>/revert_patch/<date_of_patch>")
 @login_required
 def reverse_file_patch_log_page(package, date_of_patch):
     ph.handle_Patch_Maintenance(package, date_of_patch)
+    gv.remove_Special_Characters()
+    gv.collect_Checkable_Packages()
     return redirect(url_for('log'))
     
 # --------------------------------------------------------------------------
