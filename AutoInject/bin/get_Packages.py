@@ -18,17 +18,17 @@ def get_Package_Data():
         universal_newlines=True
     ).split('\n')
     
-    print('Retrieving list of packages on system')
     list_to_insert              = []
     package_names_with_versions = []
     for line in tmp:
+        
         package_array = line.split('\t')
 
         try:
             package_version                         = sf.get_Formatted_Version(package_array[1])
             formatted_package_name_without_version  = sf.get_Formatted_Name(package_array[0])
             squashed_version                        = ''.join(e for e in package_version if e.isalnum())
-            package_name_with_version               = formatted_package_name_without_version + squashed_Version
+            package_name_with_version               = formatted_package_name_without_version + squashed_version
             squashed_name_with_version              = ''.join(e for e in package_name_with_version if e.isalnum() or e == ':')
 
             package_item = {
@@ -46,7 +46,6 @@ def get_Package_Data():
             }
             list_to_insert.append(package_item)
             package_names_with_versions.append(squashed_name_with_version)
-        
         except:
             print("Error inserting", package_array)
             continue
@@ -54,8 +53,8 @@ def get_Package_Data():
 
 def insert_Packages(package_List):
     # Deleting any current package details
-    db.package_list.drop()
-    print('Collection names (should be empty):', db.collection_names())
+    collection.drop()
+    print('Collection names:', db.collection_names())
     collection.insert(package_List)
     print('Finished inserting into DB')
 

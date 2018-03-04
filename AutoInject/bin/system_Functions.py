@@ -1,4 +1,4 @@
-import pymongo
+import pymongo, re
 
 from time               import time
 from pymongo            import MongoClient

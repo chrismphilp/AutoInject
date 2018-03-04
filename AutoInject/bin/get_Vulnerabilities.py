@@ -1,10 +1,11 @@
 import pymongo, re, time, sys, subprocess
 
-from pymongo                        import MongoClient
-from json                           import loads
-from bson.json_util                 import dumps
+from pymongo                            import MongoClient
+from json                               import loads
+from bson.json_util                     import dumps
 
-import AutoInject.bin.get_Packages  as gp
+import AutoInject.bin.get_Packages      as gp
+import AutoInject.bin.system_Functions  as sf
 
 client                      = MongoClient()
 cve_collection              = client['cvedb']['cves']
@@ -49,54 +50,52 @@ def check_For_Updated_Packages(package_Data):
     # Use this for package updates, when the squashed_name will have changed, but package is the same 
     print("Getting packages that have been updated")
     for values in package_collection.find( { 'formatted_package_name_with_version' : { '$nin' : package_Data[1] } } ):
+        for items in package_Data[0]:
+            if items['package_name'] == values['package_name']:
 
-        changed_package_name = False
-        
-        for items in package_Data[1]:
-            if items == values['formatted_package_name_with_version']:
-                changed_package_name = values['formatted_package_name_with_version']
-                package_collection.insert_one(values)
+                for ids in values['matching_ids']:
+                    cve_collection.update(
+                        { 'id' : ids },
+                        { '$unset' : { 
+                            'matched_To_CVE' : 1, 
+                            'matched_to' : 1
+                        } }, 
+                    )
 
-        for ids in values['matching_ids']:
-            cve_collection.update(
-                { 'id' : ids },
-                { '$unset' : { 
-                    'matched_To_CVE' : 1, 
-                    'matched_to' : 1
-                } }, 
-            )
+                current_version = sf.get_Ubuntu_Package_Version(values['package_name'])
 
-        package_collection.remove( { '_id' : values['_id'] } )
+                try:
+                    package_version               = sf.get_Formatted_Version(current_version)
+                    squashed_version              = ''.join(e for e in package_version if e.isalnum())
+                    package_name_with_version     = values['formatted_package_name_without_version'] + squashed_version
+                    squashed_name_with_version    = ''.join(e for e in package_name_with_version if e.isalnum() or e == ':')
+                except: 
+                    print("Couln't reformat:", package_name, current_version); return False
 
-        if changed_package_name:
-            cursor = cve_collection.find( 
-                { 'matched_CVE_ID' : { '$ne' : 1 } },
-                { '$text' : { '$search' : changed_package_name } } 
-            )
-
-            list_Of_IDs = []
-            for items in cursor:
-                cve_collection.update(
-                    { 'id' : items['id'] },
-                    { '$set' : { 'matched_To_CVE' : 1 } }
+                print("Updating information for package:", values['package_name'], "\n")
+                print(values['package_name'], current_version, package_version, squashed_version, squashed_name_with_version)
+                # Update current package data to match updated values 
+                package_collection.update_one(
+                    { 'package_name' : values['package_name'] },
+                    { '$set' : { 
+                        'package_name_with_version' : package_name_with_version, #apport2141
+                        'formatted_package_name_with_version' :  squashed_name_with_version, #apport2141 
+                        'version' : package_version, #2.1.41
+                        'formatted_version' : squashed_version, #2141
+                        'current_ubuntu_version' : current_version,
+                        'matching_ids' : []
+                    } }
                 )
-                list_Of_IDs.append(items['id'])
-
-            package_collection.update(
-                { 'formatted_package_name_with_version' : formatted_package_name['formatted_package_name_with_version'] },
-                { '$push' : { 'matching_ids' : { '$each' : list_Of_IDs } } }
-            )
 
 def search_New_Vulnerabilities(package_Data):
     # # Search all new packages 
     print('Matching packages to new updated vulnerabilites')
     for formatted_package_name in package_Data[1]:
 
-        cursor = cve_collection.find( 
-            { 
-                '$text' : { '$search' : formatted_package_name },
-                'matched_To_CVE' : { '$ne' : 1 } 
-            }     
+        cursor = cve_collection.find( { 
+            '$text' : { '$search' : formatted_package_name },
+            'matched_To_CVE' : { '$ne' : 1 },
+            'deleted' : { '$ne' : 1 } }   
         )
 
         # Create a list to store the list of relating id's to package names

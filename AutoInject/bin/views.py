@@ -100,7 +100,7 @@ def version_update():
     )
     gv.remove_Special_Characters()
     gv.collect_Checkable_Packages()
-    return redirect("/vulnerabilities/" + package, code=302)
+    return redirect("/vulnerabilities/" + request.form['package'], code=302)
 
 @app.route("/manual_update", methods=['POST'])
 @login_required

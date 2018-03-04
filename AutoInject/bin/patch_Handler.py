@@ -14,6 +14,12 @@ client                      = MongoClient()
 package_collection          = client['package_db']['package_list']
 cve_collection              = client['cvedb']['cves']
 
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+#                           BFS Related Functions                          |
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+
 def produce_Diff_Of_Files(file_path1, file_path2, package_name, diff_file_name):    
 
     if not os.path.exists('AutoInject/file_store'):
@@ -159,9 +165,24 @@ def apply_Forward(json_of_patch):
 
 def delete_Patch(package, date_of_patch):
     tmp = package_collection.find_one( { 'log' : { '$elemMatch' :  { 'date' : date_of_patch, 'active' : 1 } } } )
-    file_path_of_copy = False
-
+    file_path_of_copy   = False
+    version_delete      = False
+    bfs_delete          = False
+    
     if tmp:
+        for values in tmp['log']:
+            if (values['date'] == date_of_patch):
+                if (values['update_type'] == 'version'):    version_delete = True
+                elif (values['update_type'] == 'version'):  bfs_delete = True
+    
+    if version_delete:
+        for values in tmp['log']:
+            if (values['date'] == date_of_patch):
+                package_collection.update(
+                    { '_id' : tmp['_id'] },
+                    { '$pull' : { 'log' : { 'linking_id' : values['linking_id'] } } }
+                )
+    elif bfs_delete:
         for values in tmp['log']:
             if (values['date'] == date_of_patch):
                 if values['path_of_intermediate_store']:
@@ -202,14 +223,6 @@ def make_Copy_Of_File(package_name, file_path, set_Path=False):
 def restore_File_Contents(path_of_diff):
     os.system("patch --no-backup-if-mismatch --force -d/ -p0 < " + path_of_diff)
 
-def get_Source_Path(path_of_file):
-    return os.path.realpath(path_of_file)
-
-def get_Current_Time():
-    formatted_time = datetime.utcnow()
-    formatted_time = str(formatted_time).split(' ')[1] + ' +0000'
-    return formatted_time
-
 kwargs  = {
     'java' : { 
         'compile' : True,
@@ -233,6 +246,52 @@ def check_If_Needs_To_Be_Compiled(path_of_file):
         if key in file_ext:
             if value['compile']: return value['command']
     return False
+
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+#                           Version Related Functions                      |
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+
+def package_Version_Update_Reversal(cursor):
+    print("Reversing package update")
+        
+    perform_Package_Version_Update(cursor['package'])
+
+    # Update the reversal patch
+    package_collection.update_one(
+        {   'log' : 
+            { '$elemMatch' : {   
+                'linking_id' : cursor['linking_id'],
+                'active' : 1 } 
+            } 
+        },
+        { '$set' : { 'log.$.active' : 0 } }
+    )
+    # Update the forward patch
+    package_collection.update_one(
+        {   'log' : 
+            { '$elemMatch' : {   
+                'linking_id' : cursor['linking_id'],
+                'active' : 0 } 
+            } 
+        },
+        { '$set' : { 'log.$.active' : 1 } }
+    )
+
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+#                           System Related Functions                       |
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+
+def get_Source_Path(path_of_file):
+    return os.path.realpath(path_of_file)
+
+def get_Current_Time():
+    formatted_time = datetime.utcnow()
+    formatted_time = str(formatted_time).split(' ')[1] + ' +0000'
+    return formatted_time
 
 def get_File_Name_From_Path(path_of_file):
     return os.path.basename(path_of_file)

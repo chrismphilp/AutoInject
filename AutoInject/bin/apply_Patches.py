@@ -4,6 +4,7 @@ import pymongo, time, datetime, os
 import AutoInject.bin.build_From_Source as bfs
 import AutoInject.bin.github_Parser     as gp
 import AutoInject.bin.patch_Handler     as ph
+import AutoInject.bin.system_Functions  as sf
 import AutoInject.bin.website_Parser    as wp
 
 from pymongo                            import MongoClient
@@ -126,8 +127,23 @@ def handle_Manual_Patch_By_User(full_file_path, package, inserted_code, comment,
     return diff_file_path
 
 def handle_Version_Patch_By_User(package, version_name, link, comment):
-    if link: wp.collect_Specific_Package_URL(None, link)
-    elif version_name: wp.get_Matching_Ubuntu_Version(package, version_name, comment)
+    
+    package_name = package_collection.find_one( { 'formatted_package_name_with_version' : package } )['package_name']
+    if not determine_Package_Status(package_name): return False
+
+    if version_name: 
+        versions = wp.get_Matching_Ubuntu_Version(package, version_name)
+        if versions: 
+            if wp.perform_Package_Version_Update(versions[0], package, versions[1]):
+                if wp.update_Vulnerability_Information(
+                    package,                            
+                    sf.get_Ubuntu_Package_Version(package_name),
+                    versions[1],
+                    'manual',
+                    comment
+                ): return True
+                else: return False
+    elif link: wp.collect_Specific_Package_URL(None, 'manual', comment, link)
 
 def determine_File_Status(file_path):
     try:
