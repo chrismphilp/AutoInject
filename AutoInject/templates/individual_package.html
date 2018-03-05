@@ -387,19 +387,22 @@
 			// Other table
 
 			var JSON_update_data = {{ update_log|safe }};
+			var current_ubuntu_version = "{{ current_ubuntu_version|safe }}";
 			var objects;
 			var update_data = [];
 
 			for (objects in JSON_update_data['log']) {
-				update_data.push( 
-					[ 
-						JSON_update_data['log'][objects]['original_files_path'],
-						JSON_update_data['log'][objects]['update_type'],
-						JSON_update_data['log'][objects]['comment'],
-						JSON_update_data['log'][objects]['date'],
-						JSON_update_data['log'][objects]['implementation_type']
-					] 
-				);
+				if (current_ubuntu_version != JSON_update_data['log'][objects]['original_files_path']) {
+					update_data.push( 
+						[ 
+							JSON_update_data['log'][objects]['original_files_path'],
+							JSON_update_data['log'][objects]['update_type'],
+							JSON_update_data['log'][objects]['comment'],
+							JSON_update_data['log'][objects]['date'],
+							JSON_update_data['log'][objects]['implementation_type']
+						] 
+					);
+				}
 			}
 
 			var update_log = $('#update_log').DataTable( {

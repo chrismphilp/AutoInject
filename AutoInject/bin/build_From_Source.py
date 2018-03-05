@@ -31,7 +31,10 @@ def search_Files(file_name):
         universal_newlines=True
     )
     if (full_file_path[-1:] == "\n"): full_file_path = full_file_path[:-1]
-    return full_file_path
+    
+    full_file_path = full_file_path.split('\n')
+    if len(full_file_path) > 2 or not full_file_path: return False
+    return full_file_path[0]
 
 def format_HTML(filepath):
     with open(filepath, 'r') as file_to_read:

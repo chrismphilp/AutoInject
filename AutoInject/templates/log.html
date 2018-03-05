@@ -77,17 +77,19 @@
 			for (objects in JSON_data) {
 				for (items in JSON_data[objects]['log']) {
 					if (JSON_data[objects]['log'][items]['active'] == 1) {
-						data.push(
-							[ 
-								JSON_data[objects]['formatted_package_name_with_version'],
-								JSON_data[objects]['log'][items]['original_files_path'],
-								JSON_data[objects]['log'][items]['update_type'],
-								JSON_data[objects]['log'][items]['comment'],
-								JSON_data[objects]['log'][items]['date'],
-								JSON_data[objects]['log'][items]['implementation_type'],
-								JSON_data[objects]['log'][items]['type_of_patch']
-							] 						
-						);
+						if (JSON_data[objects]['current_ubuntu_version'] != JSON_data[objects]['log'][items]['original_files_path']) {
+							data.push(
+								[ 
+									JSON_data[objects]['formatted_package_name_with_version'],
+									JSON_data[objects]['log'][items]['original_files_path'],
+									JSON_data[objects]['log'][items]['update_type'],
+									JSON_data[objects]['log'][items]['comment'],
+									JSON_data[objects]['log'][items]['date'],
+									JSON_data[objects]['log'][items]['implementation_type'],
+									JSON_data[objects]['log'][items]['type_of_patch']
+								] 						
+							);
+						}
 					}
 				}
 			}

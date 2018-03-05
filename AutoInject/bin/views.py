@@ -61,8 +61,13 @@ def return_CVE_IDs(package):
     ))
     update_log = ap.get_Update_Log(package)
 
+    current_ubuntu_version = package_collection.find_one( 
+        { 'formatted_package_name_with_version' : package } 
+    )['current_ubuntu_version']
+
     return render_template(
         'individual_package.html', 
+        current_ubuntu_version=current_ubuntu_version,
         vulnerabilities=vulnerabilities, 
         package=package,
         update_log=update_log

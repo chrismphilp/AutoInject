@@ -18,13 +18,6 @@ cve_collection                          = client['cvedb']['cves']
 
 def handle_Patch_Update(patch_cursor):
     
-    try:
-        if (patch_cursor['file_path']):
-            for filename in bfs.search_Files(patch_cursor['file_path']).split('\n'):
-                if filename.endswith('.orig') or filename.endswith('.rej'):
-                    os.remove(filename)
-    except: pass
-
     if ('ADMIN' in patch_cursor['id']):
         if (patch_cursor['patch_type'] == 'build_from_source'):
             if (patch_cursor['references']):
@@ -35,6 +28,7 @@ def handle_Patch_Update(patch_cursor):
                 )
             else:
                 print("No link provided")
+                if not bfs.search_Files(patch_cursor['file_path']): return False
                 if determine_File_Status(bfs.search_Files(patch_cursor['file_path'])): return False
                 handle_Manual_Patch_By_User(
                     bfs.search_Files(patch_cursor['file_path']),
@@ -63,6 +57,7 @@ def handle_Patch_Update(patch_cursor):
 def handle_Github_Patch(cursor, package, url):
     set_to = False
     for (file_path, code) in gp.parse_Github(url):
+        if not bfs.search_Files(file_path): return False
         if bfs.perform_Additions(bfs.search_Files(file_path), None, code, False) == False: return False
         if determine_File_Status(file_path): return False
 
