@@ -102,7 +102,8 @@ def handle_Patch_Maintenance(package, date_of_patch):
                         apply_BFS_Reversal(elements, package)
                     elif (elements['type_of_patch'] == 'forward_patch'):
                         apply_BFS_Forward(elements)
-    else: print("No file matching")
+                return True
+    else: print("No file matching"); return False
 
 def apply_BFS_Reversal(json_of_patch, package):
 

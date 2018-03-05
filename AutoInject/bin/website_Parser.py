@@ -75,22 +75,20 @@ def resolve_Admin_Version_Update(cursor):
     if cursor['references']:
         collect_Specific_Package_URL(cursor)
     elif cursor['version_number']:
-        package_name = package_collection.find_one( { 'formatted_package_name_with_version' : package } )['package_name']
-        if not determine_Package_Status(package_name): return False
-        versions = wp.get_Matching_Ubuntu_Version(package, version_name)
+        versions = get_Matching_Ubuntu_Version(cursor['reformatted_configs'][0], cursor['version_number'])
         if versions: 
-            if wp.perform_Package_Version_Update(versions[0], package, versions[1]):
-                if wp.update_Vulnerability_Information(
-                    package,                            
-                    sf.get_Ubuntu_Package_Version(package_name),
+            if perform_Package_Version_Update(versions[0], cursor['individual_package_name'], versions[1]):
+                if update_Vulnerability_Information(
+                    None,                            
+                    sf.get_Ubuntu_Package_Version(cursor['individual_package_name']),
                     versions[1],
                     'manual',
-                    comment
+                    cursor['summary'],
+                    cursor['individual_package_name']
                 ): 
-                    cve_collection.remove_one( { '_id' : cursor['_id'] } )
+                    cve_collection.delete_one( { '_id' : cursor['_id'] } )
                     return True
-                else: return False
-
+        return False
 
 def collect_Specific_Package_URL(cursor, implementation_type='automatic', comment=False, link=False):
     
@@ -233,11 +231,14 @@ def perform_Package_Version_Update(list_Of_Potential_Versions, package_name, pre
                     return False
             except: print("Could not upgrade with:", version); return False
 
-def update_Vulnerability_Information(package_name, current_version, previous_version, implementation_type, comment=False):
+def update_Vulnerability_Information(package_name, current_version, previous_version, implementation_type, comment=False, 
+    unformatted_package_name=False):
+
     print("Updating vulnerability information")
 
     # 1) Get all CVE's unmatched from current package and release them
-    cursor = package_collection.find_one( { 'formatted_package_name_with_version' : package_name } )
+    if unformatted_package_name: cursor = package_collection.find_one( { 'package_name' : unformatted_package_name } )
+    else: cursor = package_collection.find_one( { 'formatted_package_name_with_version' : package_name } )
     
     for items in cursor['matching_ids']:
         cve_collection.update(
@@ -251,9 +252,8 @@ def update_Vulnerability_Information(package_name, current_version, previous_ver
     # 2)1) Change new version number accordingly with new_package_version_name
     # 2)2) Also could check whether old version can be downgraded back to?
 
-    just_package_name = package_collection.find_one( 
-        { 'formatted_package_name_with_version' : package_name } 
-    )['package_name']
+    if unformatted_package_name: just_package_name = unformatted_package_name
+    else: just_package_name = package_collection.find_one( { 'formatted_package_name_with_version' : package_name } )['package_name']
 
     # Push new log data to array
     if not comment: comment = ('From:' + previous_version + 'To:' + current_version)

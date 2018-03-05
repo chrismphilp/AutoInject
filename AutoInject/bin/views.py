@@ -102,6 +102,7 @@ def version_update():
         request.form['link'],
         request.form['comment']
     ): return redirect(url_for('vulnerabilities') + '/' + request.form['package'])
+    
     gv.remove_Special_Characters()
     gv.collect_Checkable_Packages()
 
@@ -145,8 +146,10 @@ def manual_update():
 @app.route("/vulnerabilities/<package>/package_update/<admin_id>")
 @login_required
 def update_using_admin_patch(package, admin_id):
+    previous_name = package_collection.find_one( { 'formatted_package_name_with_version' : package } )['package_name']
     ap.handle_Patch_Update(cve_collection.find_one( { 'id' : admin_id } ) )
-    return redirect(url_for('vulnerabilities') + '/' + package)
+    new_name = package_collection.find_one( { 'package_name' : previous_name } )['formatted_package_name_with_version']
+    return redirect(url_for('vulnerabilities') + '/' + new_name)
 
 @app.route("/vulnerabilities/<package>/delete_patch/<date_of_patch>")
 @login_required
@@ -157,10 +160,12 @@ def delete_file_patch(package, date_of_patch):
 @app.route("/vulnerabilities/<package>/revert_patch/<date_of_patch>")
 @login_required
 def reverse_file_patch_package_page(package, date_of_patch):
+    previous_name = package_collection.find_one( { 'formatted_package_name_with_version' : package } )['package_name']
     ph.handle_Patch_Maintenance(package, date_of_patch)
     gv.remove_Special_Characters()
     gv.collect_Checkable_Packages()
-    return redirect(url_for('vulnerabilities') + '/' + package)
+    new_name = package_collection.find_one( { 'package_name' : previous_name } )['formatted_package_name_with_version']
+    return redirect(url_for('vulnerabilities') + '/' + new_name)
 
 @app.route("/log/<package>/revert_patch/<date_of_patch>")
 @login_required

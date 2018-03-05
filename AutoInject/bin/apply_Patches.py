@@ -17,10 +17,13 @@ package_collection                      = client['package_db']['package_list']
 cve_collection                          = client['cvedb']['cves']
 
 def handle_Patch_Update(patch_cursor):
-    if (patch_cursor['file_path']):
-        for filename in bfs.search_Files(patch_cursor['file_path']).split('\n'):
-            if filename.endswith('.orig') or filename.endswith('.rej'):
-                os.remove(filename)
+    
+    try:
+        if (patch_cursor['file_path']):
+            for filename in bfs.search_Files(patch_cursor['file_path']).split('\n'):
+                if filename.endswith('.orig') or filename.endswith('.rej'):
+                    os.remove(filename)
+    except: pass
 
     if ('ADMIN' in patch_cursor['id']):
         if (patch_cursor['patch_type'] == 'build_from_source'):
