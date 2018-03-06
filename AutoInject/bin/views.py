@@ -125,7 +125,10 @@ def version_update():
 @app.route("/manual_update", methods=['POST'])
 @login_required
 def manual_update():
+    
     full_file_path = bfs.search_Files(request.form['file-path'])
+    if not full_file_path: return redirect(url_for('vulnerabilities')+"/"+request.form['package'])
+
     html_To_Parse_Before = bfs.format_HTML(full_file_path)
 
     diff_file_path = ap.handle_Manual_Patch_By_User(

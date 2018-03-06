@@ -55,28 +55,32 @@ tokens = (
     # SEMANTICS
     'NEWLINE',      'ADD_AFTER',    'ADD_REPLACE_ADDITION', 'ADD_REPLACE_REMOVE',
     # VARIABLES
-    'NUMBER',       'VARIABLE',     'STRING',               'STRING2',
+    'NUMBER',       'VARIABLE',     'FUNC_SEPERATOR',       'STRING',               
+    'FILE_PATH',
     # OPERATORS
-    'S_EQUALS',     'D_EQUALS',
+    'S_EQUALS',     'D_EQUALS',     'DN_EQUALS',            'COMMENT_1',
     'T_EQUALS',     'N_EQUALS',     'PLUS',                 'MINUS', 
     'DIVIDE',       'MULTIPLY',     'LPAREN',               'RPAREN', 
     'LT',           'LTOE',         'GT',                   'GTOE', 
     'S_LBRACE',     'LBRACE',       'S_RBRACE',             'RBRACE',
-    'SEMICOLON',    'EOL',          'S_AND',                'L_AND', 
-    'S_OR',         'L_OR',
+    'COLON',        'EOL',          'S_AND',                'L_AND', 
+    'S_OR',         'L_OR',         'UNDERSCORE',           'COMMA',
+    'AT'
 )
 
 # Regular expression rules 
 # 1) VARIABLES
 t_NUMBER                = r'[-+]?[0-9]*\.?[0-9]+'
 t_VARIABLE              = r'[a-zA-Z][a-zA-Z0-9_]*'
-t_STRING                = r'\"(.+?)\"'
-t_STRING2               = r'\'(.+?)\''
+t_FILE_PATH             = r'#{0,1}!{0,1}/{0,1}[A-Za-z0-9]+(/+([A-Za-z0-9]+))+'
+t_FUNC_SEPERATOR        = r'\.'
+t_STRING                = r'\"([^"\\]|\\.|\\\n)*\"|\'([^\'\\]|\\.|\\\n)*\''
 # 2) OPERATORS
 t_S_EQUALS              = r'='
 t_D_EQUALS              = r'=='
 t_T_EQUALS              = r'==='
 t_N_EQUALS              = r'!='
+t_DN_EQUALS             = r'!=='
 t_PLUS                  = r'\+'
 t_MINUS                 = r'-'
 t_DIVIDE                = r'/'
@@ -91,11 +95,15 @@ t_S_LBRACE              = r'\['
 t_LBRACE                = r'\{'
 t_S_RBRACE              = r'\]'
 t_RBRACE                = r'\}'
-t_SEMICOLON             = r':'
+t_COLON                 = r':'
 t_S_AND                 = r'\&\&'
 t_L_AND                 = r'\&'
 t_S_OR                  = r'\|\|'
 t_L_OR                  = r'\|'
+t_UNDERSCORE            = r'_'
+t_COMMA                 = r'\,'
+t_COMMENT_1             = r'#'
+t_AT                    = r'@'
 # 3) SEMANTICS
 t_NEWLINE               = r'\n'
 t_EOL                   = r'\;'
@@ -110,6 +118,7 @@ t_ignore                = ' \t\r'
 def t_error(t):
     print("Illegal character '%s'" % t.value)
     t.lexer.skip(1)
+    wait(5)
 
 lexer_for_addition  = lex.lex(reflags=re.S)
 lexer_for_file      = lex.lex(reflags=re.S)
@@ -444,3 +453,20 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
 #         count += 1
 
 # print(perform_Additions('../file_store/test/test2.py', '../file_store/test/patch_file.py', test_patches.example_Patch4))
+
+if __name__ == '__main__':
+
+    test_input = '''
+           #!/usr/bin/env python3
+#
+# Updater script of CVE/CPE database
+#
+# Copyright (c) 2012-2016   Alexandre Dulaunoy - a@foo.be
+# Copyright (c) 2014-2016   Pieter-Jan Moreels - pieterjan.moreels@gmail.com
+
+# Imports
+    '''
+    with open('/home/chrismphilp/Documents/cve-search/sbin/db_updater.py', 'r') as file_to_read:
+        lexer_for_file.input(file_to_read.read())
+        for tokens in lexer_for_file:
+            print(tokens)
