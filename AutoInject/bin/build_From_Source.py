@@ -446,25 +446,17 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
 
 ##############################################################
 
-# with open('AutoInject/file_store/test/test2.py', 'r') as file_to_read:
-#     count = 0
-#     for characters in file_to_read.read():
-#         print(characters, count)
-#         count += 1
-
-# print(perform_Additions('../file_store/test/test2.py', '../file_store/test/patch_file.py', test_patches.example_Patch4))
-
 if __name__ == '__main__':
 
     test_input = '''
-           #!/usr/bin/env python3
-#
-# Updater script of CVE/CPE database
-#
-# Copyright (c) 2012-2016   Alexandre Dulaunoy - a@foo.be
-# Copyright (c) 2014-2016   Pieter-Jan Moreels - pieterjan.moreels@gmail.com
+        #!/usr/bin/env python3
+        #
+        # Updater script of CVE/CPE database
+        #
+        # Copyright (c) 2012-2016   Alexandre Dulaunoy - a@foo.be
+        # Copyright (c) 2014-2016   Pieter-Jan Moreels - pieterjan.moreels@gmail.com
 
-# Imports
+        # Imports
     '''
     with open('/home/chrismphilp/Documents/cve-search/sbin/db_updater.py', 'r') as file_to_read:
         lexer_for_file.input(file_to_read.read())

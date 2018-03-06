@@ -1,0 +1,11 @@
+--- /home/chrismphilp/Documents/AutoInject/AutoInject/file_store/test/test2.py	02:25:05.761324 +0000
++++ /home/chrismphilp/Documents/AutoInject/AutoInject/file_store/test/patch_file.py	02:25:05.761351 +0000
+@@ -2,6 +2,6 @@
+ 	def goodbye():
+ 		print("Say goodbye")
+ 
+-
+-	
++class ader:
++	def hello():
+ 		return goodbye "Hello"
