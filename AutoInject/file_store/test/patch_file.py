@@ -1,7 +1,3 @@
-class adder:
-	def goodbye():
-		print("Say goodbye")
+Hi
 
-
-	
-		return goodbye "Hello"
+Hi

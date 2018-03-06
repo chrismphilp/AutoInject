@@ -249,14 +249,22 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
                                 addition_token = lexer_for_addition.token()
                             
                             if copy_of_token_for_file:
+                                while (file_token.lexpos != copy_of_token_for_file.lexpos):
+                                    file_token = lexer_for_file.token()
+
                                 while (file_token.type != 'NEWLINE'):
                                     file_token = lexer_for_file.token()
+                                    print("Updating file_token:", file_token)
                             else:
                                 while (file_token.lexpos != tmp.lexpos):
                                     file_token = lexer_for_file.token()
 
                             matched = True
                             break
+                        
+                        while (copy_of_token_for_file != None and copy_of_token_for_file.type == 'NEWLINE'):
+                            if copy_of_token_for_file: copy_of_token_for_file = copy_of_lexer_for_file.token()
+                            print("Copy of token after newline:", copy_of_token_for_file)
 
                     if not matched: 
                         try:    
@@ -323,6 +331,10 @@ def get_Tuples_For_Addition(path_of_file_to_modify, lexer_for_addition, addition
                             if copy_of_token_for_file: token_tmp = copy_of_token_for_file
                             end_position_to_remove = tmp.lexpos + len(tmp.value) 
                             matched = True
+
+                        while (copy_of_token_for_file != None and copy_of_token_for_file.type == 'NEWLINE'):
+                            if copy_of_token_for_file: copy_of_token_for_file = copy_of_lexer_for_file.token()
+                            print("Copy of token after newline:", copy_of_token_for_file)
                     
                     if not matched: 
                         try:    
@@ -448,17 +460,19 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
 
 if __name__ == '__main__':
 
-    test_input = '''
-        #!/usr/bin/env python3
-        #
-        # Updater script of CVE/CPE database
-        #
-        # Copyright (c) 2012-2016   Alexandre Dulaunoy - a@foo.be
-        # Copyright (c) 2014-2016   Pieter-Jan Moreels - pieterjan.moreels@gmail.com
+    # test_input = '''
+    #     #!/usr/bin/env python3
+    #     #
+    #     # Updater script of CVE/CPE database
+    #     #
+    #     # Copyright (c) 2012-2016   Alexandre Dulaunoy - a@foo.be
+    #     # Copyright (c) 2014-2016   Pieter-Jan Moreels - pieterjan.moreels@gmail.com
 
-        # Imports
-    '''
-    with open('/home/chrismphilp/Documents/cve-search/sbin/db_updater.py', 'r') as file_to_read:
-        lexer_for_file.input(file_to_read.read())
-        for tokens in lexer_for_file:
-            print(tokens)
+    #     # Imports
+    # '''
+    # with open('/home/chrismphilp/Documents/cve-search/sbin/db_updater.py', 'r') as file_to_read:
+    #     lexer_for_file.input(file_to_read.read())
+    #     for tokens in lexer_for_file:
+    #         print(tokens)
+
+    print(perform_Additions('../file_store/test/test2.py', '../file_store/test/patch_file.py', test_patches.example_Patch4))

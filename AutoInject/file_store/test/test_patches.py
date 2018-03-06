@@ -123,3 +123,34 @@ Hello
 &++
 Hello
 '''
+
+example_Patch18 = '''
+&* class adder: def goodbye
+yoo
+'''
+
+example_Patch19 = '''
+&-- class adder: def goodbye
+&++hi
+&* class ader:def hello()
+Hi B
+'''
+
+example_Patch20 = '''
+&-- class adder: def goodbye
+&++hi
+&* class ader:def hello():return goodbye "Hello"
+Hi B
+'''
+
+example_Patch21 = '''
+&-- class adder: def goodbye(): print("Say goodbye") class ader: def hello(): return goodbye "Hello"
+&++
+'''
+
+example_Patch22 = '''
+Hi
+&-- class adder: def goodbye(): print("Say goodbye") class ader: def hello(): return goodbye "Hello"
+&++
+Hi
+'''
