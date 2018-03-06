@@ -29,7 +29,12 @@ kwargs  = {
     },
     'ubuntu' : {
         'finder' : re.compile(r""".*ubuntu\.com.*"""),
-        'search_info' : '//dl/dd/span/a/text()',
+        'search_info' : '//dl/dd/a/text()',
+        'compiler' : re.compile(r"""(?:(\d+\.(?:\d+\.)*\d+))""")
+    },
+    'launchpad_trunk' : {
+        'finder' : re.compile(r""".*launchpad\.net.*trunk.*"""),
+        'search_info' : '//div[@class="yui-t4"]/div[@id="maincontent"]/div/div/h1/text()',
         'compiler' : re.compile(r"""(?:(\d+\.(?:\d+\.)*\d+))""")
     },
     'launchpad' : {
@@ -294,4 +299,5 @@ def update_Vulnerability_Information(package_name, current_version, previous_ver
     return True
 
 if __name__ == '__main__':
-    print(get_Matching_Ubuntu_Version('golang', '2.1.2'))
+    # print(get_Matching_Ubuntu_Version('golang', '2.1.2'))
+    print(search_URL_For_Version_Update('https://usn.ubuntu.com/3480-1/'))

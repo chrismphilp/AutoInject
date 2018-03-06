@@ -1,3 +1,8 @@
-Hi
+class adder:
+	def goodbye():
+		print("Say goodbye")
 
-Hi
+class ader:
+	def hello():
+Olivia Is Cool
+		return goodbye "Hello"
