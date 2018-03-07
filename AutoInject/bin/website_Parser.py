@@ -50,18 +50,6 @@ kwargs  = {
 }
 list_Of_Parsing_Procedures = defaultdict(dict, **kwargs)
 
-'''
-1) Collect list of references for package, in order of severity
-2) Place each package into a multi-threaded queue 
-3) For each package CVE:
-    - Check packages, find tells to see if BFS update
-    - Collect the version to be updated to by searching URLs
-    - Once version is retrieved, update the package acordingly (if package cannot be updated, 
-    set CVE to non-updateable/if update returns error)
-4) If packages cannot be updated, set to unupdateable, and remove all matched CVEs, and set new field
-to state this package can never be updated
-'''
-
 def collect_All_Package_URLs():
 
     cursor = package_collection.find( {
@@ -95,27 +83,45 @@ def resolve_Admin_Version_Update(cursor):
                     return True
         return False
 
-def collect_Specific_Package_URL(cursor, implementation_type='automatic', comment=False, link=False):
+def collect_Specific_Package_URL(cursor, implementation_type='automatic', comment=False, link=False, package_name=False,
+    unformatted_package_name=False):
     
     if not sf.connected_To_Internet(): return False
 
     if link:
+        unformatted_package_name = package_collection.find_one( 
+            { 'formatted_package_name_with_version' : package_name } 
+        )['package_name']
+        if not unformatted_package_name: return False
+
         version_name = search_URL_For_Version_Update(link)
         if version_name:
-            print(version_name)
-            if get_Matching_Ubuntu_Version(package_name, version_name): return True
+            versions = get_Matching_Ubuntu_Version(package_name, version_name)
+            if versions: 
+                if perform_Package_Version_Update(versions[0], unformatted_package_name, versions[1]):
+                    if update_Vulnerability_Information(
+                        package_name,                            
+                        sf.get_Ubuntu_Package_Version(unformatted_package_name),
+                        versions[1],
+                        implementation_type,
+                        comment
+                    ): return True
+                    else: return False
             else: return False
     elif cursor:        
+        formatted_package_name = package_collection.find_one( 
+            { 'package_name' : unformatted_package_name }
+        )['formatted_package_name_with_version']
         for urls in cursor['references']:
             version_name = search_URL_For_Version_Update(urls)
             if version_name:
                 print(version_name)
-                version_list = get_Matching_Ubuntu_Version(package_name, version_name)   
+                version_list = get_Matching_Ubuntu_Version(formatted_package_name, version_name)   
                 if version_list: 
-                    if perform_Package_Version_Update(version_list[0], package_name, version_list[1]):
+                    if perform_Package_Version_Update(version_list[0], unformatted_package_name, version_list[1]):
                         if update_Vulnerability_Information(
-                            package_name,                            
-                            sf.get_Ubuntu_Package_Version(),
+                            formatted_package_name,                            
+                            sf.get_Ubuntu_Package_Version(unformatted_package_name),
                             version_list[1],
                             implementation_type,
                             comment
@@ -126,8 +132,7 @@ def collect_Specific_Package_URL(cursor, implementation_type='automatic', commen
         # If none match then do this
         cve_collection.update( 
             { '_id' : cursor['_id'] },
-            { '$set' : { 'deleted' : 1 } },
-            multi=True
+            { '$set' : { 'deleted' : 1 } }
         )
         return False
     else: return False

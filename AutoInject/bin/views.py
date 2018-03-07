@@ -154,10 +154,18 @@ def manual_update():
 @app.route("/vulnerabilities/<package>/package_update/<admin_id>")
 @login_required
 def update_using_admin_patch(package, admin_id):
-    previous_name = package_collection.find_one( { 'formatted_package_name_with_version' : package } )['package_name']
-    ap.handle_Patch_Update(cve_collection.find_one( { 'id' : admin_id } ) )
-    new_name = package_collection.find_one( { 'package_name' : previous_name } )['formatted_package_name_with_version']
-    return redirect(url_for('vulnerabilities') + '/' + new_name)
+    prev_cursor         = package_collection.find_one( { 'formatted_package_name_with_version' : package } )
+    previous_name       = prev_cursor['package_name']
+    prev_ubunut_vers    = prev_cursor['current_ubuntu_version']
+    ap.handle_Patch_Update(cve_collection.find_one( { 'id' : admin_id } ), previous_name)
+    new_cursor          = package_collection.find_one( { 'package_name' : previous_name } )
+    new_formatted_name  = new_cursor['formatted_package_name_with_version']
+
+    if prev_ubunut_vers != sf.get_Ubuntu_Package_Version(previous_name):
+        gv.remove_Special_Characters()
+        gv.collect_Checkable_Packages()
+
+    return redirect(url_for('vulnerabilities') + '/' + new_formatted_name)
 
 @app.route("/vulnerabilities/<package>/delete_patch/<date_of_patch>")
 @login_required

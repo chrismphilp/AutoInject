@@ -49,9 +49,11 @@ def check_For_New_Packages(package_Data):
 def check_For_Updated_Packages(package_Data):
     # Use this for package updates, when the squashed_name will have changed, but package is the same 
     print("Getting packages that have been updated")
-    for values in package_collection.find( { 'formatted_package_name_with_version' : { '$nin' : package_Data[1] } } ):
+    for values in package_collection.find( { 'longer_ubuntu_version' : { '$nin' : package_Data[2] } } ):
         for items in package_Data[0]:
             if items['package_name'] == values['package_name']:
+
+                print("MATCHED ID:", items)
 
                 for ids in values['matching_ids']:
                     cve_collection.update(
@@ -83,6 +85,7 @@ def check_For_Updated_Packages(package_Data):
                         'version' : package_version, #2.1.41
                         'formatted_version' : squashed_version, #2141
                         'current_ubuntu_version' : current_version,
+                        'longer_ubuntu_version' : values['package_name'] + '=' + current_version,
                         'matching_ids' : []
                     } }
                 )

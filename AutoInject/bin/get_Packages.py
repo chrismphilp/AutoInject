@@ -20,6 +20,8 @@ def get_Package_Data():
     
     list_to_insert              = []
     package_names_with_versions = []
+    ubuntu_versions             = []
+
     for line in tmp:
         
         package_array = line.split('\t')
@@ -32,8 +34,8 @@ def get_Package_Data():
             squashed_name_with_version              = ''.join(e for e in package_name_with_version if e.isalnum() or e == ':')
 
             package_item = {
-                'package_name_with_version' : package_name_with_version,
                 'package_name' : package_array[0],
+                'package_name_with_version' : package_name_with_version,                
                 'formatted_package_name_with_version' :  squashed_name_with_version,
                 'formatted_package_name_without_version' : formatted_package_name_without_version,
                 'version' : package_version, 
@@ -42,14 +44,16 @@ def get_Package_Data():
                 # 1 = updateable, 0 means do not update
                 'updateable' : 1,
                 'current_ubuntu_version' : package_array[1],
+                'longer_ubuntu_version' : package_array[0] + '=' + package_array[1],
                 'matching_ids' : []
             }
             list_to_insert.append(package_item)
             package_names_with_versions.append(squashed_name_with_version)
+            ubuntu_versions.append(package_array[0] + '=' + package_array[1])
         except:
             print("Error inserting", package_array)
             continue
-    return(list_to_insert, package_names_with_versions)
+    return(list_to_insert, package_names_with_versions, ubuntu_versions)
 
 def insert_Packages(package_List):
     # Deleting any current package details

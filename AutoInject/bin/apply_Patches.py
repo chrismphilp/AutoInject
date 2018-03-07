@@ -16,7 +16,7 @@ client                                  = MongoClient()
 package_collection                      = client['package_db']['package_list']
 cve_collection                          = client['cvedb']['cves']
 
-def handle_Patch_Update(patch_cursor):
+def handle_Patch_Update(patch_cursor, unformatted_package_name):
     
     if ('ADMIN' in patch_cursor['id']):
         if (patch_cursor['patch_type'] == 'build_from_source'):
@@ -44,15 +44,23 @@ def handle_Patch_Update(patch_cursor):
             else: return False
     elif ('CVE' in patch_cursor['id']):
         print("Standard update")
-        for urls in cursor['references']: 
-            if 'github' in url:
+        for urls in patch_cursor['references']: 
+            if 'github' in urls:
                 if handle_Github_Patch(
                     patch_cursor,
                     patch_cursor['vulnerable_configuration'][0], 
                     url
                 ): return True
                 else: return False
-        wp.collect_Specific_Package_URL(patch_cursor)
+        if wp.collect_Specific_Package_URL(
+            patch_cursor,
+            'automatic',
+            patch_cursor['summary'],
+            False,
+            False,
+            unformatted_package_name
+        ): return True
+        else: return False
 
 def handle_Github_Patch(cursor, package, url):
     set_to = False
@@ -129,7 +137,8 @@ def handle_Version_Patch_By_User(package, version_name, link, comment):
     package_name = package_collection.find_one( { 'formatted_package_name_with_version' : package } )['package_name']
     if not determine_Package_Status(package_name): return False
 
-    if version_name: 
+    if link: return wp.collect_Specific_Package_URL(None, 'manual', comment, link, package)
+    elif version_name: 
         versions = wp.get_Matching_Ubuntu_Version(package, version_name)
         if versions: 
             if wp.perform_Package_Version_Update(versions[0], package, versions[1]):
@@ -141,7 +150,6 @@ def handle_Version_Patch_By_User(package, version_name, link, comment):
                     comment
                 ): return True
                 else: return False
-    elif link: wp.collect_Specific_Package_URL(None, 'manual', comment, link)
 
 def determine_File_Status(file_path):
     try:
