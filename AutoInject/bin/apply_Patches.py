@@ -40,7 +40,7 @@ def handle_Patch_Update(patch_cursor, unformatted_package_name):
             return True
         elif (patch_cursor['patch_type'] == 'version'):
             if not determine_Package_Status(patch_cursor['individual_package_name']): return False
-            if wp.resolve_Admin_Version_Update(patch_cursor): return True
+            if wp.resolve_Admin_Version_Update(patch_cursor, unformatted_package_name): return True
             else: return False
     elif ('CVE' in patch_cursor['id']):
         print("Standard update")

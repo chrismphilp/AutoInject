@@ -4,7 +4,7 @@ import pymongo, re, time, datetime, os
 
 import ply.lex                      as lex
 from pygments                       import highlight
-from pygments.lexers                import guess_lexer_for_filename, get_lexer_by_name
+from pygments.lexers                import guess_lexer_for_filename, get_lexer_by_name, guess_lexer
 from pygments.styles                import get_all_styles, get_style_by_name
 from pygments.formatters            import get_formatter_by_name
 from shutil                         import copyfile
@@ -41,8 +41,12 @@ def format_HTML(filepath):
         data            = file_to_read.read()
         lexer_object    = guess_lexer_for_filename(filepath, data)
         pyg_formatter   = get_formatter_by_name('html', linenos='table', style='monokai')
-        completed       = highlight(data, lexer_object, pyg_formatter)
-        return completed
+        return highlight(data, lexer_object, pyg_formatter)
+
+def format_BFS_String(bfs_string):
+    lexer_object    = guess_lexer(bfs_string)
+    pyg_formatter   = get_formatter_by_name('html', linenos='table', style='monokai')
+    return highlight(bfs_string, lexer_object, pyg_formatter)
 
 # --------------------------------------------------------------------------
 # --------------------------------------------------------------------------

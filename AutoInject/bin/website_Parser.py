@@ -61,12 +61,21 @@ def collect_All_Package_URLs():
         # Call multi-threader function
         pass
 
-def resolve_Admin_Version_Update(cursor):
+def resolve_Admin_Version_Update(cursor, unformatted_package_name=False):
 
     if not sf.connected_To_Internet(): return False
 
     if cursor['references']:
-        collect_Specific_Package_URL(cursor)
+        if collect_Specific_Package_URL(
+            cursor,
+            'manual',
+            cursor['summary'],
+            False, 
+            False,
+            unformatted_package_name
+        ):
+            cve_collection.delete_one( { '_id' : cursor['_id'] } )
+            return True
     elif cursor['version_number']:
         versions = get_Matching_Ubuntu_Version(cursor['reformatted_configs'][0], cursor['version_number'])
         if versions: 
@@ -128,13 +137,6 @@ def collect_Specific_Package_URL(cursor, implementation_type='automatic', commen
                         ): return True
                         else: return False
                 else: return False
-
-        # If none match then do this
-        cve_collection.update( 
-            { '_id' : cursor['_id'] },
-            { '$set' : { 'deleted' : 1 } }
-        )
-        return False
     else: return False
 
 def search_URL_For_Version_Update(url):
@@ -306,3 +308,4 @@ def update_Vulnerability_Information(package_name, current_version, previous_ver
 if __name__ == '__main__':
     # print(get_Matching_Ubuntu_Version('golang', '2.1.2'))
     print(search_URL_For_Version_Update('https://usn.ubuntu.com/3480-1/'))
+    # CVE-2017-14810 - ID for demo

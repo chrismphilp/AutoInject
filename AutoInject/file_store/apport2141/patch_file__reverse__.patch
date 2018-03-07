@@ -1,0 +1,7 @@
+--- /home/chrismphilp/Documents/AutoInject/AutoInject/file_store/test/test2.py	20:45:04.816684 +0000
++++ /home/chrismphilp/Documents/AutoInject/AutoInject/file_store/test/patch_file.py	20:45:04.816704 +0000
+@@ -1,4 +1,3 @@
+-e23w2e2
+ Hello
+ Hello
+ class adder:

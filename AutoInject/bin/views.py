@@ -140,14 +140,16 @@ def manual_update():
 
     if not diff_file_path: return redirect(url_for('vulnerabilities') + '/' + request.form['package'])
 
-    html_To_Parse_After = bfs.format_HTML('AutoInject/file_store/test/patch_file.py')
-    html_For_Diff_File  = bfs.format_HTML(diff_file_path)
+    html_To_Parse_After     = bfs.format_HTML('AutoInject/file_store/test/patch_file.py')
+    html_For_Diff_File      = bfs.format_HTML(diff_file_path)
+    formatted_bfs_string    = bfs.format_BFS_String(request.form['inserted-code'])
 
     return render_template(
         'file_alterations.html', 
         html_To_Parse_Before=html_To_Parse_Before,
         html_To_Parse_After=html_To_Parse_After,
         html_For_Diff_File=html_For_Diff_File,
+        formatted_bfs_string=formatted_bfs_string,
         link_For_Button="/vulnerabilities/"+request.form['package']
     )
 
