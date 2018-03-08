@@ -16,8 +16,10 @@ else {
 }
 
 $var = $_POST['firstname'];
-$sql = "SELECT * FROM users WHERE firstname = '$var';";
-$result = $conn->query($sql);
+$stmt = $conn->prepare('SELECT * FROM users WHERE firstname = ?');
+$stmt->bind_param('s', $var);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {
