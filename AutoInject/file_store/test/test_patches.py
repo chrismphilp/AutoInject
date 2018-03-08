@@ -168,4 +168,5 @@ presentation_mongo_query = '''
 Other apport CVE CVE-2015-1318
 coll.findOne( { 'id' : 'CVE-2017-14180' } )
 coll.update ( { 'id' : 'CVE-2017-14180' }, { '$set' : { 'deleted' : 0 } } )
+https://github.com/chrismphilp/AutoInject/commit/583336577396151db31e920c7f544b4731523ec4?diff=split
 '''

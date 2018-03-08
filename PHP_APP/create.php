@@ -1,5 +1,3 @@
-fff
-dewd
 <?php
 
 if (isset($_POST['submit'])) {

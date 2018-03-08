@@ -1,5 +1,15 @@
-edde
-ewdees
+Fefaew
+efw
+fe
+wfe
+wef
+wfe
+few
+wef
+ewf
+efw
+wef
+Hello
 class adder:
 	def goodbye():
 		print("Say goodbye")
@@ -7,3 +17,4 @@ class adder:
 class ader:
 	def hello():
 		return goodbye "Hello"
+
