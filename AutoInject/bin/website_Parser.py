@@ -29,7 +29,7 @@ kwargs  = {
     },
     'ubuntu' : {
         'finder' : re.compile(r""".*ubuntu\.com.*"""),
-        'search_info' : '//dl/dd/a/text()',
+        'search_info' : '//dl/dt[text()="Ubuntu 14.04 LTS"]/following::dd[1]/a/text()',
         'compiler' : re.compile(r"""(?:(\d+\.(?:\d+\.)*\d+))""")
     },
     'launchpad_trunk' : {
@@ -162,13 +162,13 @@ def search_URL_For_Version_Update(url):
                 update_name     = tree.xpath(value['search_info'])
                 print("Searching website and found:", update_name)
                 
-                if (update_name): 
+                if update_name: 
                     for items in update_name:   
                         version_name = re.findall(value['compiler'], items)
                         if (version_name): 
-                            print("Found a match!:", version_name)
                             if type(version_name) is list:
                                 version_name = version_name[0]
+                            print("Found a match!:", version_name)                            
                             matched = True 
             except:
                 print("Couldn't match:", url)
@@ -308,4 +308,5 @@ def update_Vulnerability_Information(package_name, current_version, previous_ver
 if __name__ == '__main__':
     # print(get_Matching_Ubuntu_Version('golang', '2.1.2'))
     print(search_URL_For_Version_Update('https://usn.ubuntu.com/3480-1/'))
+    # print(search_URL_For_Version_Update('https://usn.ubuntu.com/2353-1/'))
     # CVE-2017-14810 - ID for demo
