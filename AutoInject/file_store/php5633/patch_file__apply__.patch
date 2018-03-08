@@ -1,0 +1,32 @@
+--- /home/chrismphilp/Documents/AutoInject/AutoInject/file_store/test/patch_file.py	16:33:08.101184 +0000
++++ PHP_APP/create.php	16:33:08.101203 +0000
+@@ -11,21 +11,23 @@
+ 
+ 		// Check connection
+ 		if ($conn->connect_error) {
+-		    die("Connection failed: " . $conn->connect_error);
++			die("Connection failed: " . $conn->connect_error);
+ 		}
+ 		else {
+ 			echo "Connected successfully";
+ 		}
+ 
+ 		$var = $_POST['firstname'];
+-		$sql = "SELECT * FROM users WHERE firstname = '$var';";
++				$stmt = $conn->prepare('SELECT * FROM users WHERE firstname = ?');	
++		$stmt->bind_param('s', $var);	
+ 		// ' or '1'='1
+-		$result = $conn->query($sql);
++				$stmt->execute();	
++		$result = $stmt->get_result();	
+ 
+ 		if ($result->num_rows > 0) {
+-		    while($row = $result->fetch_assoc()) {
+-		        echo "id: " . $row["id"]. " - Name: " . $row["firstname"]. " " . $row["lastname"]. " " . $row["email"] . "<br>";
+-		    }
++			while($row = $result->fetch_assoc()) {
++				echo "id: " . $row["id"]. " - Name: " . $row["firstname"]. " " . $row["lastname"]. " " . $row["email"] . "<br>";
++			}
+ 		}
+ 		else {
+    			echo "0 results";

@@ -69,7 +69,7 @@ tokens = (
     'S_LBRACE',     'LBRACE',       'S_RBRACE',             'RBRACE',
     'COLON',        'EOL',          'S_AND',                'L_AND', 
     'S_OR',         'L_OR',         'UNDERSCORE',           'COMMA',
-    'AT'
+    'AT',           'QUESTION_MARK','DOLLAR'
 )
 
 # Regular expression rules 
@@ -108,6 +108,8 @@ t_UNDERSCORE            = r'_'
 t_COMMA                 = r'\,'
 t_COMMENT_1             = r'#'
 t_AT                    = r'@'
+t_QUESTION_MARK         = r'\?'
+t_DOLLAR                = r'\$'
 # 3) SEMANTICS
 t_NEWLINE               = r'\n'
 t_EOL                   = r'\;'

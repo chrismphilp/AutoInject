@@ -11,23 +11,21 @@
 
 		// Check connection
 		if ($conn->connect_error) {
-			die("Connection failed: " . $conn->connect_error);
+		    die("Connection failed: " . $conn->connect_error);
 		}
 		else {
 			echo "Connected successfully";
 		}
 
 		$var = $_POST['firstname'];
-				$stmt = $conn->prepare('SELECT * FROM users WHERE firstname = ?');	
-		$stmt->bind_param('s', $var);	
+		$sql = "SELECT * FROM users WHERE firstname = '$var';";
 		// ' or '1'='1
-				$stmt->execute();	
-		$result = $stmt->get_result();	
+		$result = $conn->query($sql);
 
 		if ($result->num_rows > 0) {
-			while($row = $result->fetch_assoc()) {
-				echo "id: " . $row["id"]. " - Name: " . $row["firstname"]. " " . $row["lastname"]. " " . $row["email"] . "<br>";
-			}
+		    while($row = $result->fetch_assoc()) {
+		        echo "id: " . $row["id"]. " - Name: " . $row["firstname"]. " " . $row["lastname"]. " " . $row["email"] . "<br>";
+		    }
 		}
 		else {
    			echo "0 results";
