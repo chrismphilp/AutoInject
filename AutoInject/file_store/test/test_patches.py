@@ -154,3 +154,18 @@ Hi
 &++
 Hi
 '''
+
+presentation_patch = '''
+&-- $sql = "SELECT * FROM users WHERE firstname = '$var';";
+&++$stmt = $conn->prepare('SELECT * FROM users WHERE firstname = ?');
+$stmt->bind_param('s', $var);
+$stmt->execute();
+&-- $result = $conn->query($sql);
+&++$result = $stmt->get_result();
+'''
+
+presentation_mongo_query = '''
+Other apport CVE CVE-2015-1318
+coll.findOne( { 'id' : 'CVE-2017-14180' } )
+coll.update ( { 'id' : 'CVE-2017-14180' }, { '$set' : { 'deleted' : 0 } } )
+'''

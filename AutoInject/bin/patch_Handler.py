@@ -49,6 +49,7 @@ def produce_Diff_Of_Files(file_path1, file_path2, package_name, diff_file_name):
                     for lines in unified_diff(file1.readlines(), file2.readlines(), 
                         fromfile=file_path2, tofile=file_path1, fromfiledate=get_Current_Time(), tofiledate=get_Current_Time()):
                         outfile.write(lines)
+                    outfile.write('\n')
     
     else: print("Path to files does not exist")
     

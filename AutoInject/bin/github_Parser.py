@@ -60,6 +60,7 @@ def parse_Github(url):
         l_o_i = ""
 
     print("Total time for GitHub parse:", time.time() - request_time)
+    print("List of divs:", list_of_divs)
     return list_of_divs
 
 def special_Match(strg, search=re.compile(r"[^\n\t\r' ']").search):

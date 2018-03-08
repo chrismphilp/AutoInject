@@ -59,7 +59,12 @@ def handle_Patch_Update(patch_cursor, unformatted_package_name):
             False,
             False,
             unformatted_package_name
-        ): return True
+        ): 
+            cve_collection.update(
+                { 'id' : patch_cursor['id'] },
+                { '$set' : { 'deleted' : 1 } }
+            )
+            return True
         else: return False
 
 def handle_Github_Patch(cursor, package, url):
@@ -72,7 +77,7 @@ def handle_Github_Patch(cursor, package, url):
     for (file_path, code) in gp.parse_Github(url): 
         print(file_path, code)
         if not set_to: 
-            handle_Manual_Patch_By_User(file_path, package, code, 'Github patch: ' + url, cursor)
+            handle_Manual_Patch_By_User(bfs.search_Files(file_path), package, code, 'Github patch: ' + url, cursor)
             set_to = True
         else:
             handle_Manual_Patch_By_User(bfs.search_Files(file_path), package, code, 'Github patch: ' + url)

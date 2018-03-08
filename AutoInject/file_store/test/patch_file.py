@@ -1,38 +1,37 @@
+fff
+dewd
 <?php
 
-	if (isset($_POST['submit'])) {
+if (isset($_POST['submit'])) {
 
-		$servername = "localhost";
-		$username 	= "chris";
-		$password 	= "chris";
-		$dbname 	= 'users';
-		// Create connection
-		$conn = new mysqli($servername, $username, $password, $dbname);
+$servername = "localhost";
+$username 	= "chris";
+$password 	= "chris";
+$dbname 	= 'users';
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-		// Check connection
-		if ($conn->connect_error) {
-			die("Connection failed: " . $conn->connect_error);
-		}
-		else {
-			echo "Connected successfully";
-		}
+if ($conn->connect_error) {
+	die("Connection failed: " . $conn->connect_error);
+}
+else {
+	echo "Connected successfully";
+}
 
-		$var = $_POST['firstname'];
-				$stmt = $conn->prepare('SELECT * FROM users WHERE firstname = ?');	
-		$stmt->bind_param('s', $var);	
-		// ' or '1'='1
-				$stmt->execute();	
-		$result = $stmt->get_result();	
+$var = $_POST['firstname'];
+$stmt = $conn->prepare('SELECT * FROM users WHERE firstname = ?');	
+$stmt->bind_param('s', $var);	
+$stmt->execute();	
+$result = $stmt->get_result();	
 
-		if ($result->num_rows > 0) {
-			while($row = $result->fetch_assoc()) {
-				echo "id: " . $row["id"]. " - Name: " . $row["firstname"]. " " . $row["lastname"]. " " . $row["email"] . "<br>";
-			}
-		}
-		else {
-   			echo "0 results";
-		}
+if ($result->num_rows > 0) {
+	while ($row = $result->fetch_assoc()) {
+		echo "id: " . $row["id"]. " - Name: " . $row["firstname"]. " " . $row["lastname"]. " " . $row["email"] . "<br>";
 	}
+}
+else {
+	echo "0 results";
+}
+}
 ?>
 
 <?php require "templates/header.php"; ?>
@@ -48,3 +47,4 @@
 <a href="index.php">Back to home</a>
 
 <?php require "templates/footer.php"; ?>
+

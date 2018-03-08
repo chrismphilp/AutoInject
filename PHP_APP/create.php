@@ -1,3 +1,5 @@
+fff
+dewd
 <?php
 
 if (isset($_POST['submit'])) {
@@ -9,22 +11,20 @@ $dbname 	= 'users';
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+	die("Connection failed: " . $conn->connect_error);
 }
 else {
 	echo "Connected successfully";
 }
 
 $var = $_POST['firstname'];
-$stmt = $conn->prepare('SELECT * FROM users WHERE firstname = ?');
-$stmt->bind_param('s', $var);
-$stmt->execute();
-$result = $stmt->get_result();
+$sql = "SELECT * FROM users WHERE firstname = '$var';";
+$result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
-    while($row = $result->fetch_assoc()) {
-        echo "id: " . $row["id"]. " - Name: " . $row["firstname"]. " " . $row["lastname"]. " " . $row["email"] . "<br>";
-    }
+	while ($row = $result->fetch_assoc()) {
+		echo "id: " . $row["id"]. " - Name: " . $row["firstname"]. " " . $row["lastname"]. " " . $row["email"] . "<br>";
+	}
 }
 else {
 	echo "0 results";
