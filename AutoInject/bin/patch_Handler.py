@@ -346,22 +346,3 @@ def get_Current_Time():
 
 def get_File_Name_From_Path(path_of_file):
     return os.path.basename(path_of_file)
-
-def get_Update_Log(package_name=False):
-    if package_name:    
-        cursor = package_collection.find({
-            'formatted_package_name_with_version' : package_name,
-            'log' : { 
-                '$exists' : True,
-                '$not' : { '$size' : 0 } 
-            }
-        })
-        data = { 'log' : [] }
-        formatted_data = loads(dumps(cursor))
-        for items in formatted_data:
-            for logs in items['log']:
-                if logs['active'] == 1: data['log'].append(logs)
-        cursor = data        
-    else:
-        cursor = package_collection.find( { 'log' : { '$elemMatch' : { 'active' : 0 } } } )
-    return loads(dumps(cursor))

@@ -12,7 +12,7 @@
 <!-- Main content -->
 {% block content %}
 
-<h1 style='display: inline-block;'>_{{ package }} Vulnerabilites</h1>
+<h1 style='display: inline-block;'>_{{ package_name }} Vulnerabilites</h1>
 
 <!-- Modal Buttons -->
 <button 
@@ -45,7 +45,7 @@
   	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
     	<div class="modal-content">
       		<div class="modal-header">
-        		<h5 class="modal-title" style="display: inline-block;">Update Log for <b>{{ package }}</b></h5>
+        		<h5 class="modal-title" style="display: inline-block;">Update Log for <b>{{ package_name }}</b></h5>
         		<button
 					data-toggle="modal"
 					class="btn btn-md btn-info"
@@ -134,7 +134,7 @@
   	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
     	<div class="modal-content">
       		<div class="modal-header">
-        		<h5 class="modal-title" style="display: inline-block;">Update Version for <b>{{ package }}</b></h5>
+        		<h5 class="modal-title" style="display: inline-block;">Update Version for <b>{{ package_name }}</b></h5>
         		<button
 					data-toggle="modal"
 					class="btn btn-md btn-info"
@@ -160,7 +160,7 @@
 			            <label for="recipient-name" class="col-form-label">Comment</label>
 			            <input type="text" class="form-control" id="comment" name="comment" placeholder="Great update">
 		          	</div>
-		          	<input type="hidden" name="package" value="{{ package }}">
+		          	<input type="hidden" name="package-name" value="{{ package_name }}">
 		          	<div class="modal-footer">
 				        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 				        <input type="submit" class="btn btn-primary" id="version-form" value="Submit"></button>
@@ -200,7 +200,7 @@
   	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
     	<div class="modal-content">
       		<div class="modal-header">
-        		<h5 class="modal-title" style="display: inline-block;">Rebuild Code for <b>{{ package }}</b></h5>
+        		<h5 class="modal-title" style="display: inline-block;">Rebuild Code for <b>{{ package_name }}</b></h5>
         		<button
 					data-toggle="modal"
 					class="btn btn-md btn-info"

@@ -115,21 +115,6 @@ def search_New_Vulnerabilities(package_Data):
             { '$push' : { 'matching_ids' : { '$each' : list_Of_IDs } } }
         )
 
-def hard_Reset_Packages():
-    package_collection.remove({})
-    cve_collection.update(
-        {},
-        { '$unset' : { 
-            'matched_To_CVE' : 1, 
-            'matched_to' : 1
-        } },
-        multi=True
-    )
-    package_Data = gp.get_Package_Data()
-    gp.insert_Packages(package_Data[0])
-    remove_Special_Characters()
-    search_New_Vulnerabilities(package_Data)
-
 def remove_Special_Characters():
     
     print("Beginning special character removal")
@@ -190,16 +175,3 @@ def format_String(cursor):
         except:
             print("Failure")
     return list_Of_Reformatted_Configs
-
-def return_Matched_Vulnerability_Values():
-
-    package_collection = client['package_db']['package_list']
-    package_Vulnerability_JSON = package_collection.find({ 
-        'matching_ids' : { '$exists' : True, '$not' : { '$size' : 0 } },
-        'updateable' : 1
-    })
-    return loads(dumps(package_Vulnerability_JSON))
-
-def run_Database_Updater_Script():
-    print("Running script")
-    subprocess.call(["python3", "../cve-search/sbin/db_updater.py", "-v"])

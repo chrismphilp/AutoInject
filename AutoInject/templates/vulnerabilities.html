@@ -28,7 +28,7 @@
 							        <thead>
 							            <tr>
 							                <th>Package Name</th>
-							                <th>Formatted Package Name</th>
+							                <th>Package Index</th>
 							                <th>Package Version</th>
 							                <th>Architecture</th>
 							                <th>Inpsect Vulnerabilities</th>
@@ -37,7 +37,7 @@
 							        <tfoot>
 							            <tr>
 							                <th>Package Name</th>
-							                <th>Formatted Package Name</th>
+							                <th>Package Index</th>
 							                <th>Package Version</th>
 							                <th>Architecture</th>
 							                <th>Inpsect Vulnerabilities</th>
@@ -69,7 +69,7 @@
 					[ 
 						JSON_data[vulnerability]['package_name'],
 						JSON_data[vulnerability]['formatted_package_name_with_version'],
-						JSON_data[vulnerability]['version'],
+						JSON_data[vulnerability]['current_ubuntu_version'],
 						JSON_data[vulnerability]['architecture']
 					] 
 				);
@@ -95,7 +95,7 @@
 
 			$('#vulnerabilities tbody').on('click', 'button', function() {
 				var data = vulnerabilities.row( $(this).parents('tr') ).data();
-				location.href += '/' + data[1];
+				location.href += '/' + data[0];
 			});
 		
 		});

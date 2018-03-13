@@ -9,6 +9,8 @@ from pymongo            import MongoClient
 from AutoInject         import app
 
 # Importing scripts to sort data
+from AutoInject.bin.database_Handler        import Database
+
 import AutoInject.bin.apply_Patches         as ap
 import AutoInject.bin.build_From_Source     as bfs
 import AutoInject.bin.get_Packages          as gp
@@ -34,50 +36,47 @@ admin_patches               = client['package_db']['admin_patches']
 cve_collection              = client['cvedb']['cves']
 user_collection             = client['user_db']['users']
 
+db                          = Database()
+
 @app.route("/")
 @login_required
+def home():
+    return redirect(url_for('index'))
+
+@app.route("/index")
+@login_required
 def index():  
-    package_JSON_data = gp.get_Packages_JSON()
-    return render_template('index.html', package_JSON_data=package_JSON_data)
+    return render_template(
+        'index.html', 
+        package_JSON_data=db.package_collection_json
+    )
 
 @app.route("/vulnerabilities")
 @login_required
 def vulnerabilities():
-    vulnerability_JSON_data = gv.return_Matched_Vulnerability_Values()
-    return render_template('vulnerabilities.html', vulnerability_JSON_data=vulnerability_JSON_data)
+    return render_template(
+        'vulnerabilities.html', 
+        vulnerability_JSON_data=db.packages_with_vulnerabilities
+    )
 
-@app.route("/vulnerabilities/<package>")
+@app.route("/vulnerabilities/<package_name>")
 @login_required
-def return_CVE_IDs(package):
-    list_Of_Values = []
-    for values in package_collection.find( { 'formatted_package_name_with_version' : package } ):
-        list_Of_Values.extend(values['matching_ids'])
-
-    vulnerabilities = loads(dumps( 
-        cve_collection.find( { 
-            'id' : { '$in' : list_Of_Values },
-            'deleted' : { '$ne' : 1 } } 
-        ) 
-    ))
-    update_log = ap.get_Update_Log(package)
-
-    current_ubuntu_version = package_collection.find_one( 
-        { 'formatted_package_name_with_version' : package } 
-    )['current_ubuntu_version']
-
+def return_CVE_IDs(package_name):
+    current_package = package_collection.find_one( { 'package_name' : package_name } )
     return render_template(
         'individual_package.html', 
-        current_ubuntu_version=current_ubuntu_version,
-        vulnerabilities=vulnerabilities, 
-        package=package,
-        update_log=update_log
+        package_name=package_name,
+        update_log=db.get_Specific_Update_Log(package_name),
+        vulnerabilities=db.get_Matching_CVES(current_package['matching_ids'])        
     )
 
 @app.route("/log")
 @login_required
 def log():
-    package_JSON_data = ap.get_Update_Log()
-    return render_template('log.html', package_JSON_data=package_JSON_data)
+    return render_template(
+        'log.html', 
+        update_log_JSON=db.update_log
+    )
 
 @app.route("/profile")
 @login_required
@@ -97,29 +96,29 @@ def about():
 @app.route("/version_update", methods=['POST'])
 @login_required
 def version_update():
-    prev_package = package_collection.find_one( 
-        { 'formatted_package_name_with_version' : request.form['package'] } 
-    )
+    prev_ubunut_vers = package_collection.find_one( 
+        { 'package_name' : request.form['package-name'] } 
+    )['ubuntu_version']
 
     if not ap.handle_Version_Patch_By_User(
-        request.form['package'],
+        request.form['package-name'],
         request.form['version-name'],
         request.form['link'],
         request.form['comment']
-    ): return redirect(url_for('vulnerabilities') + '/' + request.form['package'])
+    ): return redirect(url_for('vulnerabilities')+'/'+request.form['package-name'])
     
     gv.remove_Special_Characters()
     gv.collect_Checkable_Packages()
 
-    new_package_name = package_collection.find_one( 
-        { 'package_name' : prev_package['package_name'] } 
-    )
+    new_ubuntu_vers = package_collection.find_one( 
+        { 'package_name' : request.form['package-name'] } 
+    )['ubuntu_version']
 
     return render_template(
         'package_alterations.html',
-        previous_version=prev_package['current_ubuntu_version'],
-        new_version=new_package_name['current_ubuntu_version'],
-        link_For_Button="/vulnerabilities/"+new_package_name['formatted_package_name_with_version']
+        previous_version=prev_ubunut_vers,
+        new_version=new_ubuntu_vers,
+        link_For_Button="/vulnerabilities/"+request.form['package-name']
     )
 
 @app.route("/manual_update", methods=['POST'])
@@ -383,7 +382,6 @@ def admin_add_version_update():
 @app.route("/admin_settings/release_patch/<date>")
 @login_required
 def admin_release_patch(date):
-    
     patch_data                  = admin_patches.find_one( { 'date' : date } )
     vulnerable_configuration    = [ patch_data['package_name'] ]
     
@@ -437,7 +435,7 @@ def admin_delete_patch(date):
 @login_required
 def hard_reset(): 
     print("Dropping and refreshing packages")
-    gv.hard_Reset_Packages()
+    db.hard_Reset_Packages()
     return redirect("/", code=302)
 
 @app.route("/refresh")
@@ -456,6 +454,33 @@ def update_vulnerabilities():
     gv.collect_Checkable_Packages()
     return redirect(url_for('vulnerabilities'), code=302)
 
+@app.route("/vulnerabilities/<package>/disable_cve/<cve_id>")
+@login_required
+def disable_cve(package, cve_id):
+    cve_collection.update( 
+        { 'id' : cve_id }, 
+        { '$set' : { 'deleted' : 1 } } 
+    )
+    return redirect(url_for('vulnerabilities') + '/' + package, code=302)
+
+@app.route("/enable_all")
+@login_required
+def enable_all():
+    package_collection.update( 
+        {}, 
+        { '$set' : { 'updateable' : 1 } } 
+    )
+    return redirect("/", code=302)
+
+@app.route("/disable_all")
+@login_required
+def disable_all():
+    package_collection.update( 
+        {}, 
+        { '$set' : { 'updateable' : 0 } } 
+    )
+    return redirect("/", code=302)
+
 @app.route("/enable/<package>")
 @login_required
 def enabler(package):
@@ -469,38 +494,8 @@ def enabler(package):
 @app.route("/disable/<package>")
 @login_required
 def disabler(package):
-    package_collection.update(
-        { 'package_name' : package },
-        { '$set' : { 'updateable' : 0 } },
-        multi=True
-    )
-    return redirect("/", code=302)
-
-@app.route("/vulnerabilities/<package>/disable_cve/<cve_id>")
-@login_required
-def disable_cve(package, cve_id):
-    cve_collection.update(
-        { 'id' : cve_id },
-        { '$set' : { 'deleted' : 1 } }
-    )
-    return redirect(url_for('vulnerabilities') + '/' + package, code=302)
-
-@app.route("/enable_all")
-@login_required
-def enable_all():
-    package_collection.update(
-        {},
-        { '$set' : { 'updateable' : 1 } },
-        multi=True
-    )
-    return redirect("/", code=302)
-
-@app.route("/disable_all")
-@login_required
-def disable_all():
-    package_collection.update(
-        {},
-        { '$set' : { 'updateable' : 0 } },
-        multi=True
+    package_collection.update( 
+        { 'package_name' : package }, 
+        { '$set' : { 'updateable' : 0 } } 
     )
     return redirect("/", code=302)
