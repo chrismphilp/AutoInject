@@ -11,20 +11,20 @@
 {% endblock %}
 {% block content %}
     
-    <a class="btn btn-success" style="float: right; margin-right: 10px;" href="{{ link_For_Button }}">Return to Previous Page</a>
+    <a class="btn btn-success" style="float: right; margin-right: 10px;" href="{{ link_for_button }}">Return to Previous Page</a>
     <br><br><br>
     <div class="container-fluid">
         <div class="row equal">
             <div class="col-md-6">
                 <div class="panel panel-default">
                     <div class="panel-heading">Original File</div>
-                    <div class="panel-body">{{ html_To_Parse_Before|safe }}</div>
+                    <div class="panel-body">{{ html_to_parse_before|safe }}</div>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="panel panel-primary">
                     <div class="panel-heading">New File</div>
-                    <div class="panel-body">{{ html_To_Parse_After|safe }}</div>
+                    <div class="panel-body">{{ html_to_parse_after|safe }}</div>
                 </div>
             </div>
         </div>
@@ -44,7 +44,7 @@
         <div class="panel-group">
             <div class="panel panel-success">
                 <div class="panel-heading">Patch Produced</div>
-                <div class="panel-body">{{ html_For_Diff_File|safe }}</div>
+                <div class="panel-body">{{ html_for_diff_file|safe }}</div>
             </div>
             </div>
         </div>

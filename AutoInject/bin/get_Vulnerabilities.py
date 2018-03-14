@@ -18,18 +18,18 @@ def collect_Checkable_Packages():
     remove_Special_Characters()
     search_New_Vulnerabilities(package_Data)
 
-def check_For_New_Packages(package_Data):
+def check_For_New_Packages(package_data):
     # Find all completely new packages
     print("Getting all newly installed packages")
     list_of_new_packages = []
-    for values in package_Data[0]:
+    for values in package_data[0]:
         if not package_collection.find_one( { 'package_name' : values['package_name'] } ):
             package_collection.insert(values)
             list_of_new_packages.append(values)
 
-    for formatted_package_name in list_of_new_packages:
+    for package_indexes in list_of_new_packages:
         cursor = cve_collection.find( { 
-            '$text' : { '$search' : formatted_package_name['formatted_package_name_with_version'] },
+            '$text' : { '$search' : package_indexes['package_index'] },
             'matched_To_CVE' : { '$ne' : 1 } 
         } )
 
@@ -42,19 +42,16 @@ def check_For_New_Packages(package_Data):
             list_Of_IDs.append(values['id'])
 
         package_collection.update(
-            { 'formatted_package_name_with_version' : formatted_package_name['formatted_package_name_with_version'] },
+            { 'package_index' : package_indexes['package_index'] },
             { '$push' : { 'matching_ids' : { '$each' : list_Of_IDs } } }
         )
 
-def check_For_Updated_Packages(package_Data):
+def check_For_Updated_Packages(package_data):
     # Use this for package updates, when the squashed_name will have changed, but package is the same 
     print("Getting packages that have been updated")
-    for values in package_collection.find( { 'longer_ubuntu_version' : { '$nin' : package_Data[2] } } ):
-        for items in package_Data[0]:
+    for values in package_collection.find( { 'apt_version' : { '$nin' : package_data[2] } } ):
+        for items in package_data[0]:
             if items['package_name'] == values['package_name']:
-
-                print("MATCHED ID:", items)
-
                 for ids in values['matching_ids']:
                     cve_collection.update(
                         { 'id' : ids },
@@ -65,38 +62,33 @@ def check_For_Updated_Packages(package_Data):
                     )
 
                 current_version = sf.get_Ubuntu_Package_Version(values['package_name'])
-
                 try:
-                    package_version               = sf.get_Formatted_Version(current_version)
-                    squashed_version              = ''.join(e for e in package_version if e.isalnum())
-                    package_name_with_version     = values['formatted_package_name_without_version'] + squashed_version
-                    squashed_name_with_version    = ''.join(e for e in package_name_with_version if e.isalnum() or e == ':')
+                    package_version             = sf.get_Formatted_Version(current_version)
+                    package_name_with_version   = sf.get_Formatted_Name(
+                        values['package_name']) + ''.join(e for e in package_version if e.isalnum()
+                    )
+                    package_index               = ''.join(e for e in package_name_with_version if e.isalnum() or e == ':')
                 except: 
-                    print("Couln't reformat:", package_name, current_version); return False
+                    print("Couln't reformat:", package_name, current_version)
 
-                print("Updating information for package:", values['package_name'], "\n")
-                print(values['package_name'], current_version, package_version, squashed_version, squashed_name_with_version)
                 # Update current package data to match updated values 
                 package_collection.update_one(
                     { 'package_name' : values['package_name'] },
                     { '$set' : { 
-                        'package_name_with_version' : package_name_with_version, #apport2141
-                        'formatted_package_name_with_version' :  squashed_name_with_version, #apport2141 
-                        'version' : package_version, #2.1.41
-                        'formatted_version' : squashed_version, #2141
-                        'current_ubuntu_version' : current_version,
-                        'longer_ubuntu_version' : values['package_name'] + '=' + current_version,
+                        'package_index' : package_index, 
+                        'ubuntu_version' : current_version,
+                        'apt_version' : values['package_name'] + '=' + current_version,
                         'matching_ids' : []
                     } }
                 )
 
-def search_New_Vulnerabilities(package_Data):
+def search_New_Vulnerabilities(package_data):
     # # Search all new packages 
     print('Matching packages to new updated vulnerabilites')
-    for formatted_package_name in package_Data[1]:
+    for package_index in package_data[1]:
 
         cursor = cve_collection.find( { 
-            '$text' : { '$search' : formatted_package_name },
+            '$text' : { '$search' : package_index },
             'matched_To_CVE' : { '$ne' : 1 },
             'deleted' : { '$ne' : 1 } }   
         )
@@ -111,7 +103,7 @@ def search_New_Vulnerabilities(package_Data):
             list_Of_IDs.append(values['id'])
 
         package_collection.update(
-            { 'formatted_package_name_with_version' : formatted_package_name },
+            { 'package_index' : package_index },
             { '$push' : { 'matching_ids' : { '$each' : list_Of_IDs } } }
         )
 
@@ -125,9 +117,7 @@ def remove_Special_Characters():
 
         cve_collection.update( 
             { 'id' : values['id'] },
-            { '$set' : { 'reformatted_configs' : list_Of_Reformatted_Configs } },
-            upsert=False,
-            multi=True 
+            { '$set' : { 'reformatted_configs' : list_Of_Reformatted_Configs } }
         )
 
     print("Attempting to remove indexes")
@@ -161,7 +151,6 @@ def format_String(cursor):
         for strings in list(reversed(split_string)):
 
             if (re.match(re_num, strings)):
-                # print('Found a match:', re.match(re_num, strings).group(0))
                 temp = re.match(re_num, strings).group(0)
                 count += 1
                 continue

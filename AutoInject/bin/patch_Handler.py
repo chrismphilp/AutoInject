@@ -62,7 +62,7 @@ def upload_File(package_name, original_files_path, diff_file_path, type_of_updat
     print("Package name is:", package_name)
 
     package_collection.update(
-        { 'formatted_package_name_with_version' : package_name },
+        { 'package_name' : package_name },
         { '$push' : {
             'log' : { 
                 'original_files_path' : original_files_path,
@@ -79,15 +79,14 @@ def upload_File(package_name, original_files_path, diff_file_path, type_of_updat
         } }
     )
 
-def handle_Patch_Maintenance(package, date_of_patch):
-    reverser = package_collection.find_one( 
-        { 'log' : 
-            { '$elemMatch' :  { 
-                'date' : date_of_patch,
-                'active' : 1 
-            } } 
-        } 
-    )
+def handle_Patch_Maintenance(package_name, date_of_patch):
+    reverser = package_collection.find_one( { 
+        'package_name' : package_name,
+        'log' : { '$elemMatch' :  { 
+            'date' : date_of_patch,
+            'active' : 1 
+        } }
+    } )
 
     if reverser:
         formatted_data = loads(dumps(reverser))
@@ -100,16 +99,16 @@ def handle_Patch_Maintenance(package, date_of_patch):
                         apply_Version_Forward(elements, reverser['package_name'])
                 elif (elements['update_type'] == 'build_from_source'):
                     if (elements['type_of_patch'] == 'backward_patch'): 
-                        apply_BFS_Reversal(elements, package)
+                        apply_BFS_Reversal(elements, package_name)
                     elif (elements['type_of_patch'] == 'forward_patch'):
                         apply_BFS_Forward(elements)
                 return True
     else: print("No file matching"); return False
 
-def apply_BFS_Reversal(json_of_patch, package):
+def apply_BFS_Reversal(json_of_patch, package_name):
 
     if (json_of_patch['path_of_intermediate_store'] == 'N/A'):
-        copy_name = make_Copy_Of_File(package, json_of_patch['original_files_path'])
+        copy_name = make_Copy_Of_File(package_name, json_of_patch['original_files_path'])
     else:
         copy_name = make_Copy_Of_File("--", json_of_patch['original_files_path'], json_of_patch['path_of_intermediate_store'])
 
@@ -173,8 +172,11 @@ def apply_BFS_Forward(json_of_patch):
         { '$set' : { 'log.$.active' : 1 } }
     )
 
-def delete_Patch(package, date_of_patch):
-    tmp = package_collection.find_one( { 'log' : { '$elemMatch' :  { 'date' : date_of_patch, 'active' : 1 } } } )
+def delete_Patch(package_name, date_of_patch):
+    tmp = package_collection.find_one( { 
+        'package_name' : package_name, 
+        'log' : { '$elemMatch' :  { 'date' : date_of_patch, 'active' : 1 } } 
+    } )
     file_path_of_copy   = False
     version_delete      = False
     bfs_delete          = False
@@ -216,10 +218,10 @@ def delete_Patch(package, date_of_patch):
 
     else: return False
 
-def make_Copy_Of_File(package_name, file_path, set_Path=False):
+def make_Copy_Of_File(package_name, file_path, set_path=False):
 
-    if set_Path:
-        copyfile(file_path, set_Path)
+    if set_path:
+        copyfile(file_path, set_path)
         return set_Path
     else:
         copy = "AutoInject/file_store/" + package_name + "/copy"

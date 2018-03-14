@@ -30,8 +30,8 @@
 							                <th>Package Name</th>
 							                <th>Package Version</th>
 							                <th>Package Index</th>
-							                <th>Ubuntu Version</th>
 							                <th>Affected System</th>
+							                <th>Summary</th>
 							                <th>Updateable?</th>
 							                <th>Inspect Package</th>
 							            </tr>
@@ -41,8 +41,8 @@
 							                <th>Package Name</th>
 							                <th>Package Version</th>
 							                <th>Package Index</th>
-							                <th>Ubuntu Version</th>
 							                <th>Affected System</th>
+							                <th>Summary</th>
 							                <th>Updateable?</th>
 							                <th>Inspect Package</th>
 							            </tr>
@@ -73,14 +73,13 @@
 				data.push( 
 					[
 						JSON_data[package]['package_name'], 
-						JSON_data[package]['version'], 
-						JSON_data[package]['formatted_package_name_with_version'],
-						JSON_data[package]['current_ubuntu_version'],
+						JSON_data[package]['ubuntu_version'],
+						JSON_data[package]['package_index'],
 						JSON_data[package]['architecture'],
+						JSON_data[package]['summary'],
 						JSON_data[package]['updateable']
 					] 
 				);
-				console.log(JSON_data[package]['updateable']);
 			}
 
 			var packages = $('#packages').DataTable( {

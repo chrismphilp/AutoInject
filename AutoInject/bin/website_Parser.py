@@ -1,6 +1,7 @@
 import pymongo, re, time, datetime, types, requests
 
-import AutoInject.bin.system_Functions as sf
+from    AutoInject.bin.database_Handler     import Database
+import  AutoInject.bin.system_Functions     as sf
 
 # Parsing related modules
 import lxml.html    as lh 
@@ -15,6 +16,8 @@ from collections    import defaultdict
 client                      = MongoClient()
 package_collection          = client['package_db']['package_list']
 cve_collection              = client['cvedb']['cves']
+
+db                          = Database()
 
 kwargs  = {
     'bugzilla.redhat' : { 
@@ -179,13 +182,11 @@ def search_URL_For_Version_Update(url):
     if matched: return version_name
     else:       return False 
 
-def get_Matching_Ubuntu_Version(formatted_package_name, version_name):
+def get_Matching_Ubuntu_Version(package_name, version_name):
     
-    list_Of_Potential_Versions  = []
+    list_of_potential_versions  = []
     version_name                = ''.join(e for e in version_name if e.isalnum())
-    store                       = package_collection.find_one( { 'formatted_package_name_with_version' : formatted_package_name } )
-    current_version             = store['current_ubuntu_version']
-    package_name                = store['package_name'] 
+    previous_version             = package_collection.find_one( { 'package_name' : package_name } )['ubuntu_version']
 
     madison_versions = check_output(
         ["apt-cache", "madison", package_name],
@@ -203,17 +204,17 @@ def get_Matching_Ubuntu_Version(formatted_package_name, version_name):
         for sub_items in items.split(" "):
             if (version_name in ''.join(e for e in sub_items if e.isalnum())):
                 print("Sub items:", sub_items)
-                print("Current version:", current_version)
-                if (sub_items != current_version and (package_name + "=" + sub_items) not in list_Of_Potential_Versions): 
+                print("Current version:", previous_version)
+                if (sub_items != previous_version and (package_name + "=" + sub_items) not in list_of_potential_versions): 
                     print('Found', version_name, ' in:', sub_items)
-                    list_Of_Potential_Versions.append(package_name + "=" + sub_items)
+                    list_of_potential_versions.append(package_name + "=" + sub_items)
 
-    if list_Of_Potential_Versions: 
-        print("List of potential versions:", list_Of_Potential_Versions)
-        return (list_Of_Potential_Versions, current_version)
+    if list_of_potential_versions: 
+        print("List of potential versions:", list_of_potential_versions)
+        return (list_of_potential_versions, previous_version)
     else: return False
 
-def perform_Package_Version_Update(list_Of_Potential_Versions, package_name, previous_version, full_version=False):
+def perform_Package_Version_Update(list_of_potential_versions, package_name, previous_version, full_version=False):
     if full_version:
         full_package_install_name = package_name + "=" + full_version
         print("Install name:", full_package_install_name)
@@ -229,7 +230,7 @@ def perform_Package_Version_Update(list_Of_Potential_Versions, package_name, pre
                 return False
         except: print("Could not upgrade with:", full_version); return False
     else:
-        for version in list_Of_Potential_Versions:
+        for version in list_of_potential_versions:
             try:
                 package_upgrade = check_call(
                     ["sudo", "apt-get", "install", "-y", "--force-yes", version],
@@ -243,17 +244,15 @@ def perform_Package_Version_Update(list_Of_Potential_Versions, package_name, pre
                     return False
             except: print("Could not upgrade with:", version); return False
 
-def update_Vulnerability_Information(package_name, current_version, previous_version, implementation_type, comment=False, 
-    unformatted_package_name=False):
+def update_Vulnerability_Information(package_name, current_version, previous_version, implementation_type, comment=False):
 
     print("Updating vulnerability information")
 
     # 1) Get all CVE's unmatched from current package and release them
-    if unformatted_package_name: cursor = package_collection.find_one( { 'package_name' : unformatted_package_name } )
-    else: cursor = package_collection.find_one( { 'formatted_package_name_with_version' : package_name } )
+    cursor = package_collection.find_one( { 'package_name' : package_name } )
     
     for items in cursor['matching_ids']:
-        cve_collection.update(
+        cve_collection.update_one(
             { 'id' : items },
             { '$set' : { 
                 'matched_To_CVE' : 0,
@@ -264,16 +263,13 @@ def update_Vulnerability_Information(package_name, current_version, previous_ver
     # 2)1) Change new version number accordingly with new_package_version_name
     # 2)2) Also could check whether old version can be downgraded back to?
 
-    if unformatted_package_name: just_package_name = unformatted_package_name
-    else: just_package_name = package_collection.find_one( { 'formatted_package_name_with_version' : package_name } )['package_name']
-
     # Push new log data to array
     if not comment: comment = ('From:' + previous_version + 'To:' + current_version)
 
-    shared_log_id = sf.get_Incremented_Id()
+    shared_log_id = db.get_Incremented_Id()
 
-    package_collection.update(
-        { 'package_name' : just_package_name },
+    package_collection.update_one(
+        { 'package_name' : package_name },
         { '$push' : {
             'log' : {
                 '$each' : [ {

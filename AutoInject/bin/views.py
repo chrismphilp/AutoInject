@@ -109,87 +109,88 @@ def version_update():
     
     gv.remove_Special_Characters()
     gv.collect_Checkable_Packages()
+    db.update_Matched_Vulnerability_Packages_JSON()
+    db.update_Update_Log()
 
-    new_ubuntu_vers = package_collection.find_one( 
+    curr_ubuntu_vers = package_collection.find_one( 
         { 'package_name' : request.form['package-name'] } 
     )['ubuntu_version']
 
     return render_template(
         'package_alterations.html',
-        previous_version=prev_ubunut_vers,
-        new_version=new_ubuntu_vers,
+        previous_ubuntu_version=prev_ubunut_vers,
+        current_ubuntu_version=curr_ubuntu_vers,
         link_For_Button="/vulnerabilities/"+request.form['package-name']
     )
 
 @app.route("/manual_update", methods=['POST'])
 @login_required
 def manual_update():
-    
     full_file_path = bfs.search_Files(request.form['file-path'])
-    if not full_file_path: return redirect(url_for('vulnerabilities')+"/"+request.form['package'])
+    if not full_file_path: return redirect(url_for('vulnerabilities')+"/"+request.form['package-name'])
 
-    html_To_Parse_Before = bfs.format_HTML(full_file_path)
+    html_to_parse_before = bfs.format_HTML(full_file_path)
 
     diff_file_path = ap.handle_Manual_Patch_By_User(
         full_file_path,
-        request.form['package'],
+        request.form['package-name'],
         request.form['inserted-code'],
         request.form['comment']
     )
 
-    if not diff_file_path: return redirect(url_for('vulnerabilities') + '/' + request.form['package'])
+    if not diff_file_path: 
+        return redirect(url_for('vulnerabilities')+'/'+request.form['package-name'])
 
-    html_To_Parse_After     = bfs.format_HTML('AutoInject/file_store/test/patch_file.py')
-    html_For_Diff_File      = bfs.format_HTML(diff_file_path)
+    html_to_parse_after     = bfs.format_HTML('AutoInject/file_store/test/patch_file.py')
+    html_for_diff_file      = bfs.format_HTML(diff_file_path)
     formatted_bfs_string    = bfs.format_BFS_String(request.form['inserted-code'])
 
     return render_template(
         'file_alterations.html', 
-        html_To_Parse_Before=html_To_Parse_Before,
-        html_To_Parse_After=html_To_Parse_After,
-        html_For_Diff_File=html_For_Diff_File,
+        html_to_parse_before=html_to_parse_before,
+        html_to_parse_after=html_to_parse_after,
+        html_for_diff_file=html_for_diff_file,
         formatted_bfs_string=formatted_bfs_string,
-        link_For_Button="/vulnerabilities/"+request.form['package']
+        link_for_button="/vulnerabilities/"+request.form['package-name']
     )
 
-@app.route("/vulnerabilities/<package>/package_update/<admin_id>")
+@app.route("/vulnerabilities/<package_name>/package_update/<cve_id>")
 @login_required
-def update_using_admin_patch(package, admin_id):
-    prev_cursor         = package_collection.find_one( { 'formatted_package_name_with_version' : package } )
-    previous_name       = prev_cursor['package_name']
-    prev_ubunut_vers    = prev_cursor['current_ubuntu_version']
-    ap.handle_Patch_Update(cve_collection.find_one( { 'id' : admin_id } ), previous_name)
-    new_cursor          = package_collection.find_one( { 'package_name' : previous_name } )
-    new_formatted_name  = new_cursor['formatted_package_name_with_version']
-
-    if prev_ubunut_vers != sf.get_Ubuntu_Package_Version(previous_name):
+def update_using_admin_patch(package_name, cve_id):
+    prev_ubuntu_vers = package_collection.find_one( 
+        { 'package_name' : package_name } 
+    )['ubuntu_version']
+    ap.handle_Patch_Update(cve_collection.find_one( { 'id' : cve_id } ), package_name)
+    if prev_ubunut_vers != sf.get_Ubuntu_Package_Version(package_name):
         gv.remove_Special_Characters()
         gv.collect_Checkable_Packages()
+    return redirect(url_for('vulnerabilities')+'/'+package_name)
 
-    return redirect(url_for('vulnerabilities') + '/' + new_formatted_name)
-
-@app.route("/vulnerabilities/<package>/delete_patch/<date_of_patch>")
+@app.route("/vulnerabilities/<package_name>/delete_patch/<date_of_patch>")
 @login_required
-def delete_file_patch(package, date_of_patch):
-    ph.delete_Patch(package, date_of_patch)
+def delete_file_patch(package_name, date_of_patch):
+    ph.delete_Patch(package_name, date_of_patch)
+    db.update_Update_Log()
     return redirect(url_for('log'))
 
-@app.route("/vulnerabilities/<package>/revert_patch/<date_of_patch>")
+@app.route("/vulnerabilities/<package_name>/revert_patch/<date_of_patch>")
 @login_required
-def reverse_file_patch_package_page(package, date_of_patch):
-    previous_name = package_collection.find_one( { 'formatted_package_name_with_version' : package } )['package_name']
-    ph.handle_Patch_Maintenance(package, date_of_patch)
+def reverse_file_patch_package_page(package_name, date_of_patch):
+    ph.handle_Patch_Maintenance(package_name, date_of_patch)
     gv.remove_Special_Characters()
     gv.collect_Checkable_Packages()
-    new_name = package_collection.find_one( { 'package_name' : previous_name } )['formatted_package_name_with_version']
-    return redirect(url_for('vulnerabilities') + '/' + new_name)
+    db.update_Update_Log()
+    db.update_Matched_Vulnerability_Packages_JSON()
+    return redirect(url_for('vulnerabilities')+'/'+package_name)
 
-@app.route("/log/<package>/revert_patch/<date_of_patch>")
+@app.route("/log/<package_name>/revert_patch/<date_of_patch>")
 @login_required
-def reverse_file_patch_log_page(package, date_of_patch):
-    ph.handle_Patch_Maintenance(package, date_of_patch)
+def reverse_file_patch_log_page(package_name, date_of_patch):
+    ph.handle_Patch_Maintenance(package_name, date_of_patch)
     gv.remove_Special_Characters()
     gv.collect_Checkable_Packages()
+    db.update_Update_Log()
+    db.update_Matched_Vulnerability_Packages_JSON()
     return redirect(url_for('log'))
     
 # --------------------------------------------------------------------------
@@ -242,7 +243,6 @@ def login():
             else:
                 print("Passwords do not match")
                 return render_template('login.html', form=form)
-
     return render_template('login.html', form=form)
 
 @app.route("/register", methods=['POST', 'GET'])
@@ -256,7 +256,7 @@ def register():
                 print("User already registered")
                 return render_template('login.html', form=form)
             else:
-                user_collection.insert({
+                user_collection.insert_one({
                     'id' : request.form['username'],
                     'email' : request.form['email'],
                     'password' : generate_password_hash(request.form['password']),
@@ -279,34 +279,31 @@ def forgot_password():
 
 @app.route("/delete_account", methods=['POST', 'GET'])
 def delete_account():
-    account = user_collection.remove( { 'id' : request.form['username'] } )
+    account = user_collection.delete_one( { 'id' : request.form['username'] } )
     logout_user()
     return redirect(url_for('login'))
 
 @app.route("/change_password", methods=['POST', 'GET'])
 def change_password():
-    account = user_collection.update(
+    account = user_collection.update_one(
         { 'id' : request.form['username'] },
-        { '$set' : { 'password' : generate_password_hash(request.form['password']) } },
-        multi=True
+        { '$set' : { 'password' : generate_password_hash(request.form['password']) } }
     )
     return redirect(url_for('profile'))  
 
 @app.route("/update_notifications", methods=['POST', 'GET'])
 def update_notifications():
-    account = user_collection.update( 
+    account = user_collection.update_one( 
         { 'id' : request.form['username'] }, 
-        { '$set' : { 'notifications' : request.form['notification'] } },
-        multi=True
+        { '$set' : { 'notifications' : request.form['notification'] } }
     )
     return redirect(url_for('profile'))
 
 @app.route("/update_auto_update", methods=['POST', 'GET'])
 def update_auto_update():
-    account = user_collection.update( 
+    account = user_collection.update_one( 
         { 'id' : request.form['username'] }, 
-        { '$set' : { 'auto_update' : request.form['auto_update'] } },
-        multi=True
+        { '$set' : { 'auto_update' : request.form['auto_update'] } }
     )
     return redirect(url_for('profile'))
 
@@ -319,25 +316,29 @@ def update_auto_update():
 @app.route("/admin_settings")
 @login_required
 def admin_settings():
-    patch_JSON_data   = loads(dumps(admin_patches.find()))
-    user_JSON_data    = loads(dumps(user_collection.find()))
-    return render_template("admin_settings.html", user_JSON_data=user_JSON_data, patch_JSON_data=patch_JSON_data)
+    patch_JSON_data   = dumps(admin_patches.find())
+    user_JSON_data    = dumps(user_collection.find())
+    return render_template(
+        "admin_settings.html", 
+        user_JSON_data=user_JSON_data, 
+        patch_JSON_data=patch_JSON_data
+    )
 
 @app.route("/admin_settings/delete_user/<email>")
 @login_required
 def admin_delete_user(email):
-    user_collection.remove( { 'email' : email } )
+    user_collection.delete_one( { 'email' : email } )
     return redirect(url_for('admin_settings'))
 
 @app.route("/admin_registration", methods=['POST'])
 @login_required
 def admin_registration():
-    if (user_collection.find( { 'email' : request.form['email'] } ).count() 
+    if (user_collection.find_one( { 'email' : request.form['email'] } )
             or
-        user_collection.find( { 'id' : request.form['username'] } ).count()):
+        user_collection.find_one( { 'id' : request.form['username'] } )):
         print("User already registered")
     else:
-        user_collection.insert({
+        user_collection.insert_one({
             'id' : request.form['username'],
             'email' : request.form['email'],
             'password' : generate_password_hash(request.form['password']),
@@ -349,8 +350,8 @@ def admin_registration():
 @app.route("/admin_add_manual_update", methods=['POST'])
 @login_required
 def admin_add_manual_update():      
-    admin_patches.insert({
-        'id' :'ADMIN-' + str(sf.get_Incremented_Id()),
+    admin_patches.insert_one({
+        'id' :'ADMIN-' + str(db.get_Incremented_Id()),
         'package_name' : request.form['package'] + ''.join(e for e in request.form['package_version'] if e.isalnum()),
         'individual_package_name' : request.form['package'],
         'patch_type' : 'build_from_source',
@@ -366,8 +367,8 @@ def admin_add_manual_update():
 @app.route("/admin_add_version_update", methods=['POST'])
 @login_required
 def admin_add_version_update():      
-    admin_patches.insert({
-        'id' :'ADMIN-' + str(sf.get_Incremented_Id()),
+    admin_patches.insert_one({
+        'id' :'ADMIN-' + str(db.get_Incremented_Id()),
         'package_name' : request.form['package'] + ''.join(e for e in request.form['package_version'] if e.isalnum()), 
         'individual_package_name' : request.form['package'],
         'patch_type' : 'version',
@@ -389,7 +390,7 @@ def admin_release_patch(date):
     else:   references = []
 
     if (patch_data['patch_type'] == 'build_from_source'):
-        cve_collection.insert({
+        cve_collection.insert_one({
             'id' : patch_data['id'],
             'vulnerable_configuration' : vulnerable_configuration,
             'individual_package_name' : patch_data['individual_package_name'],
@@ -403,7 +404,7 @@ def admin_release_patch(date):
             'date' : patch_data['date']
         })
     elif (patch_data['patch_type'] == 'version'):
-        cve_collection.insert({
+        cve_collection.insert_one({
             'id' : patch_data['id'],
             'vulnerable_configuration' : vulnerable_configuration,
             'individual_package_name' : patch_data['individual_package_name'],
@@ -415,14 +416,14 @@ def admin_release_patch(date):
             'reformatted_configs' : vulnerable_configuration,
             'date' : patch_data['date']
         })
-    admin_patches.remove( { 'date' : date } )
+    admin_patches.delete_one( { 'date' : date } )
     return redirect(url_for('admin_settings'))
 
 @app.route("/admin_settings/delete_patch/<date>")
 @login_required
 def admin_delete_patch(date):
     print("Deleting item", date)
-    admin_patches.remove( { 'date' : date } )
+    admin_patches.delete_one( { 'date' : date } )
     return redirect(url_for('admin_settings'))
 
 # --------------------------------------------------------------------------
@@ -435,8 +436,11 @@ def admin_delete_patch(date):
 @login_required
 def hard_reset(): 
     print("Dropping and refreshing packages")
-    db.hard_Reset_Packages()
-    return redirect("/", code=302)
+    package_data = db.hard_Reset_Packages()
+    gv.remove_Special_Characters()
+    gv.search_New_Vulnerabilities(package_data)
+    db.update_Matched_Vulnerability_Packages_JSON()
+    return redirect(url_for('index'))
 
 @app.route("/refresh")
 @login_required
@@ -444,7 +448,8 @@ def refresh():
     print("Refreshing vulnerabilities")
     gv.remove_Special_Characters()
     gv.collect_Checkable_Packages()
-    return redirect(url_for('vulnerabilities'), code=302)
+    db.update_Matched_Vulnerability_Packages_JSON()
+    return redirect(url_for('vulnerabilities'))
 
 @app.route("/update_vulnerabilities")
 @login_required
@@ -452,50 +457,54 @@ def update_vulnerabilities():
     gv.run_Database_Updater_Script()
     gv.remove_Special_Characters()
     gv.collect_Checkable_Packages()
-    return redirect(url_for('vulnerabilities'), code=302)
+    return redirect(url_for('vulnerabilities'))
 
-@app.route("/vulnerabilities/<package>/disable_cve/<cve_id>")
+@app.route("/vulnerabilities/<package_name>/disable_cve/<cve_id>")
 @login_required
-def disable_cve(package, cve_id):
-    cve_collection.update( 
+def disable_cve(package_name, cve_id):
+    cve_collection.update_one( 
         { 'id' : cve_id }, 
         { '$set' : { 'deleted' : 1 } } 
     )
-    return redirect(url_for('vulnerabilities') + '/' + package, code=302)
+    db.update_Package_JSON()
+    return redirect(url_for('vulnerabilities')+'/'+package_name)
 
 @app.route("/enable_all")
 @login_required
 def enable_all():
-    package_collection.update( 
+    package_collection.update_many( 
         {}, 
         { '$set' : { 'updateable' : 1 } } 
     )
-    return redirect("/", code=302)
+    db.update_Package_JSON()
+    return redirect(url_for('index'))
 
 @app.route("/disable_all")
 @login_required
 def disable_all():
-    package_collection.update( 
+    package_collection.update_many( 
         {}, 
         { '$set' : { 'updateable' : 0 } } 
     )
-    return redirect("/", code=302)
+    db.update_Package_JSON()
+    return redirect(url_for('index'))
 
-@app.route("/enable/<package>")
+@app.route("/enable/<package_name>")
 @login_required
-def enabler(package):
-    package_collection.update(
-        { 'package_name' : package },
-        { '$set' : { 'updateable' : 1 } },
-        multi=True
+def enabler(package_name):
+    package_collection.update_one(
+        { 'package_name' : package_name },
+        { '$set' : { 'updateable' : 1 } }
     )
-    return redirect("/", code=302)
+    db.update_Package_JSON()
+    return redirect(url_for('index'))
 
-@app.route("/disable/<package>")
+@app.route("/disable/<package_name>")
 @login_required
-def disabler(package):
-    package_collection.update( 
-        { 'package_name' : package }, 
+def disabler(package_name):
+    package_collection.update_one( 
+        { 'package_name' : package_name }, 
         { '$set' : { 'updateable' : 0 } } 
     )
-    return redirect("/", code=302)
+    db.update_Package_JSON()
+    return redirect(url_for('index'))

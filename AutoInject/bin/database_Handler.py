@@ -30,24 +30,24 @@ class Database:
         self.package_collection_json = dumps(package_collection.find({}))
 
     def hard_Reset_Packages(self):
-        package_collection.remove({})
-        cve_collection.update(
+        package_collection.delete_many({})
+        cve_collection.update_many(
             {},
-            { '$unset' : { 
-                'matched_To_CVE' : 1, 
-                'matched_to' : 1
-            } }
+            { '$set' : { 
+                'matched_To_CVE' : 0, 
+                'matched_to' : 0
+            } },
+            upsert=True
         )
-        package_Data = gp.get_Package_Data()
-        self.insert_Packages(package_Data[0])
-        remove_Special_Characters()
-        search_New_Vulnerabilities(package_Data)
+        package_data = gp.get_Package_Data()
+        self.insert_Packages(package_data[0])
         self.update_Package_JSON()
+        return package_data
 
     def insert_Packages(self, package_List):
         print('Inserting new packages into database')
         package_collection.drop()
-        package_collection.insert(package_List)
+        package_collection.insert_many(package_List)
 
     # ---  --- ---  --- ---  --- ---  --- --- 
     # --- Vulnerability related functions ---
@@ -101,7 +101,7 @@ class Database:
         if (auto_increment_coll.count() > 0): 
             count = auto_increment_coll.find().sort([('id', -1)]).limit(1)
             for item in count:
-                auto_increment_coll.update( 
+                auto_increment_coll.update_one( 
                     { 'id' : item['id'] },
                     { '$set' : { 'id' : item['id'] + 1 } } 
                 )

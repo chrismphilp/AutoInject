@@ -28,8 +28,8 @@
 							        <thead>
 							            <tr>
 							                <th>Package Name</th>
-							                <th>Package Index</th>
 							                <th>Package Version</th>
+							                <th>Package Index</th>
 							                <th>Architecture</th>
 							                <th>Inpsect Vulnerabilities</th>
 							            </tr>
@@ -37,8 +37,8 @@
 							        <tfoot>
 							            <tr>
 							                <th>Package Name</th>
-							                <th>Package Index</th>
 							                <th>Package Version</th>
+							                <th>Package Index</th>							                
 							                <th>Architecture</th>
 							                <th>Inpsect Vulnerabilities</th>
 							            </tr>
@@ -68,8 +68,8 @@
 				data.push( 
 					[ 
 						JSON_data[vulnerability]['package_name'],
-						JSON_data[vulnerability]['formatted_package_name_with_version'],
-						JSON_data[vulnerability]['current_ubuntu_version'],
+						JSON_data[vulnerability]['ubuntu_version'],
+						JSON_data[vulnerability]['package_index'],						
 						JSON_data[vulnerability]['architecture']
 					] 
 				);

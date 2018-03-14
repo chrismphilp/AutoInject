@@ -16,8 +16,7 @@ client                                  = MongoClient()
 package_collection                      = client['package_db']['package_list']
 cve_collection                          = client['cvedb']['cves']
 
-def handle_Patch_Update(patch_cursor, unformatted_package_name):
-    
+def handle_Patch_Update(patch_cursor, package_name):  
     if ('ADMIN' in patch_cursor['id']):
         if (patch_cursor['patch_type'] == 'build_from_source'):
             if (patch_cursor['references']):
@@ -39,7 +38,7 @@ def handle_Patch_Update(patch_cursor, unformatted_package_name):
                 )
             return True
         elif (patch_cursor['patch_type'] == 'version'):
-            if not determine_Package_Status(patch_cursor['individual_package_name']): return False
+            if not determine_Package_Status(package_name): return False
             if wp.resolve_Admin_Version_Update(patch_cursor, unformatted_package_name): return True
             else: return False
     elif ('CVE' in patch_cursor['id']):
@@ -58,7 +57,7 @@ def handle_Patch_Update(patch_cursor, unformatted_package_name):
             patch_cursor['summary'],
             False,
             False,
-            unformatted_package_name
+            package_name
         ): 
             cve_collection.update(
                 { 'id' : patch_cursor['id'] },
@@ -83,7 +82,7 @@ def handle_Github_Patch(cursor, package, url):
             handle_Manual_Patch_By_User(bfs.search_Files(file_path), package, code, 'Github patch: ' + url)
     return True
 
-def handle_Manual_Patch_By_User(full_file_path, package, inserted_code, comment, cursor=None):
+def handle_Manual_Patch_By_User(full_file_path, package_name, inserted_code, comment, cursor=None):
 
     if not bfs.perform_File_Alterations(
         full_file_path, 
@@ -94,22 +93,22 @@ def handle_Manual_Patch_By_User(full_file_path, package, inserted_code, comment,
     diff_file_path = ph.produce_Diff_Of_Files(
         full_file_path,
         bfs.search_Files('AutoInject/file_store/test/patch_file.py'),
-        package,
+        package_name,
         'patch_file__apply__.patch'
     )
 
     diff_file_path2 = ph.produce_Diff_Of_Files(
         bfs.search_Files('AutoInject/file_store/test/patch_file.py'),
         full_file_path,
-        package,
+        package_name,
         'patch_file__reverse__.patch'
     )
 
     ph.restore_File_Contents(diff_file_path)
-    copy_of_file = ph.make_Copy_Of_File(package, full_file_path)
+    copy_of_file = ph.make_Copy_Of_File(package_name, full_file_path)
 
     ph.upload_File(
-        package,
+        package_name,
         full_file_path,
         diff_file_path,
         'build_from_source',
@@ -121,7 +120,7 @@ def handle_Manual_Patch_By_User(full_file_path, package, inserted_code, comment,
     )
 
     ph.upload_File(
-        package,
+        package_name,
         full_file_path,
         diff_file_path2,
         'build_from_source',
@@ -137,18 +136,17 @@ def handle_Manual_Patch_By_User(full_file_path, package, inserted_code, comment,
     if cursor: cve_collection.delete_one( { '_id' : cursor['_id'] } )
     return diff_file_path
 
-def handle_Version_Patch_By_User(package, version_name, link, comment):
+def handle_Version_Patch_By_User(package_name, version_name, link, comment):
     
-    package_name = package_collection.find_one( { 'formatted_package_name_with_version' : package } )['package_name']
     if not determine_Package_Status(package_name): return False
 
     if link: return wp.collect_Specific_Package_URL(None, 'manual', comment, link, package)
     elif version_name: 
-        versions = wp.get_Matching_Ubuntu_Version(package, version_name)
+        versions = wp.get_Matching_Ubuntu_Version(package_name, version_name)
         if versions: 
-            if wp.perform_Package_Version_Update(versions[0], package, versions[1]):
+            if wp.perform_Package_Version_Update(versions[0], package_name, versions[1]):
                 if wp.update_Vulnerability_Information(
-                    package,                            
+                    package_name,                            
                     sf.get_Ubuntu_Package_Version(package_name),
                     versions[1],
                     'manual',
@@ -209,6 +207,3 @@ def determine_Package_Status(package_name):
             else:               count += 1
     except:
         return False
-
-def get_Update_Log(package_name=False):
-    return ph.get_Update_Log(package_name)
