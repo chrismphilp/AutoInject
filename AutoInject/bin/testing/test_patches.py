@@ -1,10 +1,10 @@
 example_Patch1 = '''
-&* class adder:
-&-- def goodbye
-&++def new_Function
-hhh
-&* def hello():
-Test Text
+	&* class adder:
+	&-- def goodbye
+	&++def new_Function
+	hhh
+	&* def hello():
+	Test Text
 '''
 
 example_Patch2 = '''
@@ -46,18 +46,18 @@ example_Patch8 = '''
 
 example_Patch9 = '''
 &-- def goodbye
-&++Yooo
+&++def new_function
 '''
 
 example_Patch10 = '''
 &-- return goodbye "Hello"
-&++Yooo
+&++def new_function
 &* ggg
 '''
 
 example_Patch11 = '''
 &-- print("Say
-&++Yooo
+&++def new_function
 &* class
 '''
 
@@ -126,21 +126,21 @@ Hello
 
 example_Patch18 = '''
 &* class adder: def goodbye
-yoo
+def new_function():
 '''
 
 example_Patch19 = '''
 &-- class adder: def goodbye
-&++hi
+&++Insert newline1
 &* class ader:def hello()
-Hi B
+Insert newline2
 '''
 
 example_Patch20 = '''
 &-- class adder: def goodbye
-&++hi
+&++Insert newline1
 &* class ader:def hello():return goodbye "Hello"
-Hi B
+Insert newline2
 '''
 
 example_Patch21 = '''
@@ -153,20 +153,4 @@ Hi
 &-- class adder: def goodbye(): print("Say goodbye") class ader: def hello(): return goodbye "Hello"
 &++
 Hi
-'''
-
-presentation_patch = '''
-&-- $sql = "SELECT * FROM users WHERE firstname = '$var';";
-&++$stmt = $conn->prepare('SELECT * FROM users WHERE firstname = ?');
-$stmt->bind_param('s', $var);
-$stmt->execute();
-&-- $result = $conn->query($sql);
-&++$result = $stmt->get_result();
-'''
-
-presentation_mongo_query = '''
-Other apport CVE CVE-2015-1318
-coll.findOne( { 'id' : 'CVE-2017-14180' } )
-coll.update ( { 'id' : 'CVE-2017-14180' }, { '$set' : { 'deleted' : 0 } } )
-https://github.com/chrismphilp/AutoInject/commit/583336577396151db31e920c7f544b4731523ec4?diff=split
 '''

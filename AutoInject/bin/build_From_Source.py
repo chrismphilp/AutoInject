@@ -1,7 +1,6 @@
 import pymongo, re, time, datetime, os
 
 # Parsing related modules
-
 import ply.lex                      as lex
 from pygments                       import highlight
 from pygments.lexers                import guess_lexer_for_filename, get_lexer_by_name, guess_lexer
@@ -16,8 +15,6 @@ from bson.json_util                 import dumps
 
 from subprocess                     import check_output, check_call
 from copy                           import copy
-
-import AutoInject.file_store.test.test_patches as test_patches
 
 client                              = MongoClient()
 package_collection                  = client['package_db']['package_list']
@@ -461,24 +458,3 @@ def run_Addition_Searches(path_of_file_to_modify, path_of_file_to_write, list_Of
 
     with open(path_of_file_to_write, 'w') as file_to_write:
         file_to_write.write(string_for_file)
-
-##############################################################
-
-if __name__ == '__main__':
-
-    # test_input = '''
-    #     #!/usr/bin/env python3
-    #     #
-    #     # Updater script of CVE/CPE database
-    #     #
-    #     # Copyright (c) 2012-2016   Alexandre Dulaunoy - a@foo.be
-    #     # Copyright (c) 2014-2016   Pieter-Jan Moreels - pieterjan.moreels@gmail.com
-
-    #     # Imports
-    # '''
-    # with open('/home/chrismphilp/Documents/cve-search/sbin/db_updater.py', 'r') as file_to_read:
-    #     lexer_for_file.input(file_to_read.read())
-    #     for tokens in lexer_for_file:
-    #         print(tokens)
-
-    print(perform_Additions('../file_store/test/test2.py', '../file_store/test/patch_file.py', test_patches.example_Patch4))

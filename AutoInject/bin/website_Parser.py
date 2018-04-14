@@ -144,7 +144,6 @@ def collect_Specific_Package_URL(cursor, implementation_type='automatic', commen
 
 def search_URL_For_Version_Update(url):
     print('Scanning:', url)
-
     start       = time.time()
     matched     = False
 
