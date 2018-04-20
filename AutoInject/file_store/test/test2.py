@@ -1,6 +1,6 @@
 class adder:
 	def goodbye():
-		print("Say goodbye")
+		print("Say hello")
 
 class ader:
 	def hello():

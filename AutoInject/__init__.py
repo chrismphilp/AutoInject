@@ -1,15 +1,34 @@
-import sys, os, logging
-from flask import Flask, render_template, request
+import 	sys, os, logging, atexit, time
+import 	AutoInject.bin.system_Functions  	as sf
+import 	AutoInject.bin.get_Vulnerabilities 	as gv
+from 	flask 								import Flask, render_template, request, session
+from 	apscheduler.schedulers.background 	import BackgroundScheduler
+from 	apscheduler.triggers.interval 		import IntervalTrigger
 
 def init_app():
     app = Flask(__name__)
     app.config['UPLOAD_FOLDER'] = ''
     return app
-
 app = init_app()
 
-# Import page views
 from AutoInject.bin import views
+
+def call_database_updater():
+	if views.user:
+		sf.run_Database_Updater_Script()
+		gv.collect_Checkable_Packages()
+
+if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+	scheduler = BackgroundScheduler(daemon=True)
+	scheduler.start() 
+	scheduler.add_job(
+		func=call_database_updater,
+		trigger=IntervalTrigger(days=1),
+		id='refreshing_database',
+		name='Database_Refresh',
+		replace_existing=True
+	)
+	atexit.register(lambda: scheduler.shutdown())
 
 if __name__ == "__main__":
     

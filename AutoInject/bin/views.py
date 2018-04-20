@@ -25,9 +25,11 @@ from wtforms.validators import DataRequired, Email
 from flask_wtf          import FlaskForm
 from werkzeug.security  import check_password_hash, generate_password_hash
 
+global user
 login_manager               = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view    = 'login'
+user                        = False
 
 # Database API
 client                      = MongoClient()
@@ -35,7 +37,6 @@ package_collection          = client['package_db']['package_list']
 admin_patches               = client['package_db']['admin_patches']
 cve_collection              = client['cvedb']['cves']
 user_collection             = client['user_db']['users']
-
 db                          = Database()
 
 @app.route("/")
@@ -220,6 +221,7 @@ class LoginForm(FlaskForm):
 
 @login_manager.user_loader
 def load_user(user_id):
+    global user
     data                = user_collection.find_one( { 'id' : user_id } )
     user                = User()
     user.id             = data['id']
@@ -236,8 +238,8 @@ def login():
             result = user_collection.find_one( { 'id' : request.form['username'] } )
             if not result: return redirect(url_for("login"))
             elif check_password_hash(result['password'], request.form['password']):
-                user    = User()
-                user.id = result['id']
+                user        = User()
+                user.id     = result['id']
                 login_user(user)
                 return redirect(url_for("vulnerabilities"))
             else:
@@ -270,7 +272,8 @@ def register():
 
 @app.route("/logout")
 def logout():
-    logout_user()
+    global user
+    user = False
     return redirect(url_for('login'))
 
 @app.route("/forgot_password", methods=['POST', 'GET'])
