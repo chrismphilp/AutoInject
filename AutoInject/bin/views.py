@@ -232,6 +232,7 @@ def load_user(user_id):
 
 @app.route("/login", methods=['POST', 'GET'])
 def login():
+    global user
     form = LoginForm()
     if request.method == 'POST':
         if form.validate_on_submit():
@@ -274,6 +275,7 @@ def register():
 def logout():
     global user
     user = False
+    logout_user()
     return redirect(url_for('login'))
 
 @app.route("/forgot_password", methods=['POST', 'GET'])
