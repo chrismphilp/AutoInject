@@ -28,7 +28,7 @@ if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
 	scheduler.start() 
 	scheduler.add_job(
 		func=call_database_updater,
-		trigger=IntervalTrigger(seconds=5),
+		trigger=IntervalTrigger(hours=24),
 		id='refreshing_database',
 		name='Database_Refresh',
 		replace_existing=True

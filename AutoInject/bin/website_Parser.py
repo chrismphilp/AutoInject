@@ -64,7 +64,7 @@ def collect_All_Package_URLs():
         # Call multi-threader function
         pass
 
-def resolve_Admin_Version_Update(cursor, unformatted_package_name=False):
+def resolve_Admin_Version_Update(cursor, package_name):
 
     if not sf.connected_To_Internet(): return False
 
@@ -74,22 +74,20 @@ def resolve_Admin_Version_Update(cursor, unformatted_package_name=False):
             'manual',
             cursor['summary'],
             False, 
-            False,
-            unformatted_package_name
+            package_name
         ):
             cve_collection.delete_one( { '_id' : cursor['_id'] } )
             return True
     elif cursor['version_number']:
-        versions = get_Matching_Ubuntu_Version(cursor['reformatted_configs'][0], cursor['version_number'])
+        versions = get_Matching_Ubuntu_Version(cursor['individual_package_name'], cursor['version_number'])
         if versions: 
             if perform_Package_Version_Update(versions[0], cursor['individual_package_name'], versions[1]):
                 if update_Vulnerability_Information(
-                    None,                            
+                    cursor['individual_package_name'],                            
                     sf.get_Ubuntu_Package_Version(cursor['individual_package_name']),
                     versions[1],
                     'manual',
-                    cursor['summary'],
-                    cursor['individual_package_name']
+                    cursor['summary']
                 ): 
                     cve_collection.delete_one( { '_id' : cursor['_id'] } )
                     return True
@@ -101,11 +99,6 @@ def collect_Specific_Package_URL(cursor, implementation_type='automatic', commen
     if not sf.connected_To_Internet(): return False
 
     if link:
-        unformatted_package_name = package_collection.find_one( 
-            { 'formatted_package_name_with_version' : package_name } 
-        )['package_name']
-        if not unformatted_package_name: return False
-
         version_name = search_URL_For_Version_Update(link)
         if version_name:
             versions = get_Matching_Ubuntu_Version(package_name, version_name)
@@ -121,19 +114,16 @@ def collect_Specific_Package_URL(cursor, implementation_type='automatic', commen
                     else: return False
             else: return False
     elif cursor:        
-        formatted_package_name = package_collection.find_one( 
-            { 'package_name' : unformatted_package_name }
-        )['formatted_package_name_with_version']
         for urls in cursor['references']:
             version_name = search_URL_For_Version_Update(urls)
             if version_name:
                 print(version_name)
-                version_list = get_Matching_Ubuntu_Version(formatted_package_name, version_name)   
+                version_list = get_Matching_Ubuntu_Version(package_name, version_name)   
                 if version_list: 
-                    if perform_Package_Version_Update(version_list[0], unformatted_package_name, version_list[1]):
+                    if perform_Package_Version_Update(version_list[0], package_name, version_list[1]):
                         if update_Vulnerability_Information(
-                            formatted_package_name,                            
-                            sf.get_Ubuntu_Package_Version(unformatted_package_name),
+                            package_name,                            
+                            sf.get_Ubuntu_Package_Version(package_name),
                             version_list[1],
                             implementation_type,
                             comment

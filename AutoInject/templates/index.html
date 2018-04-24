@@ -119,7 +119,7 @@
 		    $('#packages tbody').on('click', 'button', function() {
 				var data = packages.row( $(this).parents('tr') ).data();
 				if (this.id == 'inspect_package') {
-					location.href = '/vulnerabilities/' + data[2];
+					location.href = '/vulnerabilities/' + data[0];
 				}
 			});
 		} );

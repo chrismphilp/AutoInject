@@ -22,7 +22,7 @@ def handle_Patch_Update(patch_cursor, package_name):
             if (patch_cursor['references']):
                 handle_Github_Patch(
                     patch_cursor,
-                    patch_cursor['vulnerable_configuration'][0], 
+                    package_name, 
                     patch_cursor['references'][0]
                 )
             else:
@@ -39,7 +39,7 @@ def handle_Patch_Update(patch_cursor, package_name):
             return True
         elif (patch_cursor['patch_type'] == 'version'):
             if not determine_Package_Status(package_name): return False
-            if wp.resolve_Admin_Version_Update(patch_cursor, unformatted_package_name): return True
+            if wp.resolve_Admin_Version_Update(patch_cursor, package_name): return True
             else: return False
     elif ('CVE' in patch_cursor['id']):
         print("Standard update")
@@ -47,7 +47,7 @@ def handle_Patch_Update(patch_cursor, package_name):
             if 'github' in urls:
                 if handle_Github_Patch(
                     patch_cursor,
-                    patch_cursor['vulnerable_configuration'][0], 
+                    package_name, 
                     url
                 ): return True
                 else: return False
@@ -55,7 +55,6 @@ def handle_Patch_Update(patch_cursor, package_name):
             patch_cursor,
             'automatic',
             patch_cursor['summary'],
-            False,
             False,
             package_name
         ): 
@@ -66,7 +65,7 @@ def handle_Patch_Update(patch_cursor, package_name):
             return True
         else: return False
 
-def handle_Github_Patch(cursor, package, url):
+def handle_Github_Patch(cursor, package_name, url):
     set_to = False
     for (file_path, code) in gp.parse_Github(url):
         if not bfs.search_Files(file_path): return False
@@ -76,10 +75,10 @@ def handle_Github_Patch(cursor, package, url):
     for (file_path, code) in gp.parse_Github(url): 
         print(file_path, code)
         if not set_to: 
-            handle_Manual_Patch_By_User(bfs.search_Files(file_path), package, code, 'Github patch: ' + url, cursor)
+            handle_Manual_Patch_By_User(bfs.search_Files(file_path), package_name, code, 'Github patch: ' + url, cursor)
             set_to = True
         else:
-            handle_Manual_Patch_By_User(bfs.search_Files(file_path), package, code, 'Github patch: ' + url)
+            handle_Manual_Patch_By_User(bfs.search_Files(file_path), package_name, code, 'Github patch: ' + url)
     return True
 
 def handle_Manual_Patch_By_User(full_file_path, package_name, inserted_code, comment, cursor=None):
@@ -140,7 +139,7 @@ def handle_Version_Patch_By_User(package_name, version_name, link, comment):
     
     if not determine_Package_Status(package_name): return False
 
-    if link: return wp.collect_Specific_Package_URL(None, 'manual', comment, link, package)
+    if link: return wp.collect_Specific_Package_URL(None, 'manual', comment, link, package_name)
     elif version_name: 
         versions = wp.get_Matching_Ubuntu_Version(package_name, version_name)
         if versions: 

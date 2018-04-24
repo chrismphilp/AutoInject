@@ -158,11 +158,9 @@ def manual_update():
 @app.route("/vulnerabilities/<package_name>/package_update/<cve_id>")
 @login_required
 def update_using_admin_patch(package_name, cve_id):
-    prev_ubuntu_vers = package_collection.find_one( 
-        { 'package_name' : package_name } 
-    )['ubuntu_version']
+    prev_ubuntu_vers = package_collection.find_one( { 'package_name' : package_name } )['ubuntu_version']
     ap.handle_Patch_Update(cve_collection.find_one( { 'id' : cve_id } ), package_name)
-    if prev_ubunut_vers != sf.get_Ubuntu_Package_Version(package_name):
+    if prev_ubuntu_vers != sf.get_Ubuntu_Package_Version(package_name):
         gv.remove_Special_Characters()
         gv.collect_Checkable_Packages()
     return redirect(url_for('vulnerabilities')+'/'+package_name)
@@ -459,8 +457,7 @@ def refresh():
 @app.route("/update_vulnerabilities")
 @login_required
 def update_vulnerabilities():  
-    gv.run_Database_Updater_Script()
-    gv.remove_Special_Characters()
+    sf.run_Database_Updater_Script()
     gv.collect_Checkable_Packages()
     return redirect(url_for('vulnerabilities'))
 

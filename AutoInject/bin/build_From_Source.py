@@ -23,10 +23,12 @@ cve_collection                      = client['cvedb']['cves']
 def search_Files(file_name):
     path_to_script = resource_filename("AutoInject", "/bin/sudo_scripts/update_db")
     os.system(path_to_script)
-    full_file_path = check_output(
-        ["locate", file_name],
-        universal_newlines=True
-    )
+    try:
+        full_file_path = check_output(
+            ["locate", file_name],
+            universal_newlines=True
+        )
+    except: return False
     if (full_file_path[-1:] == "\n"): full_file_path = full_file_path[:-1]
     
     full_file_path = full_file_path.split('\n')

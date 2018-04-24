@@ -46,35 +46,6 @@
        		<div class="col-md-9  admin-content" id="settings">
                 <div class="panel panel-info" style="margin: 1em;">
                     <div class="panel-heading">
-                        <h3 class="panel-title" style="display: inline;">Notification</h3>
-                        {% if current_user.notifications == '1' %}
-                            <div class="label label-success" style="float: right;">allowed</div>
-                    </div>
-                        <div class="panel-body">
-                            <div class="form-group">
-                                <form action="/update_notifications" method="post">
-                                    <input type="hidden" name="notification" value="0">
-                                    <input type="hidden" name="username" value="{{ current_user.id }}">
-                                    <input value="Change" type="submit" class="form-control btn btn-primary" name="submit" id="submit">
-                                </form>
-                            </div>
-                        </div>
-                        {% else %}
-                            <div class="label label-danger" style="float: right;">dis-allowed</div>
-                    </div>  
-                        <div class="panel-body">
-                            <div class="form-group">
-                                <form action="/update_notifications" method="post">
-                                    <input type="hidden" name="notification" value="1">
-                                    <input type="hidden" name="username" value="{{ current_user.id }}">
-                                    <input value="Change" type="submit" class="form-control btn btn-primary" name="submit" id="submit">
-                                </form>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-                <div class="panel panel-info" style="margin: 1em;">
-                    <div class="panel-heading">
                         <h3 class="panel-title" style="display: inline;">Auto-Update Packages</h3>
                         {% if current_user.auto_update == '1' %}
                         <div class="label label-success" style="float: right;">allowed</div>
