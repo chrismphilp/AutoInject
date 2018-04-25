@@ -103,10 +103,10 @@ def collect_Specific_Package_URL(cursor, implementation_type='automatic', commen
         if version_name:
             versions = get_Matching_Ubuntu_Version(package_name, version_name)
             if versions: 
-                if perform_Package_Version_Update(versions[0], unformatted_package_name, versions[1]):
+                if perform_Package_Version_Update(versions[0], package_name, versions[1]):
                     if update_Vulnerability_Information(
                         package_name,                            
-                        sf.get_Ubuntu_Package_Version(unformatted_package_name),
+                        sf.get_Ubuntu_Package_Version(package_name),
                         versions[1],
                         implementation_type,
                         comment
@@ -175,7 +175,7 @@ def get_Matching_Ubuntu_Version(package_name, version_name):
     
     list_of_potential_versions  = []
     version_name                = ''.join(e for e in version_name if e.isalnum())
-    previous_version             = package_collection.find_one( { 'package_name' : package_name } )['ubuntu_version']
+    previous_version            = package_collection.find_one( { 'package_name' : package_name } )['ubuntu_version']
 
     madison_versions = check_output(
         ["apt-cache", "madison", package_name],

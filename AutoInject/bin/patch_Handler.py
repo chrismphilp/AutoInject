@@ -236,6 +236,10 @@ def restore_File_Contents(path_of_diff):
     os.system("patch --no-backup-if-mismatch --force -d/ -p0 < " + path_of_diff)
 
 kwargs  = {
+    'c' : {
+        'compile' : True,
+        'command' : 'gcc -c <package>'
+    },
     'java' : { 
         'compile' : True,
         'command' : 'javac <package>'

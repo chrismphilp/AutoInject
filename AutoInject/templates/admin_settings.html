@@ -259,6 +259,48 @@
 				</div>
 			</div>
 		</div>
+		<hr/><br/>
+		<!-- DataTable -->
+		<div class="row">
+			<div class="col-lg-12">
+				<div class="panel panel-default">
+		  			<div class="panel-heading">Admin Requests</div>
+		  			<div class="panel-body">
+		    			<div class="row">
+		      				<div class="col-lg-12">
+		        				<div class="table-responsive">
+									<table 
+										id="admin_requests" 
+										cellspacing="0"
+										class="table table-bordered table-hover table-striped"  
+										width="100%"
+									>
+								        <thead>
+								            <tr>
+								                <th>CVE ID</th>
+								                <th>References</th>
+								                <th>Summary</th>
+								                <th>CVSS Rating</th>
+								            </tr>
+								        </thead>
+								        <tfoot>
+								            <tr>
+								                <th>CVE ID</th>
+								                <th>References</th>
+								                <th>Summary</th>
+								                <th>CVSS Rating</th>
+								            </tr>
+										</tfoot>
+										<tbody>
+										</tbody>
+								    </table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	{% endif %}
 {% endblock %}
 {% block scripts %}
@@ -370,6 +412,63 @@
 					location.href += '/delete_user/' + data[1];
 				}
 			});
+
+			var CVE_data = {{ admin_requests_JSON|safe }};
+			var requests;
+			var request_data = [];
+
+			for (requests in CVE_data) {	
+				request_data.push( 
+					[ 
+						CVE_data[requests]['id'],
+						CVE_data[requests]['references'],
+						CVE_data[requests]['summary'],
+						CVE_data[requests]['cvss']
+					] 
+				);
+			}
+
+			var admin_requests = $('#admin_requests').DataTable( {
+				data: request_data,
+				"columns" : [
+					{ "data" : [0] },
+					{ 
+						"data" : [1],
+						"render" : function(data, type, row, meta) {
+							var newList = data.toString().split(",");
+							var newString = "";
+							if (type == 'display') {
+								for (var i = 0; i < newList.length; i++) {	
+									newString += '<a href="' + newList[i] + '" target="_blank">' + newList[i] + '</a></br>';
+								}
+							}
+							return newString;
+						}
+					},
+					{ 	
+						"data" : [2],
+						"width" : "25%" 
+					},
+					{ "data" : [3] }
+				],
+		        "lengthMenu":   [ 5, 10, 15 ],
+		        "paging":       true,
+		        "ordering":     true,
+		        "order":        [[ 3, "desc" ]],
+		        "info":         true,
+		        stateSave: 		true
+			});
+
+			$('#package_vulnerabilities tbody').on('click', 'button', function() {
+				var data = package_vulnerabilities.row( $(this).parents('tr') ).data();
+				if (this.id == 'update_package') {
+					location.href += '/package_update/' + data[0];
+				}
+				else if (this.id == 'disable_cve') {
+					location.href += '/disable_cve/' + data[0]; 
+				}
+			});
+
 		});
 
 	</script>

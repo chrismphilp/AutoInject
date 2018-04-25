@@ -30,9 +30,9 @@ def get_Ubuntu_Package_Version(package_name):
         else: return "(none)"
     except: return "(none)"
 
-def get_Formatted_Name(package_Name):
+def get_Formatted_Name(package_name):
     re_string = re.compile(r"""([0-9]{0,1}([A-Za-z])+(\-[A-Za-z])*)+""")
-    return (re.match(re_string, package_Name)).group(0)
+    return (re.match(re_string, package_name)).group(0)
 
 def get_Formatted_Version(package_Version):
     re_num = re.compile(r"""(([0-9]:){0,1}[0-9]\.*)+""")

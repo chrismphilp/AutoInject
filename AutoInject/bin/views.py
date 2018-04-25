@@ -176,7 +176,6 @@ def delete_file_patch(package_name, date_of_patch):
 @login_required
 def reverse_file_patch_package_page(package_name, date_of_patch):
     ph.handle_Patch_Maintenance(package_name, date_of_patch)
-    gv.remove_Special_Characters()
     gv.collect_Checkable_Packages()
     db.update_Update_Log()
     db.update_Matched_Vulnerability_Packages_JSON()
@@ -186,7 +185,6 @@ def reverse_file_patch_package_page(package_name, date_of_patch):
 @login_required
 def reverse_file_patch_log_page(package_name, date_of_patch):
     ph.handle_Patch_Maintenance(package_name, date_of_patch)
-    gv.remove_Special_Characters()
     gv.collect_Checkable_Packages()
     db.update_Update_Log()
     db.update_Matched_Vulnerability_Packages_JSON()
@@ -319,12 +317,14 @@ def update_auto_update():
 @app.route("/admin_settings")
 @login_required
 def admin_settings():
-    patch_JSON_data   = dumps(admin_patches.find())
-    user_JSON_data    = dumps(user_collection.find())
+    patch_JSON_data     = dumps(admin_patches.find())
+    user_JSON_data      = dumps(user_collection.find())
+    admin_requests_JSON = dumps(cve_collection.find( { 'admin_patch_request' : 1 } ))
     return render_template(
         "admin_settings.html", 
         user_JSON_data=user_JSON_data, 
-        patch_JSON_data=patch_JSON_data
+        patch_JSON_data=patch_JSON_data,
+        admin_requests_JSON=admin_requests_JSON
     )
 
 @app.route("/admin_settings/delete_user/<email>")

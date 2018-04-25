@@ -51,6 +51,7 @@ def handle_Patch_Update(patch_cursor, package_name):
                     url
                 ): return True
                 else: return False
+        print("Collecting URLS")
         if wp.collect_Specific_Package_URL(
             patch_cursor,
             'automatic',
@@ -58,12 +59,20 @@ def handle_Patch_Update(patch_cursor, package_name):
             False,
             package_name
         ): 
-            cve_collection.update(
+            cve_collection.update_one(
                 { 'id' : patch_cursor['id'] },
                 { '$set' : { 'deleted' : 1 } }
             )
             return True
-        else: return False
+        else: 
+            cve_collection.update_one(
+                { 'id' : patch_cursor['id'] },
+                { '$set' : { 
+                    'admin_patch_request' : 1,
+                    'deleted' : 1 } 
+                }
+            )
+            return False
 
 def handle_Github_Patch(cursor, package_name, url):
     set_to = False
