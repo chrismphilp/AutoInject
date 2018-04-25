@@ -25,11 +25,6 @@ kwargs  = {
         'search_info' : '//td[@id="field_container_cf_fixed_in"]/text()',
         'compiler' : re.compile(r"""(?:(\d+\.(?:\d+\.)*\d+))""") 
     },
-    'securityfocus' : {
-        'finder' : re.compile(r""".*securityfocus.*"""),
-        'search_info' : '',
-        'compiler' : re.compile(r"""(?:(\d+\.(?:\d+\.)*\d+))""")
-    },
     'ubuntu' : {
         'finder' : re.compile(r""".*ubuntu\.com.*"""),
         'search_info' : '//dl/dt[text()="Ubuntu 14.04 LTS"]/following::dd[1]/a/text()',
