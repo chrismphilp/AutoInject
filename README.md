@@ -4,8 +4,10 @@ A software for automatically patching vulnerabilities.
 
 ### Prerequisites
 
+* Ubuntu Trusty 14.04
+* CVE-Search
+* Mongo 3.2
 * Python - 3.3 or above
-* Flask-PyMongo
 
 ## Sudo Permissions
 
@@ -39,3 +41,6 @@ Or use the provided script:
 ```
 auto_inject_script
 ```
+
+Once the application has launched, navigate to the documentation page located under the
+About heading for further information regarding the use of the application.
