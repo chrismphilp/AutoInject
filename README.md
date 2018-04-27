@@ -53,5 +53,13 @@ Or use the provided script:
 auto_inject_script
 ```
 
+These commands MUST BE RUN from the inner
+
+```
+/AutoInject
+```
+
+folder.
+
 Once the application has launched, navigate to the documentation page located under the
 About heading for further information regarding the use of the application.
