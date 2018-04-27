@@ -19,6 +19,22 @@ def collect_Checkable_Packages():
     search_New_Vulnerabilities(package_Data)
 
 def check_For_New_Packages(package_data):
+    
+    print("Attempting to remove indexes")
+    try:    cve_collection.drop_index("summary_text")
+    except: print("vulnerable_configuration_1 does not exist")
+    
+    print("Creating index on new values")
+
+    cve_collection.create_index(
+        [
+            ('id', pymongo.TEXT),
+            ("vulnerable_configuration", pymongo.TEXT),
+            ("reformatted_configs", pymongo.TEXT) 
+        ],
+        name="vulnerability_index"
+    )
+    
     # Find all completely new packages
     print("Getting all newly installed packages")
     list_of_new_packages = []
