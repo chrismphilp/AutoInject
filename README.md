@@ -59,7 +59,7 @@ Or use the provided script:
 auto_inject_script
 ```
 
-These commands MUST BE RUN from the inner
+These commands MUST BE RAN from the inner
 
 ```
 /AutoInject
