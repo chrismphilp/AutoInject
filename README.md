@@ -9,13 +9,12 @@ A software for automatically patching vulnerabilities.
 * Mongo 3.2
 * Python - 3.3 or above
 
-## Sudo Permissions
+## Sudo Permissions 
 
-Must give sudo permissions for all files in the folder.
+Global sudo permissions must be given to all the files within to enable file changes to be made.
 ```
-AutoInject/bin/sudo_scripts/ 
+AutoInject/bin/
 ```
-See this guide for further details on how to provide sudo permissions:
 
 ## Running the package
 
