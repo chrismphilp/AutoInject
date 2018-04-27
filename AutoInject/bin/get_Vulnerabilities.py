@@ -126,7 +126,7 @@ def search_New_Vulnerabilities(package_data):
 def remove_Special_Characters():
     
     print("Beginning special character removal")
-    cursor = cve_collection.find( { 'reformatted_configs' : { '$exists' : False } } )
+    cursor = cve_collection.find( { 'reformatted_configs' : { '$exists' : False } }, no_cursor_timeout=True)
 
     for values in cursor:
         list_Of_Reformatted_Configs = format_String(values['vulnerable_configuration'])
@@ -135,7 +135,8 @@ def remove_Special_Characters():
             { 'id' : values['id'] },
             { '$set' : { 'reformatted_configs' : list_Of_Reformatted_Configs } }
         )
-
+    cursor.close()
+    
     print("Attempting to remove indexes")
     try:    cve_collection.drop_index("summary_text")
     except: print("vulnerable_configuration_1 does not exist")

@@ -34,8 +34,15 @@ of the system files. Alongside this directory the CVE-search folder must be plac
 ```
 /AutoInject
 	/AutoInject
+		\bin
+		\file_store
+		\static
+		\templates
+		__init__.py
+	LICENSE
+	README.md
 	auto_inject_script
-	other files
+	setup.py
 /CVE-Search 
 ```
 
@@ -57,6 +64,17 @@ These commands MUST BE RUN from the inner
 
 ```
 /AutoInject
+	/AutoInject
+		\bin
+		\file_store
+		\static
+		\templates
+		__init__.py
+	LICENSE
+	README.md
+	auto_inject_script <- Ran from HERE
+	setup.py
+/CVE-Search 
 ```
 
 folder.
