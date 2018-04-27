@@ -28,6 +28,17 @@ Firstly, remove these lines from */cve-search/sbin/db_updater.py*
 
 Secondly, you must provide *sudo* permissions for the AutoInject directory, as it will need to make file and folder changes.
 
+Once done, the file_structure of the system must be ensured to be correct, with the base folder set to AutoInject, containing all 
+of the system files. Alongside this directory the CVE-search folder must be placed so the eventual file layout is as follows.
+
+```
+/AutoInject
+	/AutoInject
+	auto_inject_script
+	other files
+/CVE-Search 
+```
+
 Then, either run these commands:
 ```
 export FLASK_APP=AutoInject
